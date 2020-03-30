@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+sudo pacman -Rsn $(pacman -Qdtq)
+sudo pacaur -Sc --noconfirm
+rm -rf ~/.cache/*
+pup=$(comm -23 <(pacman -Qqe | awk '$0 !~ /xorg/' | sort) <(cat ~/.config/cleanup/ignore | sort))
+if [ -z $pup ]; then
+	echo "No unwanted packages!"
+else
+	echo "Potentially unwanted packages:"
+	printf "%s\n" "$pup"
+fi
+

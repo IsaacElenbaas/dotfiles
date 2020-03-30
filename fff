@@ -1,0 +1,18 @@
+f_print_actions=0
+f_trash_confirm=0
+# http://www.linux-sxs.org/housekeeping/lscolors.html 30s
+f_color1=2 # green, directory color
+f_color2=4 # blue, status bar color
+f_color3=3 # orange, selection color
+f_color4=6 # cyan, cursor color
+f_color5=0 # black, status foreground color
+f_cd_on_exit=0
+fkey_child1="off"
+fkey_parent1="off"
+fkey_previous="w"
+fkey_scroll_down1="off"
+fkey_scroll_up1="off"
+fkey_refresh="off"
+fkey_image_preview="I"
+fkey_image_preview_max="i"
+

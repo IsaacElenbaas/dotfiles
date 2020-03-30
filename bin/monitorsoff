@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+xrandr --output DVI-D-0 --off --output HDMI-0 --off
+

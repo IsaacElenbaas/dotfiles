@@ -1,0 +1,26 @@
+#!/usr/bin/bash
+
+ln -s /home/isaacelenbaas/dotfiles/vim /home/isaacelenbaas/.vim
+mkdir -p /home/isaacelenbaas/.local/share
+ln -s /home/isaacelenbaas/dotfiles/icons /home/isaacelenbaas/.local/share/
+mkdir -p /home/isaacelenbaas/.config/qutebrowser
+ln -s /home/isaacelenbaas/dotfiles/qutebrowser/greasemonkey /home/isaacelenbaas/.config/qutebrowser/
+ln -s /home/isaacelenbaas/dotfiles/qutebrowser/config.py /home/isaacelenbaas/.config/qutebrowser/
+ln -s /home/isaacelenbaas/dotfiles/albert /home/isaacelenbaas/.config/
+ln -s /home/isaacelenbaas/dotfiles/cleanup /home/isaacelenbaas/.config/
+ln -s /home/isaacelenbaas/dotfiles/dunst /home/isaacelenbaas/.config/
+ln -s /home/isaacelenbaas/dotfiles/herbstluftwm /home/isaacelenbaas/.config/
+ln -s /home/isaacelenbaas/dotfiles/neofetch /home/isaacelenbaas/.config/
+
+ln -s /home/isaacelenbaas/dotfiles/bash_profile /home/isaacelenbaas/.bash_profile
+ln -s /home/isaacelenbaas/dotfiles/bashrc /home/isaacelenbaas/.bashrc
+ln -s /home/isaacelenbaas/dotfiles/inputrc /home/isaacelenbaas/.inputrc
+ln -s /home/isaacelenbaas/dotfiles/vimrc /home/isaacelenbaas/.vimrc
+ln -s /home/isaacelenbaas/dotfiles/xbindkeysrc /home/isaacelenbaas/.xbindkeysrc
+ln -s /home/isaacelenbaas/dotfiles/xinitrc /home/isaacelenbaas/.xinitrc
+ln -s /home/isaacelenbaas/dotfiles/Xresources /home/isaacelenbaas/.Xresources
+ln -s /home/isaacelenbaas/dotfiles/fff /home/isaacelenbaas/
+
+# git config here so I don't have to worry about accidentally pushing .gitconfig sensetive info
+git config --global core.pager "diff-so-fancy | less -x2 -RFX"
+

@@ -1,0 +1,55 @@
+xterm*termName: xterm-256color
+xterm*faceName: droid:size=10
+xterm*ScrollBar: false
+xterm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
+xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift-fonts
+*VT100*translations:   #override \n\
+    Ctrl Shift <Key>C:  copy-selection(CLIPBOARD) \n\
+    Ctrl Shift <Key>V:  insert-selection(CLIPBOARD) \n\
+    Ctrl Shift <Key>Left: ignore() \n\
+    Ctrl Shift <Key>Right: ignore() \n\
+    Shift <Key>Home: ignore() \n\
+    Shift <Key>End: ignore() \n\
+    Shift <Key>Up: ignore() \n\
+    Shift <Key>Down: ignore() \n\
+    Shift <Key>Right: ignore() \n\
+    Shift <Key>Left: ignore()
+
+#define cBG #232831
+#define cFG #e5e9f0
+#define c00 #282e38
+#define c08 #2e3440
+#define c01 #bf616a
+#define c09 #d08770
+#define c02 #a3be8c
+#define c10 #a3be8c
+#define c03 #f0c674
+#define c11 #ebcb8b
+#define c04 #81a1c1
+#define c12 #88c0d0
+#define c05 #b48ead
+#define c13 #b48ead
+#define c06 #8fbcbb
+#define c14 #8fbcbb
+#define c07 #707880
+#define c15 #c5c8c6
+
+*.background:   cBG
+*.foreground:   cFG
+*.color0:       c00
+*.color1:       c01
+*.color2:       c02
+*.color3:       c03
+*.color4:       c04
+*.color5:       c05
+*.color6:       c06
+*.color7:       c07
+*.color8:       c08
+*.color9:       c09
+*.color10:      c10
+*.color11:      c11
+*.color12:      c12
+*.color13:      c13
+*.color14:      c14
+*.color15:      c15
+

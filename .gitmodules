@@ -1,0 +1,33 @@
+[submodule "vim/plugged/fff.vim"]
+	path = vim/plugged/fff.vim
+	url = https://github.com/dylanaraps/fff.vim.git
+[submodule "vim/plugged/nerdcommenter"]
+	path = vim/plugged/nerdcommenter
+	url = https://github.com/scrooloose/nerdcommenter.git
+[submodule "vim/plugged/vim-better-whitespace"]
+	path = vim/plugged/vim-better-whitespace
+	url = https://github.com/ntpeters/vim-better-whitespace.git
+[submodule "vim/plugged/undotree"]
+	path = vim/plugged/undotree
+	url = https://github.com/mbbill/undotree.git
+[submodule "vim/plugged/vim-signature"]
+	path = vim/plugged/vim-signature
+	url = https://github.com/kshenoy/vim-signature.git
+[submodule "vim/plugged/vim-rainbow"]
+	path = vim/plugged/vim-rainbow
+	url = https://github.com/frazrepo/vim-rainbow.git
+[submodule "vim/plugged/vim-sensible"]
+	path = vim/plugged/vim-sensible
+	url = https://github.com/tpope/vim-sensible.git
+[submodule "vim/plugged/vim-expand-region"]
+	path = vim/plugged/vim-expand-region
+	url = https://github.com/terryma/vim-expand-region.git
+[submodule "vim/plugged/vim-easymotion"]
+	path = vim/plugged/vim-easymotion
+	url = https://github.com/easymotion/vim-easymotion.git
+[submodule "vim/plugged/vim-multiple-cursors"]
+	path = vim/plugged/vim-multiple-cursors
+	url = https://github.com/terryma/vim-multiple-cursors.git
+[submodule "vim/plugged/lightline.vim"]
+	path = vim/plugged/lightline.vim
+	url = https://github.com/itchyny/lightline.vim.git

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+w=$(xdotool search --name ' - YouTube')
+if [ "$w" ]; then
+	layout () { herbstclient dump $1; }
+	current=$(xdotool getactivewindow)
+	numTags=$(herbstclient attr tags.count)
+	declare -a layouts
+
+	for i in $(eval echo "{1..$numTags}")
+	do
+		mapfile -t layout_output < <(layout $i)
+		layouts[$i]=${layout_output[0]}
+	done
+
+	herbstclient jumpto $w
+
+	if [ $? == 0 ] ; then
+		xdotool key --clearmodifiers y n Escape
+	fi
+
+	for i in $(eval echo "{1..$numTags}")
+	do
+		herbstclient load $i "${layouts[i]}"
+	done
+	herbstclient jumpto $current
+else
+	mocp --next
+fi
+

@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+xrandr --output DVI-D-0 --auto --output HDMI-0 --right-of DVI-D-0 --auto
+herbstclient detect_monitors
+

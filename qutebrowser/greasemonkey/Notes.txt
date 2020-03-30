@@ -1,0 +1,2 @@
+Rename if you want to deactivate (.bak, etc.)
+Regex doesn't work with @include, use @match
