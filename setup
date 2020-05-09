@@ -1,11 +1,14 @@
 #!/usr/bin/bash
 
 ln -s /home/isaacelenbaas/dotfiles/vim /home/isaacelenbaas/.vim
+ln -s /home/isaacelenbaas/dotfiles/muttrc /home/isaacelenbaas/.muttrc
 mkdir -p /home/isaacelenbaas/.local/share
 ln -s /home/isaacelenbaas/dotfiles/icons /home/isaacelenbaas/.local/share/
 mkdir -p /home/isaacelenbaas/.config/qutebrowser
 ln -s /home/isaacelenbaas/dotfiles/qutebrowser/greasemonkey /home/isaacelenbaas/.config/qutebrowser/
 ln -s /home/isaacelenbaas/dotfiles/qutebrowser/config.py /home/isaacelenbaas/.config/qutebrowser/
+mkdir -p /home/isaacelenbaas/.local/share/qutebrowser
+ln -s /home/isaacelenbaas/dotfiles/qutebrowser/userscripts /home/isaacelenbaas/.local/share/qutebrowser/
 ln -s /home/isaacelenbaas/dotfiles/albert /home/isaacelenbaas/.config/
 ln -s /home/isaacelenbaas/dotfiles/cleanup /home/isaacelenbaas/.config/
 ln -s /home/isaacelenbaas/dotfiles/dunst /home/isaacelenbaas/.config/

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+start_p="$(cat $QUTE_CONFIG_DIR/config.py | grep ^c.url.start_pages)"
+default_p="$(cat $QUTE_CONFIG_DIR/config.py | grep ^c.url.default_page)"
+[[ "$start_p" == *"$QUTE_URL"* || "$default_p" == *"$QUTE_URL"* ]] && new_tab=0 || new_tab=1
+printf "open $([ $new_tab -gt 0 ] && printf -- '-t ')$1\n" >> "$QUTE_FIFO"
+

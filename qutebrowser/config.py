@@ -16,11 +16,12 @@ c.auto_save.session = False
 c.content.autoplay = False
 
 # Type: SessionName
-c.session.default_name = 'd'
+c.session.default_name = 'backup'
 
-c.url.default_page = 'about:blank'
+c.url.default_page = 'data:text/html,%3Chtml%20contenteditable%3E%3Cstyle%3Ebody%7Bbackground-color:rgb(35,40,49);color:rgb(229,233,240);font-size:15px;%7D:empty%7Bcaret-color:transparent;%7D%3C/style%3E%3Cscript%3Ewindow.onload=function()%7Bdocument.body.focus();%7D%3C/script%3E'
+c.url.start_pages = c.url.default_page
 
-c.confirm_quit = ['always']
+c.confirm_quit = ['downloads']
 
 c.downloads.location.remember = False
 c.downloads.location.prompt = False
@@ -33,10 +34,10 @@ c.hints.chars = 'pgclaoeuidhsjkxbwv'
 c.content.host_blocking.enabled = False
 
 # Automatically enter insert mode if an editable element is focused after loading the page.
-c.input.insert_mode.auto_load = True
+c.input.insert_mode.auto_load = False
 
 # Show javascript alerts.
-c.content.javascript.alert = True
+c.content.javascript.alert = False
 
 c.keyhint.delay = 0
 
@@ -44,17 +45,17 @@ c.tabs.last_close = 'default-page'
 
 c.scrolling.smooth = True
 
-# Load a restoc01 tab as soon as it takes focus.
-c.session.lazy_restore = True
+# Load a restored tab as soon as it takes focus.
+c.session.lazy_restore = False
 
 c.content.pdfjs = True
 
 c.content.plugins = True
 
-c.completion.timestamp_format = '%m-%d-%Y'
+c.completion.timestamp_format = '%Y-%m-%d'
 
 # Limit fullscreen to the browser window (does not expand to fill the screen).
-c.content.windowed_fullscreen = True
+c.content.fullscreen.window = True
 
 # Number of zoom increments to divide the mouse wheel movements to.
 c.zoom.mouse_divider = 1024
@@ -80,8 +81,11 @@ config.set('content.headers.user_agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleW
 # c.content.user_stylesheets = 'css/themeColors-everything-css-master/css/themeColors-dark/themeColors-dark-all-sites.css'
 
 # Aliases
-c.aliases['mpv'] = 'spawn mpv {url} --title=noMin'
+c.aliases['mpv'] = 'spawn mpv {url}'
 c.aliases['session-only'] = 'session-save --only'
+c.aliases['so'] = 'session-save --only'
+c.aliases['notes'] = 'spawn --userscript smart-open file:///home/isaacelenbaas/Notes/'
+c.aliases['desmos'] = 'spawn --userscript smart-open file:///home/isaacelenbaas/Desmos/index.html'
 # c.aliases['themeColors-toggle'] = "config-cycle content.user_stylesheets 'css/themeColors-everything-css-master/css/themeColors-dark/themeColors-dark-all-sites.css' ''"
 
 # Bindings
@@ -109,22 +113,21 @@ c.bindings.commands['hint'] = {
     'y'                 : 'hint links yank',
 }
 c.bindings.commands['insert'] = {
-    '<Escape>'     : 'leave-mode',
+    '<Escape>'          : 'leave-mode',
 }
 c.bindings.commands['normal'] = {
-    '<Ctrl-Shift-K>'    : 'hint playpause --first',
+    'wl'                : 'session-save --only last ;; close',
 
     '<Return>'          : 'follow-selected',
     '+'                 : 'zoom-in',
     '-'                 : 'zoom-out',
     '/'                 : 'set-cmd-text /',
     ':'                 : 'set-cmd-text :',
+    '<Shift-Q>'           : 'set-cmd-text :',
     '<Ctrl-n>'          : 'open -w',
     '<Ctrl-Shift-N>'    : 'open -p',
 
     'b'                 : 'back-or-close',
-
-    'c'                 : 'scroll up',
 
     'd'                 : 'tab-close',
 
@@ -150,19 +153,17 @@ c.bindings.commands['normal'] = {
 
     'r'                 : 'reload',
 
-    'ss'                 : 'scroll-to-perc 0',
-    's1'                 : 'scroll-to-perc 10',
-    's2'                 : 'scroll-to-perc 20',
-    's3'                 : 'scroll-to-perc 30',
-    's4'                 : 'scroll-to-perc 40',
-    's5'                 : 'scroll-to-perc 50',
-    's6'                 : 'scroll-to-perc 60',
-    's7'                 : 'scroll-to-perc 70',
-    's8'                 : 'scroll-to-perc 80',
-    's9'                 : 'scroll-to-perc 90',
-    's0'                 : 'scroll-to-perc',
-
-    't'                 : 'scroll down',
+    'ss'                : 'scroll-to-perc 0',
+    's1'                : 'scroll-to-perc 10',
+    's2'                : 'scroll-to-perc 20',
+    's3'                : 'scroll-to-perc 30',
+    's4'                : 'scroll-to-perc 40',
+    's5'                : 'scroll-to-perc 50',
+    's6'                : 'scroll-to-perc 60',
+    's7'                : 'scroll-to-perc 70',
+    's8'                : 'scroll-to-perc 80',
+    's9'                : 'scroll-to-perc 90',
+    's0'                : 'scroll-to-perc',
 
     'u'                 : 'undo',
 
@@ -172,7 +173,7 @@ c.bindings.commands['normal'] = {
     'yp'                : 'click-element id ytp-prev-button',
 }
 c.bindings.commands['passthrough'] = {
-    '<Shift-Escape>'    : 'leave-mode',
+    '<Ctrl-Escape>'     : 'leave-mode',
 }
 c.bindings.commands['prompt'] = {
     '<Return>'          : 'prompt-accept',
@@ -192,21 +193,21 @@ c.bindings.commands['yesno'] = {
 
 # Colors
 themeColors = {
-		'cBG':     '#232831',
-		'cFG':		 '#e5e9f0',
-		'c00':		 '#282e38',
-		'c01':     '#bf616a',
-		'c02':		 '#a3be8c',
-		'c03':		 '#f0c674',
-		'c04':		 '#81a1c1',
-		'c05':     '#b48ead',
-		'c06':		 '#8fbcbb',
-		'c07':		 '#707880',
-		'c08':     '#2e3440',
-		'c09':     '#d08770',
-		'c11':		 '#ebcb8b',
-		'c12':		 '#88c0d0',
-		'c15':		 '#c5c8c6',
+    'cBG'               : '#232831',
+    'cFG'               : '#e5e9f0',
+    'c00'               : '#282e38',
+    'c01'               : '#bf616a',
+    'c02'               : '#a3be8c',
+    'c03'               : '#f0c674',
+    'c04'               : '#81a1c1',
+    'c05'               : '#b48ead',
+    'c06'               : '#8fbcbb',
+    'c07'               : '#707880',
+    'c08'               : '#2e3440',
+    'c09'               : '#d08770',
+    'c11'               : '#ebcb8b',
+    'c12'               : '#88c0d0',
+    'c15'               : '#c5c8c6',
 }
 c.colors.completion.category.bg = themeColors['cBG']
 c.colors.completion.category.border.bottom = c.colors.completion.category.bg
