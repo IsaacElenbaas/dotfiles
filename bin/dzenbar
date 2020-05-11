@@ -10,7 +10,7 @@ delimiter="␝" # can be multiple characters
 
 makecoproc () {
 	cops[${#cops[@]}]=$1
-	rparams[${#cops[@]}]="<(t=;if read -t0 t <&\"\${co$1[0]}\";then read t <&\"\${co$1[0]}\"; fi; echo \"\${t:-\$$1}$delimiter\")"
+	rparams[${#cops[@]}]="<(t=;if read -t0 t <&\"\${co$1[0]}\";then read t <&\"\${co$1[0]}\"; fi; echo \"\${t:-\$$1}$delimiter\" | sed -e 's/\\\\/\\\\\\\\\\\\\\\\\\\/g')"
 	coproc $(echo "co$1") (while true; do
 		echo $(eval $3)
 		sleep $2
@@ -41,7 +41,7 @@ tags () { # 2 -> 1
 # accumilate), and should ideally be multiples of it
 makecoproc "dztime" "1s" "date +\"%a %d %b %r\""
 makecoproc "dzram" "10s" "free | awk '/Mem/ { printf \"%d%% RAM\", \$3/\$2*100 }'"
-makecoproc "dzupdates" "1h" "pacaur -Qu | wc -l"
+makecoproc "dzupdates" "1h" "( checkupdates; pacaur -Qu ) | wc -l"
 # makecoproc "dzsongraw" "5s" "xdotool getwindowname \$(xdotool search --name ' - youtube-playlist-randomizer' || xdotool search --name ' - YouTube') | sed -e 's/\((.*)\|(\|)\|\#\||\|&\)//g' -e 's/'\"'\"'/’/g'" # old, greedy (.*) which broke some song titles
 makecoproc "dzsongraw" "5s" "(i=\$(xdotool search --name ' - YouTube') && xdotool getwindowname \$i || mocp --format %song 2>/dev/null) | awk '{ gsub(/【/,\" [\"); gsub(/】/,\"] \"); gsub(/~/,\"-\"); gsub(/[^\\0-\\177]/,\"\"); gsub(/(\(.[^\)]*\))|\(|\)|\||&|#/,\"\"); gsub(/ {2,}/,\" \"); gsub(/'\''/,\"\\\\\\\'\''\"); print }' | awk '{ if(\$1 ~ /^[ ]*\$/) print \"----------------\"; else print }'" # actually faster than sed
 
@@ -78,7 +78,7 @@ while true; do
 	tactivelast=$tactive
 
 	if [ "$dzsongraw" != "$dzsong" ]; then
-		dzsong=$(echo $dzsongraw | sed -e 's/ - YouTube - qutebrowser//' -e 's/  / /g' | awk 'length > 40 {$0=substr($0,0,37)"..."}1')
+		dzsong=$(echo $dzsongraw | sed -e 's/ - YouTube - qutebrowser//' -e 's/  / /g' | sed -e 's/\\//g' | awk 'length > 40 {$0=substr($0,0,37)"..."}1')
 	fi
 
 	updateplural=$([ "$dzupdates" = "1" ] && echo "" || echo "s")
