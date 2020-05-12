@@ -22,6 +22,7 @@
 [submodule "vim/plugged/vim-expand-region"]
 	path = vim/plugged/vim-expand-region
 	url = https://github.com/terryma/vim-expand-region.git
+	ignore = dirty
 [submodule "vim/plugged/vim-easymotion"]
 	path = vim/plugged/vim-easymotion
 	url = https://github.com/easymotion/vim-easymotion.git

@@ -1,8 +1,0 @@
-let g:netrw_dirhistmax  =10
-let g:netrw_dirhistcnt =6
-let g:netrw_dirhist_6='/home/isaacelenbaas/Downloads/Corne'
-let g:netrw_dirhist_5='/home/isaacelenbaas/fff'
-let g:netrw_dirhist_4='/home/isaacelenbaas/pacwall'
-let g:netrw_dirhist_3='/home/isaacelenbaas/Downloads'
-let g:netrw_dirhist_2='/home/isaacelenbaas/dotfiles'
-let g:netrw_dirhist_1='/mnt/isaacelenbaas/.local/share/icons/default'
