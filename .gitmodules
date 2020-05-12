@@ -31,3 +31,9 @@
 [submodule "vim/plugged/lightline.vim"]
 	path = vim/plugged/lightline.vim
 	url = https://github.com/itchyny/lightline.vim.git
+[submodule "vim/plugged/quick-scope"]
+	path = vim/plugged/quick-scope
+	url = https://github.com/unblevable/quick-scope.git
+[submodule "vim/plugged/ultisnips"]
+	path = vim/plugged/ultisnips
+	url = https://github.com/SirVer/ultisnips.git

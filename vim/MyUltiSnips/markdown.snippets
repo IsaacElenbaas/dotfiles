@@ -1,0 +1,17 @@
+# Gets angry if I don't use $0
+snippet "(^| )m" "inline math delimiters" r
+`!p snip.rv = match.group(1)`\\\`$0\\\`
+endsnippet
+#snippet \` "multi-line math delimiters" i
+#\\\`
+#\\\`$1\\\`
+#endsnippet
+snippet "\\`([^ ]*)int" "integral" r
+\\\``!p snip.rv = match.group(1)`int_($1)^($2)
+endsnippet
+snippet "\\`([^ ]*)sum" "summation" r
+\\\``!p snip.rv = match.group(1)`sum_($1=$2)^($3)
+endsnippet
+snippet "\\`([^ ]*)lim" "limit" r
+\\\``!p snip.rv = match.group(1)`lim_($1->$2)
+endsnippet
