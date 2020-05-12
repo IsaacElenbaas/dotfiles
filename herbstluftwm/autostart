@@ -7,6 +7,7 @@ hc emit_hook reload
 hc keyunbind --all
 
 m=$(xrandr --query | awk '/ connected/{print}' | wc -l)
+h=20
 Mod=Mod4 # Use the super key as the main modifier
 
 # autostart
@@ -21,10 +22,11 @@ xrdb ~/.Xresources
 # keybindings
 hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
-hc keybind $Mod-d close_or_remove
+hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_wcount) -gt 0 ] && saveclose $h || herbstclient remove"
 hc keybind $Mod-Return spawn xterm
 hc keybind $Mod-Shift-Return spawn xterm -e "fff"
 hc keybind $Mod-v spawn xterm -e "vim"
+hc keybind $Mod-Shift-m spawn xterm -e "\mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null"
 
 # basic movement
 hc keybind $Mod-h focus left
@@ -39,6 +41,8 @@ hc keybind $Mod-Shift-t shift down
 hc keybind $Mod-Shift-c shift up
 hc keybind $Mod-Shift-n or / shift right / \
 	chain , lock , shift_to_monitor -r , focus_monitor -r , unlock
+hc keybind $Mod-apostrophe cycle 1
+hc keybind $Mod-comma cycle -1
 
 # splitting frames
 hc keybind $Mod-m chain , split bottom 0.5 , focus down  , spawn albert show
@@ -64,7 +68,7 @@ hc keybind $Mod-y spawn bash -c 'herbstclient setenv clip $(herbstclient get_att
 hc keybind $Mod-i spawn bash -c 'herbstclient bring $(herbstclient getenv clip)'
 
 # tags
-tag_names=$(eval echo "{1..$((6*$m))}")
+tag_names=({1..12})
 hc rename default "${tag_names[0]}" || true
 for i in ${!tag_names[@]} ; do
 	hc add "${tag_names[$i]}"
@@ -98,12 +102,11 @@ hc set mouse_recenter_gap 0
 # rules
 hc unrule -F
 
-hc rule title='albert — Albert' manage=off pseudotile=on
+hc rule title='albert — Albert' floating=on #manage=off pseudotile=on
 hc rule class='discord' tag=2
 hc rule class='Steam' tag=3
 hc rule focus=on # normally focus new clients
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
-hc rule windowtype='_NET_WM_WINDOW_TYPE_DIALOG' focus=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on #pseudotile=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 
 # start
@@ -112,6 +115,5 @@ hc unlock
 hc detect_monitors
 killall dzen2
 killall dzenbar
-h=20
 dzenbar $h | dzen2 -ta l -e '' -h $h -fn "DejaVu" -p
 

@@ -1,6 +1,0 @@
-#!/bin/bash
-
-export WINEPREFIX="$HOME/.wine_osu"
-export STAGING_AUDIO_DURATION=20480
-wine /home/isaacelenbaas/.wine_osu/drive_c/users/isaacelenbaas/Local\ Settings/Application\ Data/osu\!/osu\!.exe
-

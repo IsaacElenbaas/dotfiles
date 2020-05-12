@@ -25,6 +25,6 @@ if [ "$w" ]; then
 	done
 	herbstclient jumpto $current
 else
-	mocp --next
+	\mocp --next
 fi
 

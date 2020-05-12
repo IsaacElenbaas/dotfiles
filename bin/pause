@@ -25,6 +25,6 @@ if [ "$w" ]; then
 	done
 	herbstclient jumpto $current
 else
-	if [ "$(mocp --format %song 2>/dev/null)" == "" ]; then mocp --play; else mocp --toggle-pause; fi
+	if [ "$(\mocp --format %song 2>/dev/null)" == "" ]; then \mocp --play; else \mocp --toggle-pause; fi
 fi
 
