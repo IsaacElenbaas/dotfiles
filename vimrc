@@ -54,7 +54,7 @@ function! Ulti_ExpandOrJump_getRes()
 endfunction
 " has to be <c-r>=, not sure why
 inoremap <silent> <Space> <c-r>=(Ulti_ExpandOrJump_getRes() > 0) ? "\<lt>Left>" : "\<lt>Space>" <CR>
-vnoremap <silent> m di\`<c-r>"\`<Esc>
+xnoremap <silent> m di\`<c-r>"\`<Esc>
 nnoremap <silent> mm 0vg_di\`<c-r>"\`<Esc>
 	"}}}
 "}}}
@@ -178,30 +178,31 @@ onoremap <silent> if :<c-u>call SelectFold(0)<CR>
 xnoremap <silent> af :<c-u>call SelectFold(1)<CR>
 onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 nmap h <Plug>(expand_region_expand)
-vmap h <Plug>(expand_region_expand)
-vmap t <Plug>(expand_region_shrink)
+xmap h <Plug>(expand_region_expand)
+nnoremap j J
+xmap t <Plug>(expand_region_shrink)
 
 	"{{{ basic movement
+nnoremap <Tab> %
 nnoremap $ g$
 nnoremap <kHome> g^
 nnoremap <kEnd> g$
 imap <kHome> <Esc><kHome>i
 imap <kEnd> <Esc><kEnd>i
-nnoremap j <Nop>
 nnoremap k <Nop>
 nnoremap l <Nop>
 " soft lines
 nnoremap <Down> gj
 nnoremap <Up> gk
-vnoremap <Down> gj
-vnoremap <Up> gk
+xnoremap <Down> gj
+xnoremap <Up> gk
 inoremap <Down> <Esc>gji
 inoremap <Up> <Esc>gki
 	"}}}
 
 	"{{{ travelling
 nnoremap tm '
-vnoremap tm '
+xnoremap tm '
 " back/forward in jump history
 nnoremap tb <c-o>
 nnoremap tf <c-i>
@@ -231,15 +232,15 @@ inoremap () ()<Left>
 inoremap (); ();
 inoremap ()<Space> ()<Space>
 inoremap ()<CR> ()<CR>
-vnoremap ( di(<c-r>")<Esc>
-vmap ) (
+xnoremap ( di(<c-r>")<Esc>
+xmap ) (
 
 inoremap [] []<Left>
 inoremap []<Space> []<Space>
 inoremap []<CR> []<CR>
 imap [) []
-vnoremap [ di[<c-r>"]<Esc>
-vmap ] [
+xnoremap [ di[<c-r>"]<Esc>
+xmap ] [
 
 inoremap <> <><Left>
 inoremap <><Space> <><Space>
@@ -249,17 +250,17 @@ inoremap "" ""<Left>
 inoremap ""<Space> ""<Space>
 inoremap ""<CR> ""<CR>
 imap "' ""
-vnoremap " di"<c-r>""<Esc>
+xnoremap " di"<c-r>""<Esc>
 
 inoremap '' ''<Left>
 inoremap ''<Space> ''<Space>
 inoremap ''<CR> ''<CR>
-vnoremap ' di'<c-r>"'<Esc>
+xnoremap ' di'<c-r>"'<Esc>
 
 inoremap `` ``<Left>
 inoremap ``<Space> ``<Space>
 inoremap ``<CR> ``<CR>
-vnoremap ` di`<c-r>"`<Esc>
+xnoremap ` di`<c-r>"`<Esc>
 
 " makes <expr> below not happen
 inoremap {} {}
@@ -267,8 +268,8 @@ inoremap {}<Space> {<Space><Space>}<Left><Left>
 imap {) {}
 " turns (stuff {) into (stuff) {<CR><CR>} ending on empty line
 inoremap <silent> <expr> {<CR> ((strlen(getline(".")) == getpos(".")[2]-1) ? "" : "<BS><kEnd><Space>") . "{<CR>t<CR>}<Up><BS>"
-vnoremap { di{<c-r>"}<Esc>
-vmap } {
+xnoremap { di{<c-r>"}<Esc>
+xmap } {
 	"}}}
 
 	"{{{ scrolling to percentage

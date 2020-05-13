@@ -54,3 +54,6 @@
 [submodule "vim/plugged/vim-wordmotion"]
 	path = vim/plugged/vim-wordmotion
 	url = https://github.com/chaoren/vim-wordmotion
+[submodule "vim/plugged/vim-easy-align"]
+	path = vim/plugged/vim-easy-align
+	url = https://github.com/junegunn/vim-easy-align.git
