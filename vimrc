@@ -7,7 +7,9 @@ Plug 'dstein64/vim-startuptime'
 Plug 'dylanaraps/fff.vim'
 Plug 'easymotion/vim-easymotion'
 Plug 'itchyny/lightline.vim'
+Plug 'junegunn/vim-easy-align'
 Plug 'kshenoy/vim-signature'
+Plug 'machakann/vim-sandwich'
 Plug 'mbbill/undotree'
 Plug 'kana/vim-textobj-user' | Plug 'kana/vim-textobj-line' | Plug 'terryma/vim-expand-region'
 Plug 'unblevable/quick-scope'
@@ -28,8 +30,11 @@ xnoremap as aw
 onoremap as aw
 " fff
 let g:fff#split="20new"
+" vim-easy-align
+nmap ga <Plug>(EasyAlign)
+xmap ga <Plug>(EasyAlign)
 " vim-expand-region
-call expand_region#custom_text_objects({"is" :0,})
+call expand_region#custom_text_objects({"is" :0,"if" :0})
 " quick-scope
 let g:qs_second_highlight=0
 augroup qs_colors
@@ -82,8 +87,25 @@ endfunction
 function SynGroup()
 	let l:s=synID(line("."), col("."), 1)
 	echo synIDattr(l:s, "name") . ' -> ' . synIDattr(synIDtrans(l:s), "name")
-endfun
+endfunction
 	"}}}
+
+"{{{ SelectFold
+function SelectFold(around)
+	let l:position=line(".")
+	if foldclosed(l:position) == -1
+		normal! za
+		let l:start=foldclosed(l:position)
+		if l:start == -1
+			return
+		endif
+		let l:end=foldclosedend(l:position)
+		execute "normal! za" . (l:start+((a:around) ? 0 : 1)) . "GV" . (l:end-((a:around) ? 0 : 1)) . "G"
+	else
+		execute "normal! V"
+	endif
+endfunction
+"}}}
 "}}}
 
 "{{{ settings
@@ -151,6 +173,10 @@ nnoremap <Space> za
 nnoremap z<Space> :<c-u>call ToggleAllFolds()<CR>
 " clear searches
 nnoremap <silent> <Leader>/ :<c-u>let @/=""<CR>
+xnoremap <silent> if :<c-u>call SelectFold(0)<CR>
+onoremap <silent> if :<c-u>call SelectFold(0)<CR>
+xnoremap <silent> af :<c-u>call SelectFold(1)<CR>
+onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 nmap h <Plug>(expand_region_expand)
 vmap h <Plug>(expand_region_expand)
 vmap t <Plug>(expand_region_shrink)
@@ -201,7 +227,6 @@ nmap tmm<Up> t<Up>
 	"}}}
 
 	"{{{ enclosing characters
-" TODO: "",
 inoremap () ()<Left>
 inoremap (); ();
 inoremap ()<Space> ()<Space>
