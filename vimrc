@@ -162,10 +162,12 @@ nnoremap Q :
 nnoremap q :<c-u>q<CR>
 nnoremap p P
 nnoremap P p
+vnoremap <expr> p (mode() == "\<c-v>") ? 'I<c-r>"' : "p"
 nnoremap x "_d
 nnoremap xx "_dd
 nnoremap X "_D
 nnoremap dD ^D
+nnoremap Y y$
 " ctrl+backspace
 inoremap  <Esc>dbi
 " folds
@@ -207,8 +209,8 @@ xnoremap tm '
 nnoremap tb <c-o>
 nnoremap tf <c-i>
 " up/down 1/2 page
-nnoremap tu <c-u>
-nnoremap td <c-d>
+nnoremap <silent> tu :<c-u>mark `<CR><c-u>``
+nnoremap <silent> td :<c-u>mark `<CR><c-d>``
 " go to definition
 nnoremap tD gd
 " keyrepeat
