@@ -321,12 +321,12 @@ hi FoldMarkerSpace ctermfg=8 ctermbg=8
 augroup FoldMarkerHighlight
 	autocmd!
 	" this horrible regex is to color fold markers - only in comments
-	autocmd BufNewfile,Bufread * call matchadd("FoldMarker", '\V' . (substitute(&commentstring, '%s', '\\m.*\\%({{{\\|}}}\\).*\\V', "")))
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarker", '\V' . (substitute(&commentstring, '%s', '\\m.*\\%({{{\\|}}}\\).*\\V', ""))) | endif
 	" spaces immediately before/after comment chars
-	autocmd BufNewfile,Bufread * call matchadd("FoldMarkerSpace", '\s\+\%(\V' . (substitute(&commentstring, '%s', '\\m\\s*\\%({{{\\|}}}\\)\\)\\@=\\V', "")))
-	autocmd BufNewfile,Bufread * call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m\\)\\@<=\\s\\+\\%({{{\\|}}}\\)\\@=\\V', "")))
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '\s\+\%(\V' . (substitute(&commentstring, '%s', '\\m\\s*\\%({{{\\|}}}\\)\\)\\@=\\V', ""))) | endif
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m\\)\\@<=\\s\\+\\%({{{\\|}}}\\)\\@=\\V', ""))) | endif
 	" spaces after fold marks
-	autocmd BufNewfile,Bufread * call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m\\s*\\%({{{\\|}}}\\).*\\)\\@<=\\s\\+\\V', "")))
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m\\s*\\%({{{\\|}}}\\).*\\)\\@<=\\s\\+\\V', ""))) | endif
 augroup end
 		"}}}
 	"}}}
