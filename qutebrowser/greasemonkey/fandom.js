@@ -2,6 +2,7 @@
 // @name        FANDOM cleanup
 // @description Remove all the garbage because this site is horrible
 // @match       *://*.fandom.com/*
+// @match       *://*.gamepedia.com/*
 // @grant       none
 // ==/UserScript==
 

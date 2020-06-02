@@ -154,7 +154,7 @@ filetype indent off
 
 	"{{{ commands
 cmap w!! w !sudo tee > /dev/null %
-command D w !git diff --no-index -- % -
+command D execute 'w !git diff --no-index --color=always -- % - | less -R' | execute 'silent! !stty sane' | redraw!
 command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"}}}
 
