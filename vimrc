@@ -276,16 +276,27 @@ xmap } {
 
 	"{{{ scrolling to percentage
 nnoremap ss gg
+xnoremap ss gg
 nnoremap <silent> s1 :<c-u>call ScrollPercent(10)<CR>
+xnoremap <silent> s1 :<c-u>call ScrollPercent(10)<CR>
 nnoremap <silent> s2 :<c-u>call ScrollPercent(20)<CR>
+xnoremap <silent> s2 :<c-u>call ScrollPercent(20)<CR>
 nnoremap <silent> s3 :<c-u>call ScrollPercent(30)<CR>
+xnoremap <silent> s3 :<c-u>call ScrollPercent(30)<CR>
 nnoremap <silent> s4 :<c-u>call ScrollPercent(40)<CR>
+xnoremap <silent> s4 :<c-u>call ScrollPercent(40)<CR>
 nnoremap <silent> s5 :<c-u>call ScrollPercent(50)<CR>
+xnoremap <silent> s5 :<c-u>call ScrollPercent(50)<CR>
 nnoremap <silent> s6 :<c-u>call ScrollPercent(60)<CR>
+xnoremap <silent> s6 :<c-u>call ScrollPercent(60)<CR>
 nnoremap <silent> s7 :<c-u>call ScrollPercent(70)<CR>
+xnoremap <silent> s7 :<c-u>call ScrollPercent(70)<CR>
 nnoremap <silent> s8 :<c-u>call ScrollPercent(80)<CR>
+xnoremap <silent> s8 :<c-u>call ScrollPercent(80)<CR>
 nnoremap <silent> s9 :<c-u>call ScrollPercent(90)<CR>
+xnoremap <silent> s9 :<c-u>call ScrollPercent(90)<CR>
 nnoremap s0 G
+xnoremap s0 G
 	"}}}
 
 	"{{{ window management

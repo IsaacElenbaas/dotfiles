@@ -22,8 +22,10 @@
 	m:0x0 + c:122
 "amixer set Master 5%+; updatedzen"
 	m:0x0 + c:123
-"scrot -s -e 'mv $f ~/scrot/'"
+"ffcast -s png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x40 + c:33
+"ffcast -# $(xdotool getactivewindow) png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
+	m:0x41 + c:33
 "qutebrowser &"
 	m:0x44 + c:57
 "qutebrowser ':open -p' &"
@@ -34,7 +36,7 @@
 	m:0x0 + c:171 + Release
 "previous"
 	m:0x0 + c:173 + Release
-"if [ \"\$(xrandr --listactivemonitors | head -n 1)\" == \"Monitors: 2\" ]; then monitorsoff; else monitorson; fi"
+"if [ \"$(xrandr --listactivemonitors | head -n 1)\" == \"Monitors: 2\" ]; then monitorsoff; else monitorson; fi"
 	m:0x0 + c:202
 "monitorson"
 	m:0x0 + c:201
