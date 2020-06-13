@@ -59,9 +59,8 @@ while
 do sleep 1; done &
 xbindkeys &
 tabletsetup
-\mocp -x
-\mocp --server 2>/dev/null
-\mocp --toggle shuffle --append /home/isaacelenbaas/Music 2>/dev/null
+\mocp --server >/dev/null
+\mocp --on shuffle --append /home/isaacelenbaas/Music/Default
 
 exec herbstluftwm --locked
 

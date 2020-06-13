@@ -26,7 +26,7 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 hc keybind $Mod-Return spawn xterm
 hc keybind $Mod-Shift-Return spawn xterm -e "fff"
 hc keybind $Mod-v spawn xterm -e "vim"
-hc keybind $Mod-Shift-m spawn xterm -e "\mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null"
+hc keybind $Mod-Shift-m spawn xterm -e "\mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
 
 # basic movement
 hc keybind $Mod-h focus left

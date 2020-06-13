@@ -1,8 +1,9 @@
 #!/usr/bin/bash
 
-mocp -x 2>/dev/null
-youtube-dl --download-archive /home/isaacelenbaas/Music/archive.txt "https://www.youtube.com/playlist?list=PL9aQR0qi3yRad5s3ABdKaC06M9g1O0Iem" -f 'bestaudio/best' --extract-audio --audio-format mp3 --metadata-from-title "%(id)s" --add-metadata -o "/home/isaacelenbaas/Music/%(title)s.%(ext)s" --no-overwrites | grep -e "\[download\] Destination:" -e "\[download\] Finished"
-find /home/isaacelenbaas/Music/ -name "*\\.mp3" -exec mp3gain -r -k -c {} \; | grep Applying
-mocp --server 2>/dev/null
-mocp --toggle shuffle --append /home/isaacelenbaas/Music 2>/dev/null
+\mocp --clear
+\mocp --exit
+youtube-dl --download-archive /home/isaacelenbaas/Music/Default/archive.txt "https://www.youtube.com/playlist?list=PL9aQR0qi3yRad5s3ABdKaC06M9g1O0Iem" -f 'bestaudio/best' --extract-audio --audio-format mp3 --metadata-from-title "%(id)s" --add-metadata -o "/home/isaacelenbaas/Music/Default/%(title)s.%(ext)s" --no-overwrites | grep -e "\[download\] Destination:" -e "\[download\] Finished"
+find /home/isaacelenbaas/Music/Default/ -name "*\\.mp3" -exec mp3gain -r -k -c {} \; | grep Applying
+\mocp --server >/dev/null
+\mocp --on shuffle --append /home/isaacelenbaas/Music/Default
 

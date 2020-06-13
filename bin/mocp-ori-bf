@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+
+\mocp --clear
+\mocp --exit
+\mocp --server >/dev/null
+\mocp --on shuffle --append /home/isaacelenbaas/Music/Ori/BF\ Original /home/isaacelenbaas/Music/Ori/BF\ Additional
+
