@@ -102,12 +102,15 @@ hc set mouse_recenter_gap 0
 # rules
 hc unrule -F
 
-hc rule title='albert — Albert' floating=on #manage=off pseudotile=on
+hc rule focus=on # normally focus new clients
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on #floating=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
+
+hc rule class='albert' floating=on #manage=off pseudotile=on
 hc rule class='discord' tag=2
 hc rule class='Steam' tag=3
-hc rule focus=on # normally focus new clients
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' floating=on #pseudotile=on
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
+hc rule class='mpv' title='noMin' fullscreen=on
+hc rule class='mpv' not title='noMin' focus=off index='/'
 
 # start
 hc set tree_style '╾│ ├└╼─┐' # For printing window list
