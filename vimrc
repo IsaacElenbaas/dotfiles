@@ -1,3 +1,130 @@
+"{{{ functions
+	"{{{ Word
+" does w or b but stops at end/beginning of line
+function Word(forward, big, visual)
+	let l:position=line(".")
+	if a:visual
+		normal! gv
+	endif
+	if a:forward
+		call eval(printf("<SNR>%d_WordMotion(v:count1, " . ((a:visual) ? "'x'" : "'n'") . ", '', [])", GetScriptNumber("wordmotion.vim")))
+		"call feedkeys((a:big) ? "W" : "w", "nx")
+		if line(".") != l:position
+			call feedkeys("kg$", "n")
+		endif
+	else
+		call feedkeys((a:big) ? "B" : "b", "nx")
+		if line(".") != l:position
+			call feedkeys("j^", "n")
+		endif
+	endif
+endfunction
+	"}}}
+
+	"{{{ ScrollScreenPercent
+function ScrollScreenPercent(percent, visual)
+	normal! H
+	let l:top=line(".")
+	normal! L
+	let l:i=0
+	while line(".") > l:top
+		execute "normal! k"
+		let i+=1
+	endwhile
+	execute "normal! " . a:percent*l:i/100 . "j"
+	if a:visual
+		let l:scroll=line(".")
+		call feedkeys("gv" . l:scroll . "gg", "n")
+	endif
+endfunction
+	"}}}
+
+	"{{{ ScrollPercent
+" scrolls to visible percentage when there are folds
+function ScrollPercent(percent, visual)
+	normal! G
+	let l:i=0
+	while line(".") > 1
+		execute "normal! " . (1+line("$")/1000) . "k"
+		let i+=1+line('$')/1000
+	endwhile
+	execute "normal! " . a:percent*l:i/100 . "j"
+	if a:visual
+		let l:scroll=line(".")
+		call feedkeys("gv" . l:scroll . "ggzz", "n")
+	else
+		normal! zz
+	endif
+endfunction
+	"}}}
+
+	"{{{ ToggleFold
+	" same as za but keeps cursor position on screen
+function ToggleFold()
+	let l:position=line(".")
+	let l:closed=foldclosed(line("."))
+	normal! H
+	let l:i=0
+	while line(".") < ((l:closed == -1) ? l:position : l:closed)
+		execute "normal! j"
+		let i+=1
+	endwhile
+	normal! za
+	execute "normal! " . l:position . "gg" . l:i . "kzt" . l:position . "gg"
+endfunction
+	"}}}
+
+	"{{{ ToggleAllFolds
+function ToggleAllFolds()
+	let l:position=line(".")
+	normal! G
+	execute "normal! " . (line("$")-2) . "k"
+	execute "normal! " . ((line(".") == 1) ? "zR" : "zM")
+	execute "normal! " . l:position . "gg"
+endfunction
+	"}}}
+
+	"{{{ SelectFold
+function SelectFold(around)
+	let l:position=line(".")
+	if foldclosed(l:position) == -1
+		normal! za
+		let l:start=foldclosed(l:position)
+		if l:start == -1
+			return
+		endif
+		let l:end=foldclosedend(l:position)
+		execute "normal! za" . (l:start+((a:around) ? 0 : 1)) . "GV" . (l:end-((a:around) ? 0 : 1)) . "G"
+	else
+		normal! V
+	endif
+endfunction
+	"}}}
+
+	"{{{ GetSynGroup
+function GetSynGroup()
+	let l:s=synID(line("."), col("."), 1)
+	echo synIDattr(l:s, "name") . ' -> ' . synIDattr(synIDtrans(l:s), "name")
+endfunction
+	"}}}
+
+	"{{{ GetScriptNumber
+function GetScriptNumber(script_name)
+	redir => scriptnames
+	silent! scriptnames
+	redir END
+
+	for script in split(l:scriptnames, "\n")
+		if l:script =~ a:script_name
+			return str2nr(split(l:script, ":")[0])
+		endif
+	endfor
+
+	return -1
+endfunction
+	"}}}
+"}}}
+
 "{{{ plugins
 	"{{{ plugin installation
 " :PlugInstall :PlugClean :PlugUpdate :PlugUpdate
@@ -11,6 +138,7 @@ Plug 'junegunn/vim-easy-align'
 Plug 'kshenoy/vim-signature'
 Plug 'machakann/vim-sandwich'
 Plug 'mbbill/undotree'
+Plug 'sirtaj/vim-openscad'
 Plug 'kana/vim-textobj-user' | Plug 'kana/vim-textobj-line' | Plug 'terryma/vim-expand-region'
 Plug 'unblevable/quick-scope'
 Plug 'tpope/vim-commentary'
@@ -20,28 +148,50 @@ call plug#end()
 	"}}}
 
 	"{{{ plugin config
-" vim-wordmotion
-nnoremap s w
-xnoremap s w
-onoremap s w
+		"{{{ vim-wordmotion
+runtime plugin/wordmotion.vim
+nnoremap <silent> w :<c-u>call Word(1, 0, 0)<CR>
+xnoremap <silent> w :<c-u>call Word(1, 0, 1)<CR>
+nnoremap <silent> b :<c-u>call Word(0, 0, 0)<CR>
+xnoremap <silent> b :<c-u>call Word(0, 0, 1)<CR>
+nnoremap <silent> W :<c-u>call Word(1, 1, 0)<CR>
+xnoremap <silent> W :<c-u>call Word(1, 1, 1)<CR>
+nnoremap <silent> B :<c-u>call Word(0, 1, 0)<CR>
+xnoremap <silent> B :<c-u>call Word(0, 1, 1)<CR>
 xnoremap is iw
 onoremap is iw
 xnoremap as aw
 onoremap as aw
-" fff
+		"}}}
+
+		"{{{ fff
 let g:fff#split="20new"
-" vim-easy-align
+		"}}}
+
+		"{{{ vim-easy-align
 nmap ga <Plug>(EasyAlign)
 xmap ga <Plug>(EasyAlign)
-" vim-expand-region
+		"}}}
+
+		"{{{ vim-expand-region
 call expand_region#custom_text_objects({"is" :0,"if" :0})
-" quick-scope
+nmap h <Plug>(expand_region_expand)
+xmap h <Plug>(expand_region_expand)
+xmap t <Plug>(expand_region_shrink)
+		"}}}
+
+		"{{{ quick-scope
 let g:qs_second_highlight=0
 augroup qs_colors
 	autocmd!
 	autocmd ColorScheme * highlight QuickScopePrimary term=NONE cterm=NONE ctermfg=NONE ctermbg=240 gui=NONE guifg=NONE guifg=NONE guibg=NONE
 augroup END
-" ultisnips
+		"}}}
+
+" just here so I don't get confused when stuff in settings don't apply
+runtime! plugin/sensible.vim
+
+		"{{{ ultisnips
 let g:UltiSnipsSnippetDirectories=["/home/isaacelenbaas/.vim/Ultisnips", "/home/isaacelenbaas/.vim/MyUltiSnips"]
 " couldn't find a way to unbind these and I don't have F keys on my keyboard
 let g:UltiSnipsExpandTrigger="<F1>"
@@ -56,56 +206,8 @@ endfunction
 inoremap <silent> <Space> <c-r>=(Ulti_ExpandOrJump_getRes() > 0) ? "\<lt>Left>" : "\<lt>Space>" <CR>
 xnoremap <silent> m di\`<c-r>"\`<Esc>
 nnoremap <silent> mm 0vg_di\`<c-r>"\`<Esc>
+		"}}}
 	"}}}
-"}}}
-
-"{{{ functions
-	"{{{ ScrollPercent
-" for scrolling to visible percentage when there are folds
-function ScrollPercent(percent)
-	normal! G
-	let l:i=0
-	while line(".") > 1
-		execute "normal! " . (1+line("$")/1000) . "k"
-		let i+=1+line('$')/1000
-	endwhile
-	execute "normal! " . a:percent*l:i/100 . "j"
-endfunction
-	"}}}
-
-	"{{{ ToggleAllFolds
-function ToggleAllFolds()
-	let l:position=line(".")
-	normal! G
-	execute "normal! " . (line("$")-2) . "k"
-	execute "normal! " . ((line(".") == 1) ? "zR" : "zM")
-	execute "normal! " . l:position . "gg"
-endfunction
-	"}}}
-
-	"{{{ SynGroup
-function SynGroup()
-	let l:s=synID(line("."), col("."), 1)
-	echo synIDattr(l:s, "name") . ' -> ' . synIDattr(synIDtrans(l:s), "name")
-endfunction
-	"}}}
-
-"{{{ SelectFold
-function SelectFold(around)
-	let l:position=line(".")
-	if foldclosed(l:position) == -1
-		normal! za
-		let l:start=foldclosed(l:position)
-		if l:start == -1
-			return
-		endif
-		let l:end=foldclosedend(l:position)
-		execute "normal! za" . (l:start+((a:around) ? 0 : 1)) . "GV" . (l:end-((a:around) ? 0 : 1)) . "G"
-	else
-		execute "normal! V"
-	endif
-endfunction
-"}}}
 "}}}
 
 "{{{ settings
@@ -126,10 +228,13 @@ set gdefault
 set notimeout
 " enable fold markers
 set foldmethod=marker
+" makes things that use h and l to keep active line work better
+set scrolloff=0
 " scroll through history
 set mouse=n
 nnoremap <ScrollWheelDown> u
 nnoremap <ScrollWheelUp> <c-r>
+
 	"{{{ indentation
 " https://tedlogan.com/techblog3.html
 " copy indent chars when hitting enter at end of indented line
@@ -139,7 +244,6 @@ set tabstop=2
 set softtabstop=2
 " automatic indentation total width, doesn't affect characters
 set shiftwidth=2
-runtime! plugin/sensible.vim
 " stupid, vim-sensible enables it
 set nosmarttab
 " part of cursor fixes
@@ -158,39 +262,43 @@ command D execute 'w !git diff --no-index --color=always -- % - | less -R' | exe
 command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"}}}
 
+	"{{{ broken keys/key combos
+" ctrl+backspace
+inoremap  <Esc>dbi
+nnoremap <kHome> g^
+imap <kHome> <Esc><kHome>i
+nnoremap <kEnd> g$
+imap <kEnd> <Esc><kEnd>i
+	"}}}
+
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
 nnoremap p P
 nnoremap P p
 vnoremap <expr> p (mode() == "\<c-v>") ? 'I<c-r>"' : "p"
+nnoremap dD 0D
 nnoremap x "_d
+xnoremap x "_d
 nnoremap xx "_dd
 nnoremap X "_D
-nnoremap dD ^D
+nmap xX 0X
 nnoremap Y y$
-" ctrl+backspace
-inoremap  <Esc>dbi
+nmap yY 0Y
 " folds
-nnoremap <Space> za
-nnoremap z<Space> :<c-u>call ToggleAllFolds()<CR>
+nnoremap <silent> <Space> :<c-u>call ToggleFold()<CR>
+nnoremap <silent> z<Space> :<c-u>call ToggleAllFolds()<CR>
 " clear searches
 nnoremap <silent> <Leader>/ :<c-u>let @/=""<CR>
 xnoremap <silent> if :<c-u>call SelectFold(0)<CR>
 onoremap <silent> if :<c-u>call SelectFold(0)<CR>
 xnoremap <silent> af :<c-u>call SelectFold(1)<CR>
 onoremap <silent> af :<c-u>call SelectFold(1)<CR>
-nmap h <Plug>(expand_region_expand)
-xmap h <Plug>(expand_region_expand)
-nnoremap j J
-xmap t <Plug>(expand_region_shrink)
+nnoremap j gJ
 
 	"{{{ basic movement
 nnoremap <Tab> %
 nnoremap $ g$
-nnoremap <kHome> g^
-nnoremap <kEnd> g$
-imap <kHome> <Esc><kHome>i
-imap <kEnd> <Esc><kEnd>i
+map M zz
 nnoremap k <Nop>
 nnoremap l <Nop>
 " soft lines
@@ -213,88 +321,131 @@ nnoremap <silent> tu :<c-u>mark `<CR><c-u>``
 nnoremap <silent> td :<c-u>mark `<CR><c-d>``
 " go to definition
 nnoremap tD gd
-" keyrepeat
+
+		"{{{ scrolling
 nnoremap tmm <Nop>
 nmap <silent> tn :<c-u>call signature#mark#Goto("next", "spot", "pos")<CR>tmm
-nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
-nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>"<CR>Mtmm
-nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>"<CR>Mtmm
-nmap tt t<Down>
-nmap tc t<Up>
 nmap tmmn tn
+nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
 nmap tmmN tN
-nmap tmmt tt
-nmap tmmc tc
+nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
 nmap tmm<Down> t<Down>
+nmap tt t<Down>
+nmap tmmt tt
+nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
 nmap tmm<Up> t<Up>
+nmap tc t<Up>
+nmap tmmc tc
+		"}}}
+
+		"{{{ scrolling to screen percentage
+nnoremap T H
+xnoremap T H
+nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 0)<CR>
+xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 1)<CR>
+nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 0)<CR>
+xnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 1)<CR>
+nnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 0)<CR>
+xnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 1)<CR>
+nnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 0)<CR>
+xnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 1)<CR>
+nnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 0)<CR>
+xnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 1)<CR>
+nnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 0)<CR>
+xnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 1)<CR>
+nnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 0)<CR>
+xnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 1)<CR>
+nnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 0)<CR>
+xnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 1)<CR>
+nnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 0)<CR>
+xnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 1)<CR>
+nnoremap t0 L
+xnoremap t0 L
+		"}}}
 	"}}}
 
 	"{{{ enclosing characters
+		"{{{ parentheses
 inoremap () ()<Left>
 inoremap (); ();
 inoremap ()<Space> ()<Space>
 inoremap ()<CR> ()<CR>
 xnoremap ( di(<c-r>")<Esc>
+imap )( ()
 xmap ) (
+		"}}}
 
+		"{{{ brackets
 inoremap [] []<Left>
 inoremap []<Space> []<Space>
 inoremap []<CR> []<CR>
 imap [) []
 xnoremap [ di[<c-r>"]<Esc>
 xmap ] [
+		"}}}
 
+		"{{{ carats
 inoremap <> <><Left>
 inoremap <><Space> <><Space>
 inoremap <><CR> <><CR>
+		"}}}
 
+		"{{{ double quotes
 inoremap "" ""<Left>
 inoremap ""<Space> ""<Space>
 inoremap ""<CR> ""<CR>
 imap "' ""
 xnoremap " di"<c-r>""<Esc>
+		"}}}
 
+		"{{{ single quotes
 inoremap '' ''<Left>
 inoremap ''<Space> ''<Space>
 inoremap ''<CR> ''<CR>
 xnoremap ' di'<c-r>"'<Esc>
+		"}}}
 
+		"{{{ backticks
 inoremap `` ``<Left>
 inoremap ``<Space> ``<Space>
 inoremap ``<CR> ``<CR>
 xnoremap ` di`<c-r>"`<Esc>
+		"}}}
 
+		"{{{ curly brackets
 " makes <expr> below not happen
 inoremap {} {}
 inoremap {}<Space> {<Space><Space>}<Left><Left>
 imap {) {}
 " turns (stuff {) into (stuff) {<CR><CR>} ending on empty line
-inoremap <silent> <expr> {<CR> ((strlen(getline(".")) == getpos(".")[2]-1) ? "" : "<BS><kEnd><Space>") . "{<CR>t<CR>}<Up><BS>"
+" the t is to keep indent level
+inoremap <silent> <expr> {<CR> ((strlen(getline(".")) == getpos(".")[2]-1) ? "" : "<BS><kEnd><Space>") . "{<CR>t<CR>}<Up><kEnd><BS>"
 xnoremap { di{<c-r>"}<Esc>
 xmap } {
+		"}}}
 	"}}}
 
-	"{{{ scrolling to percentage
+	"{{{ scrolling to document percentage (visible lines)
 nnoremap ss gg
 xnoremap ss gg
-nnoremap <silent> s1 :<c-u>call ScrollPercent(10)<CR>
-xnoremap <silent> s1 :<c-u>call ScrollPercent(10)<CR>
-nnoremap <silent> s2 :<c-u>call ScrollPercent(20)<CR>
-xnoremap <silent> s2 :<c-u>call ScrollPercent(20)<CR>
-nnoremap <silent> s3 :<c-u>call ScrollPercent(30)<CR>
-xnoremap <silent> s3 :<c-u>call ScrollPercent(30)<CR>
-nnoremap <silent> s4 :<c-u>call ScrollPercent(40)<CR>
-xnoremap <silent> s4 :<c-u>call ScrollPercent(40)<CR>
-nnoremap <silent> s5 :<c-u>call ScrollPercent(50)<CR>
-xnoremap <silent> s5 :<c-u>call ScrollPercent(50)<CR>
-nnoremap <silent> s6 :<c-u>call ScrollPercent(60)<CR>
-xnoremap <silent> s6 :<c-u>call ScrollPercent(60)<CR>
-nnoremap <silent> s7 :<c-u>call ScrollPercent(70)<CR>
-xnoremap <silent> s7 :<c-u>call ScrollPercent(70)<CR>
-nnoremap <silent> s8 :<c-u>call ScrollPercent(80)<CR>
-xnoremap <silent> s8 :<c-u>call ScrollPercent(80)<CR>
-nnoremap <silent> s9 :<c-u>call ScrollPercent(90)<CR>
-xnoremap <silent> s9 :<c-u>call ScrollPercent(90)<CR>
+nnoremap <silent> s1 :<c-u>call ScrollPercent(10, 0)<CR>
+xnoremap <silent> s1 :<c-u>call ScrollPercent(10, 1)<CR>
+nnoremap <silent> s2 :<c-u>call ScrollPercent(20, 0)<CR>
+xnoremap <silent> s2 :<c-u>call ScrollPercent(20, 1)<CR>
+nnoremap <silent> s3 :<c-u>call ScrollPercent(30, 0)<CR>
+xnoremap <silent> s3 :<c-u>call ScrollPercent(30, 1)<CR>
+nnoremap <silent> s4 :<c-u>call ScrollPercent(40, 0)<CR>
+xnoremap <silent> s4 :<c-u>call ScrollPercent(40, 1)<CR>
+nnoremap <silent> s5 :<c-u>call ScrollPercent(50, 0)<CR>
+xnoremap <silent> s5 :<c-u>call ScrollPercent(50, 1)<CR>
+nnoremap <silent> s6 :<c-u>call ScrollPercent(60, 0)<CR>
+xnoremap <silent> s6 :<c-u>call ScrollPercent(60, 1)<CR>
+nnoremap <silent> s7 :<c-u>call ScrollPercent(70, 0)<CR>
+xnoremap <silent> s7 :<c-u>call ScrollPercent(70, 1)<CR>
+nnoremap <silent> s8 :<c-u>call ScrollPercent(80, 0)<CR>
+xnoremap <silent> s8 :<c-u>call ScrollPercent(80, 1)<CR>
+nnoremap <silent> s9 :<c-u>call ScrollPercent(90, 0)<CR>
+xnoremap <silent> s9 :<c-u>call ScrollPercent(90, 1)<CR>
 nnoremap s0 G
 xnoremap s0 G
 	"}}}
