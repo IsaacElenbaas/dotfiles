@@ -21,6 +21,24 @@ function Word(forward, big, visual)
 endfunction
 	"}}}
 
+	"{{{ In/Outdent
+" makes 2>2> indent two lines two times instead of four lines once
+function Indent(...)
+	if exists("a:1")
+		execute "normal! `[V`]" . g:temp . ">"
+	else
+		execute "normal! V" . g:temp . ">"
+	endif
+endfunction
+function Outdent(...)
+	if exists("a:1")
+		execute "normal! `[V`]" . g:temp . "<"
+	else
+		execute "normal! V" . g:temp . "<"
+	endif
+endfunction
+	"}}}
+
 	"{{{ ScrollScreenPercent
 function ScrollScreenPercent(percent, visual)
 	normal! H
@@ -273,9 +291,13 @@ imap <kEnd> <Esc><kEnd>i
 
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
-nnoremap p P
-nnoremap P p
+nnoremap p gP
+nnoremap P P`.
 vnoremap <expr> p (mode() == "\<c-v>") ? 'I<c-r>"' : "p"
+nnoremap <silent> > :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Indent<CR>g@
+nnoremap <silent> >> :<c-u>execute "let temp=" . v:count1<CR>:call Indent()<CR>
+nnoremap <silent> < :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Outdent<CR>g@
+nnoremap <silent> << :<c-u>execute "let temp=" . v:count1<CR>:call Outdent()<CR>
 nnoremap dD 0D
 nnoremap x "_d
 xnoremap x "_d
