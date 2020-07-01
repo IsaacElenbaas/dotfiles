@@ -21,6 +21,20 @@ function Word(forward, big, visual)
 endfunction
 	"}}}
 
+	"{{{ Home
+" makes home go left of whitespace if already at 'beginning' of line
+function Home(visual)
+	let l:position=virtcol(".")
+	if a:visual
+		normal! gv
+	endif
+	call feedkeys("g^", "nx")
+	if virtcol(".") == l:position
+		call feedkeys("0", "n")
+	endif
+endfunction
+	"}}}
+
 	"{{{ In/Outdent
 " makes 2>2> indent two lines two times instead of four lines once
 function Indent(...)
@@ -253,6 +267,10 @@ set mouse=n
 nnoremap <ScrollWheelDown> u
 nnoremap <ScrollWheelUp> <c-r>
 
+set undofile
+call system("mkdir -p ~/.vim/undo")
+set undodir=$HOME/.vim/undo
+
 	"{{{ indentation
 " https://tedlogan.com/techblog3.html
 " copy indent chars when hitting enter at end of indented line
@@ -283,17 +301,20 @@ command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"{{{ broken keys/key combos
 " ctrl+backspace
 inoremap  <Esc>dbi
-nnoremap <kHome> g^
-imap <kHome> <Esc><kHome>i
+nnoremap <silent> <kHome> :<c-u>call Home(0)<CR>
+inoremap <silent> <kHome> <Esc>:<c-u>call Home(0) \| call feedkeys("i")<CR>
+xnoremap <silent> <kHome> :<c-u>call Home(1)<CR>
 nnoremap <kEnd> g$
 imap <kEnd> <Esc><kEnd>i
 	"}}}
 
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
-nnoremap p gP
-nnoremap P P`.
-vnoremap <expr> p (mode() == "\<c-v>") ? 'I<c-r>"' : "p"
+nnoremap p P`.
+nnoremap P gP
+" janky in visual-block but works
+xnoremap <expr> p (mode() == "\<c-v>") ? ('I<c-r>"' . repeat("\<Left>", strchars(getreg('"')))) : "P`."
+xnoremap <expr> P (mode() == "\<c-v>") ? 'I<c-r>"' : "gP"
 nnoremap <silent> > :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Indent<CR>g@
 nnoremap <silent> >> :<c-u>execute "let temp=" . v:count1<CR>:call Indent()<CR>
 nnoremap <silent> < :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Outdent<CR>g@
@@ -318,6 +339,8 @@ onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 nnoremap j gJ
 
 	"{{{ basic movement
+map <c-Right> w
+map <c-Left> b
 nnoremap <Tab> %
 nnoremap $ g$
 map M zz

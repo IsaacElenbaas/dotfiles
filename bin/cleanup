@@ -3,6 +3,7 @@
 sudo pacman -Rsn $(pacman -Qdtq)
 sudo pacaur -Sc --noconfirm
 rm -rf ~/.cache/*
+rm -r ~/.vim/undo/*
 pup=$(comm -23 <(pacman -Qqe | sort) <(sort <(cat ~/.config/cleanup/essentials ~/.config/cleanup/ignore)))
 if [ -z $pup ]; then
 	echo "No unwanted packages!"
