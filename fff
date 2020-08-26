@@ -12,7 +12,7 @@ fkey_parent1="off"
 fkey_previous="b"
 fkey_scroll_down1="off"
 fkey_scroll_up1="off"
-fkey_bulk_rename="off"
+fkey_bulk_rename="off" # use visual
 fkey_image_preview="I"
 fkey_image_preview_max="i"
 

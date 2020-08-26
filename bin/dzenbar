@@ -40,9 +40,11 @@ tags () { # 2 -> 1
 # nothing can update at a equal or lesser interval as the sleep (delay will
 # accumilate), and should ideally be multiples of it
 makecoproc "dztime" "1s" "date +\"%a %d %b %r\""
-makecoproc "dzram" "10s" "free | awk '/Mem/ { printf \"%d%% RAM\", \$3/\$2*100 }'"
+# https://www.linuxatemyram.com/
+#makecoproc "dzram" "10s" "free | awk '/Mem/ { printf \"%d%% RAM\", \$3/\$2*100 }'"
+makecoproc "dzram" "10s" "free | awk '/Mem/ { printf \"%d%% RAM\", (\$2-\$7)/\$2*100 }'"
 makecoproc "dzupdates" "1h" "( checkupdates; pacaur -Qu ) | wc -l"
-# makecoproc "dzsongraw" "5s" "xdotool getwindowname \$(xdotool search --name ' - youtube-playlist-randomizer' || xdotool search --name ' - YouTube') | sed -e 's/\((.*)\|(\|)\|\#\||\|&\)//g' -e 's/'\"'\"'/’/g'" # old, greedy (.*) which broke some song titles
+#makecoproc "dzsongraw" "5s" "xdotool getwindowname \$(xdotool search --name ' - youtube-playlist-randomizer' || xdotool search --name ' - YouTube') | sed -e 's/\((.*)\|(\|)\|\#\||\|&\)//g' -e 's/'\"'\"'/’/g'" # old, greedy (.*) which broke some song titles
 makecoproc "dzsongraw" "5s" "(i=\$(xdotool search --name ' - YouTube') && xdotool getwindowname \$i || mocp --format %song 2>/dev/null) | awk '{ gsub(/【/,\" [\"); gsub(/】/,\"] \"); gsub(/~/,\"-\"); gsub(/[^\\0-\\177]/,\"\"); gsub(/(\(.[^\)]*\))|\(|\)|\||&|#/,\"\"); gsub(/ {2,}/,\" \"); gsub(/'\''/,\"\\\\\\\'\''\"); print }' | awk '{ if(\$1 ~ /^[ ]*\$/) print \"----------------\"; else print }'" # actually faster than sed
 
 joinparam="${rparams[@]}"

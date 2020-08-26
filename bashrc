@@ -19,7 +19,8 @@ export -f f
 
 alias fff='f'
 alias less='less -x2'
-alias ls='ls -lA --color=auto'
+alias ls='ls -hlA --color=auto'
+alias rm='rm -d'
 alias pm='sudo pacman'
 alias pa='pacaur'
 alias c='clear'
@@ -31,5 +32,7 @@ alias m='neomutt'
 alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
 alias ln='ln -s'
 alias ping='ping -c 5'
+alias dirsize='du -sh -- .'
+shopt -s autocd
 PS1='[\u@\h \W]\$ '
 

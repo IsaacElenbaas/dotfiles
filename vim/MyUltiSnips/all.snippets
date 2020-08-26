@@ -1,3 +1,14 @@
 # snippet test "Just a test"
 # yay snippets are working
 # endsnippet
+
+global !p
+def concatenate():
+	match = re.search(' \+(["\'`])\Z', snip.buffer[snip.line][:snip.column+2])
+	if match: snip.buffer[snip.line] = snip.buffer[snip.line][:snip.column-1] + match.group(1) + " " + snip.buffer[snip.line][snip.column+2:]
+	return match
+endglobal
+snippet + "concatenation" "concatenate()" e
+ + 
+endsnippet
+

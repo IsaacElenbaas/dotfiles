@@ -1,6 +1,7 @@
 # To specify a key, you can use 'xbindkeys --key' or
 # 'xbindkeys --multikey' and put one of the two lines in this file.
-# Run xbindkeys --poll-rc to reload this config file after making changes.
+# Run xbindkeys --poll-rc or killall -HUP xbindkeys to reload this config file
+# after making changes if they are not applied automatically.
 #
 # The format of a command line is:
 #    "command to start"
@@ -18,28 +19,28 @@
 # The release modifier ( + Release) is not a standard X modifier, but you can
 # use it if you want to catch release events instead of press events
 
-"amixer set Master 5%-; updatedzen"
-	m:0x0 + c:122
-"amixer set Master 5%+; updatedzen"
-	m:0x0 + c:123
+"if [ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ]; then xdotool key --clearmodifiers 9; else amixer set Master 5%-; updatedzen; fi"
+	m:0x0 + c:122 + Release
+"[ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ] && xdotool key --clearmodifiers 0 || amixer set Master 5%+ && updatedzen"
+	m:0x0 + c:123 + Release
 "ffcast -s png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
-	m:0x40 + c:33
+	m:0x40 + c:33 + Release
 "ffcast -# $(xdotool getactivewindow) png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x41 + c:33
 "qutebrowser &"
-	m:0x44 + c:57
+	m:0x44 + c:57 + Release
 "qutebrowser ':open -p' &"
 	m:0x45 + c:57
 "pause"
-	m:0x0 + c:172 + Release
+	m:0x0 + c:172
 "next"
 	m:0x0 + c:171 + Release
 "previous"
 	m:0x0 + c:173 + Release
-"if [ \"$(xrandr --listactivemonitors | head -n 1)\" == \"Monitors: 2\" ]; then monitorsoff; else monitorson; fi"
-	m:0x0 + c:202
+"[ \"$(xrandr --listactivemonitors | head -n 1)\" == \"Monitors: 2\" ] && monitorsoff || monitorson"
+	m:0x0 + c:202 + Release
 "monitorson"
-	m:0x0 + c:201
+	m:0x0 + c:201 + Release
 "rmonitoroff"
-	m:0x0 + c:200
+	m:0x0 + c:200 + Release
 

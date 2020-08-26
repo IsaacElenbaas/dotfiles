@@ -38,23 +38,24 @@ fi
 xset s off -dpms
 while
 	xset r rate 150
-	xset -r 10
-	xset -r 11
-	xset -r 12
-	xset -r 13
-	xset -r 14
-	xset -r 15
-	xset -r 16
-	xset -r 17
-	xset -r 18
-	xset -r 19
-	xset -r 21
-	xset -r 34
-	xset -r 35
-	xset -r 49
-	xset -r 59
-	xset -r 60
-	xset -r 65
+	# xmodmap -pke
+	xset -r 10 # 1
+	xset -r 11 # 2
+	xset -r 12 # 3
+	xset -r 13 # 4
+	xset -r 14 # 5
+	xset -r 15 # 6
+	xset -r 16 # 7
+	xset -r 17 # 8
+	xset -r 18 # 9
+	xset -r 19 # 0
+	xset -r 21 # =
+	xset -r 34 # {
+	xset -r 35 # }
+	xset -r 49 # `
+	xset -r 59 # ,
+	xset -r 60 # .
+	xset -r 65 # space
 	inotifywait -q -e create -e delete /dev/input
 do sleep 1; done &
 xbindkeys &
@@ -64,9 +65,9 @@ tabletsetup
 
 exec herbstluftwm --locked
 
-# twm &
-# xclock -geometry 50x50-1+1 &
-# xterm -geometry 80x50+494+51 &
-# xterm -geometry 80x20+494-0 &
-# exec xterm -geometry 80x66+0+0 -name login
+#twm &
+#xclock -geometry 50x50-1+1 &
+#xterm -geometry 80x50+494+51 &
+#xterm -geometry 80x20+494-0 &
+#exec xterm -geometry 80x66+0+0 -name login
 

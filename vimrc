@@ -18,11 +18,12 @@ function Word(forward, big, visual)
 			call feedkeys("j^", "n")
 		endif
 	endif
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
 	"{{{ Home
-" makes home go left of whitespace if already at 'beginning' of line
+" makes home go left of whitespace only if already at 'beginning' of line
 function Home(visual)
 	let l:position=virtcol(".")
 	if a:visual
@@ -32,61 +33,113 @@ function Home(visual)
 	if virtcol(".") == l:position
 		call feedkeys("0", "n")
 	endif
+	call feedkeys("", "x")
+endfunction
+	"}}}
+
+	"{{{ End
+" makes end go right of comment only if already at/past its start
+function End(visual)
+	let l:last=@/
+	if a:visual
+		normal! gv
+	endif
+	let l:position=virtcol(".")
+	let l:line=line(".")
+	if match(&commentstring, '%s') != -1
+		call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
+		call histdel("/", -1)
+	endif
+	if line(".") != l:line
+		call feedkeys(l:line . "ggg$", "n")
+	else
+		if virtcol(".") <= l:position
+			call feedkeys("g$", "nx")
+		endif
+		if virtcol(".") == l:position
+			call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
+			call histdel("/", -1)
+		endif
+	endif
+	echo
+	let @/=l:last
+	if a:visual
+		normal! gv
+	endif
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
 	"{{{ In/Outdent
-" makes 2>2> indent two lines two times instead of four lines once
+" makes 2>2j indent three lines two times
 function Indent(...)
 	if exists("a:1")
-		execute "normal! `[V`]" . g:temp . ">"
+		call feedkeys("`[V`]" . g:temp . ">", "n")
 	else
-		execute "normal! V" . g:temp . ">"
+		call feedkeys("V" . g:temp . ">", "n")
 	endif
+	call feedkeys("", "x")
 endfunction
 function Outdent(...)
 	if exists("a:1")
-		execute "normal! `[V`]" . g:temp . "<"
+		call feedkeys("`[V`]" . g:temp . "<", "n")
 	else
-		execute "normal! V" . g:temp . "<"
+		call feedkeys("V" . g:temp . "<", "n")
 	endif
+	call feedkeys("", "x")
+endfunction
+	"}}}
+
+	"{{{ ScrollOnlyScreenPercent
+function ScrollOnlyScreenPercent(percent, visual)
+	let l:position=line(".")
+	call feedkeys("H", "nx")
+	let l:i=0
+	while line(".") < l:position
+		call feedkeys("j", "nx")
+		let i+=1
+	endwhile
+	let l:diff=a:percent*winheight("%")/100-l:i
+	if l:diff > 0
+		call feedkeys(l:diff . "\<c-y>", "n")
+	elseif l:diff < 0
+		call feedkeys(-1*l:diff . "\<c-e>", "n")
+	endif
+	if a:visual
+		normal! gv
+	endif
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
 	"{{{ ScrollScreenPercent
 function ScrollScreenPercent(percent, visual)
-	normal! H
-	let l:top=line(".")
-	normal! L
-	let l:i=0
-	while line(".") > l:top
-		execute "normal! k"
-		let i+=1
-	endwhile
-	execute "normal! " . a:percent*l:i/100 . "j"
+	call feedkeys("H" . a:percent*winheight("%")/100 . "j", "n")
 	if a:visual
 		let l:scroll=line(".")
 		call feedkeys("gv" . l:scroll . "gg", "n")
 	endif
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
 	"{{{ ScrollPercent
-" scrolls to visible percentage when there are folds
+" scrolls to visible percentage even when there are folds
 function ScrollPercent(percent, visual)
-	normal! G
+	call feedkeys("G", "nx")
 	let l:i=0
 	while line(".") > 1
-		execute "normal! " . (1+line("$")/1000) . "k"
+		call feedkeys((1+line("$")/1000) . "k", "nx")
 		let i+=1+line('$')/1000
 	endwhile
-	execute "normal! " . a:percent*l:i/100 . "j"
+	call feedkeys(a:percent*l:i/100 . "j", "nx")
 	if a:visual
 		let l:scroll=line(".")
 		call feedkeys("gv" . l:scroll . "ggzz", "n")
 	else
-		normal! zz
+		call feedkeys("zz", "n")
 	endif
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
@@ -95,24 +148,26 @@ endfunction
 function ToggleFold()
 	let l:position=line(".")
 	let l:closed=foldclosed(line("."))
-	normal! H
+	call feedkeys("H", "nx")
 	let l:i=0
 	while line(".") < ((l:closed == -1) ? l:position : l:closed)
-		execute "normal! j"
+		call feedkeys("j", "nx")
 		let i+=1
 	endwhile
-	normal! za
-	execute "normal! " . l:position . "gg" . l:i . "kzt" . l:position . "gg"
+	silent! normal! za
+	call feedkeys(l:position . "gg" . l:i . "kzt" . l:position . "gg", "n")
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
 	"{{{ ToggleAllFolds
 function ToggleAllFolds()
 	let l:position=line(".")
-	normal! G
-	execute "normal! " . (line("$")-2) . "k"
-	execute "normal! " . ((line(".") == 1) ? "zR" : "zM")
-	execute "normal! " . l:position . "gg"
+	call feedkeys("G", "n")
+	call feedkeys((line("$")-2) . "k", "nx")
+	call feedkeys(((line(".") == 1) ? "zR" : "zM"), "n")
+	call feedkeys(l:position . "gg", "n")
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
@@ -120,16 +175,17 @@ endfunction
 function SelectFold(around)
 	let l:position=line(".")
 	if foldclosed(l:position) == -1
-		normal! za
+		call feedkeys("za", "nx")
 		let l:start=foldclosed(l:position)
 		if l:start == -1
 			return
 		endif
 		let l:end=foldclosedend(l:position)
-		execute "normal! za" . (l:start+((a:around) ? 0 : 1)) . "GV" . (l:end-((a:around) ? 0 : 1)) . "G"
+		call feedkeys("za" . (l:start+((a:around) ? 0 : 1)) . "GV" . (l:end-((a:around) ? 0 : 1)) . "G", "n")
 	else
-		normal! V
+		call feedkeys("V", "n")
 	endif
+	call feedkeys("", "x")
 endfunction
 	"}}}
 
@@ -164,11 +220,9 @@ call plug#begin('~/.vim/plugged')
 Plug 'chaoren/vim-wordmotion'
 Plug 'dstein64/vim-startuptime'
 Plug 'dylanaraps/fff.vim'
-Plug 'easymotion/vim-easymotion'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'kshenoy/vim-signature'
-Plug 'machakann/vim-sandwich'
 Plug 'mbbill/undotree'
 Plug 'sirtaj/vim-openscad'
 Plug 'kana/vim-textobj-user' | Plug 'kana/vim-textobj-line' | Plug 'terryma/vim-expand-region'
@@ -196,14 +250,18 @@ xnoremap as aw
 onoremap as aw
 		"}}}
 
-		"{{{ fff
 let g:fff#split="20new"
-		"}}}
 
 		"{{{ vim-easy-align
-nmap ga <Plug>(EasyAlign)
-xmap ga <Plug>(EasyAlign)
+nmap a <Plug>(EasyAlign)
+xmap a <Plug>(EasyAlign)
 		"}}}
+
+autocmd ColorScheme * hi SignatureMarkText cterm=bold ctermfg=255 ctermbg=0
+
+nnoremap <silent> U :<c-u>UndotreeToggle<CR>
+let g:undotree_DiffAutoOpen = 0
+let g:undotree_SetFocusWhenToggle = 1
 
 		"{{{ vim-expand-region
 call expand_region#custom_text_objects({"is" :0,"if" :0})
@@ -243,6 +301,8 @@ nnoremap <silent> mm 0vg_di\`<c-r>"\`<Esc>
 "}}}
 
 "{{{ settings
+" screw the python styleguide
+let g:python_recommended_style=0
 " use 256 color
 set t_Co=256
 " hybrid number rows
@@ -252,8 +312,7 @@ set relativenumber
 set noshowmode
 " allow going to end of line in normal mode
 set virtualedit+=onemore
-" highlight all matches when searching
-set hlsearch
+
 " replace global by default
 set gdefault
 " don't timeout multi-stroke mappings
@@ -270,6 +329,14 @@ nnoremap <ScrollWheelUp> <c-r>
 set undofile
 call system("mkdir -p ~/.vim/undo")
 set undodir=$HOME/.vim/undo
+
+	"{{{ searching
+" highlight all matches when searching
+set hlsearch
+set ignorecase
+set smartcase
+set nowrapscan
+	"}}}
 
 	"{{{ indentation
 " https://tedlogan.com/techblog3.html
@@ -294,7 +361,7 @@ filetype indent off
 
 	"{{{ commands
 cmap w!! w !sudo tee > /dev/null %
-command D execute 'w !git diff --no-index --color=always -- % - | less -R' | execute 'silent! !stty sane' | redraw!
+command D execute "w !git diff --no-index --color=always -- % - | less -R" | execute "silent! !stty sane" | redraw!
 command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"}}}
 
@@ -302,46 +369,38 @@ command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 " ctrl+backspace
 inoremap  <Esc>dbi
 nnoremap <silent> <kHome> :<c-u>call Home(0)<CR>
-inoremap <silent> <kHome> <Esc>:<c-u>call Home(0) \| call feedkeys("i")<CR>
+inoremap <silent> <kHome> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
 xnoremap <silent> <kHome> :<c-u>call Home(1)<CR>
-nnoremap <kEnd> g$
-imap <kEnd> <Esc><kEnd>i
+nnoremap <silent> <kEnd> :<c-u>call End(0)<CR>
+inoremap <silent> <kEnd> <Esc>:<c-u>call End(0) <bar> startinsert<CR>
+xnoremap <silent> <kEnd> :<c-u>call End(1)<CR>
 	"}}}
 
+	"{{{ misc.
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
-nnoremap p P`.
-nnoremap P gP
-" janky in visual-block but works
-xnoremap <expr> p (mode() == "\<c-v>") ? ('I<c-r>"' . repeat("\<Left>", strchars(getreg('"')))) : "P`."
-xnoremap <expr> P (mode() == "\<c-v>") ? 'I<c-r>"' : "gP"
-nnoremap <silent> > :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Indent<CR>g@
-nnoremap <silent> >> :<c-u>execute "let temp=" . v:count1<CR>:call Indent()<CR>
-nnoremap <silent> < :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Outdent<CR>g@
-nnoremap <silent> << :<c-u>execute "let temp=" . v:count1<CR>:call Outdent()<CR>
-nnoremap dD 0D
+nnoremap dD g^D
+nnoremap cC g^C
 nnoremap x "_d
 xnoremap x "_d
 nnoremap xx "_dd
 nnoremap X "_D
-nmap xX 0X
+nmap xX g^X
 nnoremap Y y$
-nmap yY 0Y
-" folds
-nnoremap <silent> <Space> :<c-u>call ToggleFold()<CR>
-nnoremap <silent> z<Space> :<c-u>call ToggleAllFolds()<CR>
-" clear searches
-nnoremap <silent> <Leader>/ :<c-u>let @/=""<CR>
-xnoremap <silent> if :<c-u>call SelectFold(0)<CR>
-onoremap <silent> if :<c-u>call SelectFold(0)<CR>
-xnoremap <silent> af :<c-u>call SelectFold(1)<CR>
-onoremap <silent> af :<c-u>call SelectFold(1)<CR>
+nmap yY g^Y
+" may be iffy if there's weird characters
+vnoremap Y ""y:silent execute "!printf '" . substitute(substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\', '\\\', "g"), '%', '\\%\\%', "g"), '\n', '\\n', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+" better chance of working but leaves newlines as \n
+"vnoremap Y ""y:silent execute "!printf '\\%s' '" . substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\n', '\\n', "g"), '%', '\\%', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+nnoremap <silent> <Leader>/ :<c-u>noh<CR>
 nnoremap j gJ
+inoremap <bar>& <bar><bar>
 
 	"{{{ basic movement
 map <c-Right> w
 map <c-Left> b
-nnoremap <Tab> %
+nnoremap <silent> <Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>/(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
+nnoremap <silent> <S-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap $ g$
 map M zz
 nnoremap k <Nop>
@@ -355,6 +414,31 @@ inoremap <Down> <Esc>gji
 inoremap <Up> <Esc>gki
 	"}}}
 
+	"{{{ pasting
+nnoremap p P`.
+nnoremap P gP
+" janky in visual-block but works
+xnoremap <expr> p (mode() == "\<c-v>") ? ('I<c-r>"' . repeat("\<Left>", strchars(getreg('"')))) : "P`."
+xnoremap <expr> P (mode() == "\<c-v>") ? 'I<c-r>"' : "gP"
+	"}}}
+
+	"{{{ indenting
+nnoremap <silent> > :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Indent<CR>g@
+nnoremap <silent> >> :<c-u>execute "let temp=" . v:count1<CR>:call Indent()<CR>
+nnoremap <silent> < :<c-u>execute "let temp=" . v:count1<CR>:set opfunc=Outdent<CR>g@
+nnoremap <silent> << :<c-u>execute "let temp=" . v:count1<CR>:call Outdent()<CR>
+	"}}}
+
+		"{{{ folds
+nnoremap <silent> <Space> :<c-u>call ToggleFold()<CR>
+nnoremap <silent> z<Space> :<c-u>call ToggleAllFolds()<CR>
+xnoremap <silent> if :<c-u>call SelectFold(0)<CR>
+onoremap <silent> if :<c-u>call SelectFold(0)<CR>
+xnoremap <silent> af :<c-u>call SelectFold(1)<CR>
+onoremap <silent> af :<c-u>call SelectFold(1)<CR>
+		"}}}
+	"}}}
+
 	"{{{ travelling
 nnoremap tm '
 xnoremap tm '
@@ -364,8 +448,7 @@ nnoremap tf <c-i>
 " up/down 1/2 page
 nnoremap <silent> tu :<c-u>mark `<CR><c-u>``
 nnoremap <silent> td :<c-u>mark `<CR><c-d>``
-" go to definition
-nnoremap tD gd
+nnoremap tv gv
 
 		"{{{ scrolling
 nnoremap tmm <Nop>
@@ -375,8 +458,7 @@ nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
 nmap tmmN tN
 nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
 nmap tmm<Down> t<Down>
-nmap tt t<Down>
-nmap tmmt tt
+nmap tmmt t<Down>
 nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
 nmap tmm<Up> t<Up>
 nmap tc t<Up>
@@ -384,8 +466,8 @@ nmap tmmc tc
 		"}}}
 
 		"{{{ scrolling to screen percentage
-nnoremap T H
-xnoremap T H
+nnoremap tt H
+xnoremap tt H
 nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 0)<CR>
 xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 1)<CR>
 nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 0)<CR>
@@ -410,9 +492,13 @@ xnoremap t0 L
 	"}}}
 
 	"{{{ enclosing characters
+
 		"{{{ parentheses
 inoremap () ()<Left>
 inoremap (); ();
+inoremap (). ().
+inoremap (), (),
+inoremap (): ():
 inoremap ()<Space> ()<Space>
 inoremap ()<CR> ()<CR>
 xnoremap ( di(<c-r>")<Esc>
@@ -422,10 +508,10 @@ xmap ) (
 
 		"{{{ brackets
 inoremap [] []<Left>
-inoremap []<Space> []<Space>
+inoremap []<Space> [<Space><Space>]<Left><Left>
 inoremap []<CR> []<CR>
 imap [) []
-xnoremap [ di[<c-r>"]<Esc>
+xnoremap [ di[<Space><c-r>"<Space>]<Esc>
 xmap ] [
 		"}}}
 
@@ -437,14 +523,19 @@ inoremap <><CR> <><CR>
 
 		"{{{ double quotes
 inoremap "" ""<Left>
+inoremap "". "".
+inoremap "", "",
 inoremap ""<Space> ""<Space>
 inoremap ""<CR> ""<CR>
 imap "' ""
+imap '" ""
 xnoremap " di"<c-r>""<Esc>
 		"}}}
 
 		"{{{ single quotes
 inoremap '' ''<Left>
+inoremap ''. ''.
+inoremap '', '',
 inoremap ''<Space> ''<Space>
 inoremap ''<CR> ''<CR>
 xnoremap ' di'<c-r>"'<Esc>
@@ -458,19 +549,43 @@ xnoremap ` di`<c-r>"`<Esc>
 		"}}}
 
 		"{{{ curly brackets
-" makes <expr> below not happen
-inoremap {} {}
+inoremap {} {}<Left>
 inoremap {}<Space> {<Space><Space>}<Left><Left>
 imap {) {}
-" turns (stuff {) into (stuff) {<CR><CR>} ending on empty line
 " the t is to keep indent level
-inoremap <silent> <expr> {<CR> ((strlen(getline(".")) == getpos(".")[2]-1) ? "" : "<BS><kEnd><Space>") . "{<CR>t<CR>}<Up><kEnd><BS>"
-xnoremap { di{<c-r>"}<Esc>
+inoremap {<CR> {<CR>t<CR>}<Up><kEnd><BS>
+xnoremap { di{<Space><c-r>"<Space>}<Esc>
 xmap } {
 		"}}}
 	"}}}
 
+	"{{{ centering to screen percentage
+nnoremap cc zt
+xnoremap cc zt
+nnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10, 0)<CR>
+xnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10, 1)<CR>
+nnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20, 0)<CR>
+xnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20, 1)<CR>
+nnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30, 0)<CR>
+xnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30, 1)<CR>
+nnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40, 0)<CR>
+xnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40, 1)<CR>
+nnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50, 0)<CR>
+xnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50, 1)<CR>
+nnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60, 0)<CR>
+xnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60, 1)<CR>
+nnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70, 0)<CR>
+xnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70, 1)<CR>
+nnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80, 0)<CR>
+xnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80, 1)<CR>
+nnoremap <silent> c9 :<c-u>call ScrollOnlyScreenPercent(90, 0)<CR>
+xnoremap <silent> c9 :<c-u>call ScrollOnlyScreenPercent(90, 1)<CR>
+nnoremap c0 zb
+xnoremap c0 zb
+	"}}}
+
 	"{{{ scrolling to document percentage (visible lines)
+nnoremap s<Esc> <Nop>
 nnoremap ss gg
 xnoremap ss gg
 nnoremap <silent> s1 :<c-u>call ScrollPercent(10, 0)<CR>
@@ -515,7 +630,7 @@ colorscheme myColors
 	"{{{ folding
 		"{{{ fold text
 function! FoldText()
-	let l:label="{{" . "{ " . substitute(getline(v:foldstart), '.*{{' . '{\s*', '', "") . " }" . "}}"
+	let l:label="{{" . "{ " . substitute(substitute(getline(v:foldstart), '.*{{' . '{\s*', "", ""), '\*/$', "", "") . " }" . "}}"
 	" +2 chars at beginning makes it more obvious when something is opened
 	return repeat("-", v:foldlevel*2+2) . l:label . repeat(" ", winwidth(0))
 endfunction
@@ -544,14 +659,16 @@ set listchars=tab:\|\ ,space:·
 " hides listchars for non-leading whitespace (as best as possible, BG doesn't
 " seem to be referenceable and 0 is as close as you can get without hardcoding
 highlight NormalWhitespace ctermfg=0
-call matchadd("NormalWhitespace", '\s\+')
+call matchadd("NormalWhitespace", ' \+')
 highlight LeadingWhitespace ctermfg=255
 call matchadd("LeadingWhitespace", '^\s\+')
 highlight BadWhitespace ctermfg=255 ctermbg=9
 " tabs used after start of lines
-call matchadd("BadWhitespace", '\S\zs\t\+')
+call matchadd("BadWhitespace", '[^^\t]\zs\t\+')
 " whitespace at the end of lines
 call matchadd("BadWhitespace", '\s\+$')
+" if accidentally sent two spaces
+call matchadd("BadWhitespace", '\S\zs\s\{2\}\ze\S')
 	"}}}
 
 " soft wrapping
@@ -566,7 +683,7 @@ augroup MySh
 	" cursor fixes
 	autocmd InsertLeave * call cursor([getpos(".")[1], getpos(".")[2]+1])
 	" per filetype
-	autocmd BufNewFile,BufRead *.pde let &makeprg='processing-java --sketch='.expand("%:p:h").' --run >/dev/null &'
+	autocmd BufNewFile,BufRead *.pde let &makeprg="processing-java --sketch=" . expand("%:p:h") . " --run >/dev/null &"
 augroup END
 "}}}
 

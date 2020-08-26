@@ -1,0 +1,10 @@
+#!/bin/bash
+
+OLDIFS=$IFS
+IFS=$'\n'
+for file in $(find . -type f -name "$1" | sort -V); do
+	i=$((i+1))
+	mv "$file" "$2$(printf %0$3d $i).${file##*.}"
+done
+IFS=$OLDIFS
+

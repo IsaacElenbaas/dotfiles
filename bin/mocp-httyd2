@@ -4,5 +4,5 @@
 \mocp --exit
 while [ -f /home/isaacelenbaas/.moc/pid ]; do sleep 0.5; done
 \mocp --server >/dev/null
-\mocp --on shuffle --append /home/isaacelenbaas/Music/Ori
+\mocp --on shuffle --append /home/isaacelenbaas/Music/HTTYD/2
 

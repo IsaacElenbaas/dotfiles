@@ -13,7 +13,7 @@ Mod=Mod4 # Use the super key as the main modifier
 # autostart
 hc set auto_detect_monitors 0 # Required to turn off monitors with xrandr
 pacwall.sh -b "#232831" -d "#e5e9f080" -e "#88c0d0" -s "#c5c8c626"
-albert &
+#albert &
 unclutter -idle 2 -root &
 dunst &
 echo -e 'power on\nexit' | bluetoothctl
@@ -22,11 +22,12 @@ xrdb ~/.Xresources
 # keybindings
 hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
+hc keybind $Mod-a spawn ~/Projects/Launcher/launcher.py
 hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_wcount) -gt 0 ] && saveclose $h || herbstclient remove"
 hc keybind $Mod-Return spawn xterm
-hc keybind $Mod-Shift-Return spawn xterm -e "fff"
-hc keybind $Mod-v spawn xterm -e "vim"
-hc keybind $Mod-Shift-m spawn xterm -e "\mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
+hc keybind $Mod-Shift-Return spawn xterm -e "\fff; cd \"\$(cat "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null)\"; rm "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null; bash"
+hc keybind $Mod-Shift-v spawn xterm -e "vim"
+hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; \mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
 
 # basic movement
 hc keybind $Mod-h focus left
@@ -45,8 +46,10 @@ hc keybind $Mod-apostrophe cycle 1
 hc keybind $Mod-comma cycle -1
 
 # splitting frames
-hc keybind $Mod-m chain , split bottom 0.5 , focus down  , spawn albert show
-hc keybind $Mod-s chain , split right  0.5 , focus right , spawn albert show
+#hc keybind $Mod-m chain , split bottom 0.5 , focus down  , spawn albert show
+hc keybind $Mod-m chain , split bottom 0.5 , focus down
+#hc keybind $Mod-s chain , split right  0.5 , focus right , spawn albert show
+hc keybind $Mod-s chain , split right  0.5 , focus right
 
 # resizing frames
 resizestep=0.05
@@ -106,7 +109,7 @@ hc rule focus=on # normally focus new clients
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on #floating=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 
-hc rule class='albert' floating=on #manage=off pseudotile=on
+#hc rule class='albert' floating=on #manage=off pseudotile=on
 hc rule class='discord' tag=2
 hc rule class='Steam' tag=3
 hc rule class='mpv' title='noMin' fullscreen=on

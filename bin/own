@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo chown -R isaacelenbaas .
+chmod -R -x,u+rwX,go+rX,go-w .
+
