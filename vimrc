@@ -56,16 +56,13 @@ function End(visual)
 		if virtcol(".") <= l:position
 			call feedkeys("g$", "nx")
 		endif
-		if virtcol(".") == l:position
+		if virtcol(".") == l:position && match(&commentstring, '%s') != -1
 			call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
 			call histdel("/", -1)
 		endif
 	endif
 	echo
 	let @/=l:last
-	if a:visual
-		normal! gv
-	endif
 	call feedkeys("", "x")
 endfunction
 	"}}}
