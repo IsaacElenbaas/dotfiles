@@ -47,17 +47,25 @@ function End(visual)
 	let l:position=virtcol(".")
 	let l:line=line(".")
 	if match(&commentstring, '%s') != -1
-		call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
+		try
+			call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
+		catch /^Vim(call):E385:.*/
+			echo v:exception
+		endtry
 		call histdel("/", -1)
 	endif
 	if line(".") != l:line
-		call feedkeys(l:line . "ggg$", "n")
+		call feedkeys("\<c-o>g$", "n")
 	else
 		if virtcol(".") <= l:position
 			call feedkeys("g$", "nx")
 		endif
 		if virtcol(".") == l:position && match(&commentstring, '%s') != -1
-			call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
+			try
+				call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
+			catch /^Vim(call):E385:.*/
+				call feedkeys("g$", "n")
+			endtry
 			call histdel("/", -1)
 		endif
 	endif
