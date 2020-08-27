@@ -64,9 +64,12 @@ function End(visual)
 			try
 				call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
 			catch /^Vim(call):E385:.*/
-				call feedkeys("g$", "n")
+				call feedkeys("g$", "nx")
 			endtry
 			call histdel("/", -1)
+		endif
+		if virtcol(".") == l:position
+			call feedkeys("$l", "n")
 		endif
 	endif
 	echo
