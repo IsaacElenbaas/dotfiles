@@ -11,4 +11,3 @@ else
 	echo "Potentially unwanted packages:"
 	printf "%s\n" "$pup"
 fi
-

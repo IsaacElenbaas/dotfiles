@@ -27,4 +27,3 @@ if [ "$w" ]; then
 else
 	if [ "$(\mocp --format %state 2>/dev/null)" == "STOP" ]; then \mocp --play; else \mocp --toggle-pause; fi
 fi
-

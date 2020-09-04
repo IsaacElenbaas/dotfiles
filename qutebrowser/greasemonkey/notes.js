@@ -1059,4 +1059,3 @@ document.body.style.margin = "49px";
 document.body.style.fontFamily = "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji";
 
 console.log("GitHub theme complete");
-

@@ -27,4 +27,3 @@ removeClass("WikiaTopAds");
 removeClass("wds-global-footer");
 removeClass("aff-unit__wrapper");
 document.getElementById("WikiaMainContent").style.width = "100%";
-

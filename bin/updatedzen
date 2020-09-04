@@ -1,4 +1,3 @@
 #!/usr/bin/bash
 
 kill -10 $(ps ax --sort=-time | grep dzenbar | awk '{print $1;exit}')
-

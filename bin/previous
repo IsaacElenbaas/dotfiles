@@ -27,4 +27,3 @@ if [ "$w" ]; then
 else
 	\mocp --previous
 fi
-

@@ -50,7 +50,6 @@ function End(visual)
 		try
 			call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
 		catch /^Vim(call):E385:.*/
-			echo v:exception
 		endtry
 		call histdel("/", -1)
 	endif
@@ -267,9 +266,11 @@ xmap a <Plug>(EasyAlign)
 
 autocmd ColorScheme * hi SignatureMarkText cterm=bold ctermfg=255 ctermbg=0
 
+		"{{{ vim-undotree
 nnoremap <silent> U :<c-u>UndotreeToggle<CR>
 let g:undotree_DiffAutoOpen = 0
 let g:undotree_SetFocusWhenToggle = 1
+		"}}}
 
 		"{{{ vim-expand-region
 call expand_region#custom_text_objects({"is" :0,"if" :0})
@@ -449,7 +450,6 @@ onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 
 	"{{{ travelling
 nnoremap tm '
-xnoremap tm '
 " back/forward in jump history
 nnoremap tb <c-o>
 nnoremap tf <c-i>
@@ -469,33 +469,21 @@ nmap tmm<Down> t<Down>
 nmap tmmt t<Down>
 nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
 nmap tmm<Up> t<Up>
-nmap tc t<Up>
-nmap tmmc tc
+nmap tmmc t<Up>
 		"}}}
 
 		"{{{ scrolling to screen percentage
 nnoremap tt H
-xnoremap tt H
 nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 0)<CR>
-xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 1)<CR>
 nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 0)<CR>
-xnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 1)<CR>
 nnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 0)<CR>
-xnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 1)<CR>
 nnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 0)<CR>
-xnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 1)<CR>
 nnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 0)<CR>
-xnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 1)<CR>
 nnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 0)<CR>
-xnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 1)<CR>
 nnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 0)<CR>
-xnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 1)<CR>
 nnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 0)<CR>
-xnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 1)<CR>
 nnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 0)<CR>
-xnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 1)<CR>
 nnoremap t0 L
-xnoremap t0 L
 		"}}}
 	"}}}
 
@@ -565,6 +553,16 @@ inoremap {<CR> {<CR>t<CR>}<Up><kEnd><BS>
 xnoremap { di{<Space><c-r>"<Space>}<Esc>
 xmap } {
 		"}}}
+	"}}}
+
+	"{{{ screen scrolling
+nnoremap cmm <Nop>
+nmap <silent> c<Down> :<c-u>execute "normal! 2\<lt>c-e>"<CR>cmm
+nmap cmm<Down> c<Down>
+nmap cmmt c<Down>
+nmap <silent> c<Up> :<c-u>execute "normal! 2\<lt>c-y>"<CR>cmm
+nmap cmm<Up> c<Up>
+nmap cmmc c<Up>
 	"}}}
 
 	"{{{ centering to screen percentage
@@ -694,4 +692,3 @@ augroup MySh
 	autocmd BufNewFile,BufRead *.pde let &makeprg="processing-java --sketch=" . expand("%:p:h") . " --run >/dev/null &"
 augroup END
 "}}}
-

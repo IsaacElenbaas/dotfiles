@@ -6,4 +6,3 @@ youtube-dl --download-archive /home/isaacelenbaas/Music/Default/archive.txt "htt
 find /home/isaacelenbaas/Music/Default/ -name "*\\.mp3" -exec mp3gain -r -k -c {} \; | grep Applying
 \mocp --server >/dev/null
 \mocp --on shuffle --append /home/isaacelenbaas/Music/Default
-

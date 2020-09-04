@@ -122,4 +122,3 @@ hc detect_monitors
 killall dzen2
 killall dzenbar
 dzenbar $h | dzen2 -ta l -e '' -h $h -fn "DejaVu" -p
-

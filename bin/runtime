@@ -3,4 +3,3 @@
 s=$(find . -regex '\./.*\.\(mkv\|mp3\)' -exec ffprobe -v quiet -of csv=p=0 -show_entries format=duration {} \; | awk '{s+=$1}END{printf "%.3f\n", s}')
 printf "%.2d:" $((${s%.*}/86400))
 echo $(eval "date -d@$s -u +%H:%M:%S")"."$(printf "$s" | cut -d "." -f 2)
-

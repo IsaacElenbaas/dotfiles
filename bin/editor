@@ -1,4 +1,3 @@
 #!/bin/bash
 
 [[ "$(ps -o comm= $PPID)" == "less" ]] && vim "$@" || less "$@"
-

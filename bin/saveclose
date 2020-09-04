@@ -4,4 +4,3 @@ current=$(xdotool getactivewindow)
 if [ "$(echo -e 'yes\nno' | dmenu -h $1 -p 'Close window?')" == "yes" ]; then
 	[ "$(herbstclient get_attr clients.focus.class)" == "qutebrowser" ] && xdotool key --clearmodifiers Escape w l || herbstclient close $current
 fi
-

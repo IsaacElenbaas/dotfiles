@@ -25,4 +25,3 @@ ln -s /home/isaacelenbaas/dotfiles/fff /home/isaacelenbaas/
 
 # git config here so I don't have to worry about accidentally pushing .gitconfig sensetive info
 git config --global core.pager "diff-so-fancy | less -x2 -RFX"
-

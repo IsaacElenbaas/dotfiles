@@ -21,13 +21,17 @@ c.session.default_name = 'backup'
 c.url.default_page = 'data:text/html,%3Chtml%20contenteditable%3E%3Cstyle%3Ebody%7Bbackground-color:rgb(35,40,49);color:rgb(229,233,240);font-size:15px;%7D:empty%7Bcaret-color:transparent;%7D%3C/style%3E%3Cscript%3Ewindow.onload=function()%7Bdocument.body.focus();%7D%3C/script%3E'
 c.url.start_pages = c.url.default_page
 
+c.url.searchengines['r'] = 'https://www.reddit.com/r/{}'
+
 c.confirm_quit = ['downloads']
 
 c.downloads.location.remember = False
-c.downloads.location.prompt = False
+c.downloads.location.prompt = True
 
 # Type: BoolAsk
 c.content.geolocation = True
+
+c.content.notifications = False
 
 c.hints.chars = 'pgclaoeuidhsjkxbwv'
 
@@ -52,6 +56,7 @@ c.content.pdfjs = True
 
 c.content.plugins = True
 
+c.completion.open_categories.remove('searchengines')
 c.completion.timestamp_format = '%Y-%m-%d'
 
 # Limit fullscreen to the browser window (does not expand to fill the screen).
@@ -85,7 +90,7 @@ c.aliases['mpv'] = 'spawn mpv {url}'
 c.aliases['session-only'] = 'session-save --only'
 c.aliases['so'] = 'session-save --only'
 c.aliases['notes'] = 'spawn --userscript smart-open file:///home/isaacelenbaas/Notes/'
-c.aliases['desmos'] = 'spawn --userscript smart-open file:///home/isaacelenbaas/Desmos/index.html'
+c.aliases['desmos'] = 'spawn --userscript smart-open file:///home/isaacelenbaas/Projects/Desmos/index.html'
 # c.aliases['themeColors-toggle'] = "config-cycle content.user_stylesheets 'css/themeColors-everything-css-master/css/themeColors-dark/themeColors-dark-all-sites.css' ''"
 
 # Bindings
@@ -148,6 +153,8 @@ c.bindings.commands['normal'] = {
 
     'o'                 : 'set-cmd-text -s :open',
     'O'                 : 'set-cmd-text -s :open -t',
+    '.'                 : 'set-cmd-text :open !',
+    '!'                 : 'set-cmd-text :open -t !',
 
     'p'                 : 'print',
 
@@ -228,12 +235,13 @@ c.colors.downloads.bar.bg = themeColors['cBG']
 c.colors.downloads.error.bg = themeColors['c01']
 c.colors.downloads.error.fg = themeColors['c03']
 # Color gradient start for download backgrounds.
-# c.colors.downloads.start.bg = '#0000aa'
-c.colors.downloads.start.fg = themeColors['cFG']
+c.colors.downloads.start.bg = themeColors['c06']
+# Color gradient start for download text.
+c.colors.downloads.start.fg = themeColors['c00']
 # Color gradient stop for download backgrounds.
-# c.colors.downloads.stop.bg = '#00aa00'
+c.colors.downloads.stop.bg = themeColors['c02']
 # Color gradient end for download text.
-# c.colors.downloads.stop.fg = themeColors['c00']
+c.colors.downloads.stop.fg = '#000000'
 c.colors.hints.bg = '#434c5e'
 c.colors.hints.fg = '#ffffff'
 c.colors.hints.match.fg = c.colors.hints.bg
@@ -292,4 +300,3 @@ c.colors.tabs.selected.even.fg = '#ffffff'
 c.colors.tabs.selected.odd.bg = c.colors.tabs.selected.even.bg
 c.colors.tabs.selected.odd.fg = c.colors.tabs.selected.even.fg
 c.colors.webpage.bg = themeColors['cFG']
-

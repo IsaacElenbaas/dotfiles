@@ -72,4 +72,3 @@ hi Error NONE
 hi link Error ErrorMsg
 " matching Comment with reverse
 hi Todo              term=NONE cterm=reverse        ctermfg=4    ctermbg=NONE gui=NONE guifg=NONE guibg=NONE
-

@@ -8,4 +8,3 @@
 console.log("Youtube Script Loaded");
 document.getElementsByClassName("ytp-next-button")[0].id = "ytp-next-button";
 document.getElementsByClassName("ytp-prev-button")[0].id = "ytp-prev-button";
-

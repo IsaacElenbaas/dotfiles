@@ -92,4 +92,3 @@ while true; do
 done
 # To trigger an update early, run the following (useful for volume, changing tags, etc.)
 # kill -10 $(ps ax --sort=-time | grep dzenbar | head -1 | cut -d " " -f1)
-
