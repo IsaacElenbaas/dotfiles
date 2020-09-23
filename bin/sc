@@ -1,0 +1,56 @@
+#!/usr/bin/bash
+
+div=" \e[0m|\e[1m "
+
+index=99
+while true; do
+	sockets=$(screen -ls | grep Detached | sed 's/^\s*//' | sed 's/\s*(Detached)$//' | tac)
+	if [ "$sockets" == "" ]; then
+		[ $index -ne 99 ] && clear
+		printf "No detached Sockets found.\n"
+		exit 1
+	fi
+	maxIndex=$(printf "$sockets" | wc -l)
+	index=$((maxIndex>index ? index : maxIndex))
+	clear
+	i=0
+	while read line; do
+		if [ $i -eq $index ]; then
+			printf "\e[7m$line\e[0m\n"
+			pid="${line%%.*}"
+		else
+			printf "$line\n"
+		fi
+		i=$((i+1))
+	done <<< "$sockets"
+	printf "\e[1mq/Esc:quit${div}CR/Space:restore${div}d:delete${div}r:rename${div}p:preview\e[0m\n"
+	read -rs -n 1 key
+	read -rs -n 99 -t 0.005 key2
+	key="$key$key2"
+	case "$key" in
+		"q" | "")
+			break
+			;;
+		"") # newline/space
+			screen -d -r $pid
+			;;
+		"d")
+			screen -X -S $pid quit
+			;;
+		"r")
+			read -p "New name: "
+			screen -X -S $pid sessionname "$REPLY"
+			;;
+		"p")
+			screen -X -S $pid bindkey "q" detach
+			screen -d -r $pid
+			screen -X -S $pid bindkey "q"
+			;;
+		"[A")
+			index=$((index>0 ? index-1 : 0))
+			;;
+		"[B")
+			index=$((index<maxIndex ? index+1 : maxIndex))
+			;;
+	esac
+done

@@ -375,8 +375,6 @@ command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"}}}
 
 	"{{{ broken keys/key combos
-" ctrl+backspace
-inoremap  <Esc>dbi
 nnoremap <silent> <kHome> :<c-u>call Home(0)<CR>
 inoremap <silent> <kHome> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
 xnoremap <silent> <kHome> :<c-u>call Home(1)<CR>
@@ -397,8 +395,8 @@ nnoremap X "_D
 nmap xX g^X
 nnoremap Y y$
 nmap yY g^Y
-" may be iffy if there's weird characters
-vnoremap Y ""y:silent execute "!printf '" . substitute(substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\', '\\\', "g"), '%', '\\%\\%', "g"), '\n', '\\n', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+" may be iffy if there's weird characters, add any basic vim special ones to innermost substitute group
+vnoremap Y ""y:silent execute "!printf '" . substitute(substitute(substitute(substitute(getreg('"'), '\(\\\\|#\)\@=', '\\', "g"), '%', '\\%\\%', "g"), '\n', '\\n', "g"), "'", "'\\\\''", "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
 " better chance of working but leaves newlines as \n
 "vnoremap Y ""y:silent execute "!printf '\\%s' '" . substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\n', '\\n', "g"), '%', '\\%', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
 nnoremap <silent> <Leader>/ :<c-u>noh<CR>
@@ -450,13 +448,12 @@ onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 
 	"{{{ travelling
 nnoremap tm '
+xnoremap tm '
 " back/forward in jump history
 nnoremap tb <c-o>
 nnoremap tf <c-i>
-" up/down 1/2 page
-nnoremap <silent> tu :<c-u>mark `<CR><c-u>``
-nnoremap <silent> td :<c-u>mark `<CR><c-d>``
 nnoremap tv gv
+xnoremap tv gv
 
 		"{{{ scrolling
 nnoremap tmm <Nop>
@@ -504,7 +501,8 @@ xmap ) (
 
 		"{{{ brackets
 inoremap [] []<Left>
-inoremap []<Space> [<Space><Space>]<Left><Left>
+inoremap [], [],
+inoremap []<Space> []<Space>
 inoremap []<CR> []<CR>
 imap [) []
 xnoremap [ di[<Space><c-r>"<Space>]<Esc>
@@ -546,7 +544,6 @@ xnoremap ` di`<c-r>"`<Esc>
 
 		"{{{ curly brackets
 inoremap {} {}<Left>
-inoremap {}<Space> {<Space><Space>}<Left><Left>
 imap {) {}
 " the t is to keep indent level
 inoremap {<CR> {<CR>t<CR>}<Up><kEnd><BS>
@@ -615,19 +612,6 @@ xnoremap <silent> s9 :<c-u>call ScrollPercent(90, 1)<CR>
 nnoremap s0 G
 xnoremap s0 G
 	"}}}
-
-	"{{{ window management
-nnoremap <c-h> <c-w>h
-nnoremap <c-t> <c-w>j
-nnoremap <c-c> <c-w>k
-nnoremap <c-n> <c-w>l
-nnoremap <c-m> <c-w>s
-nnoremap <c-s> <c-w>v
-nnoremap <c-o> <c-w>5<
-nnoremap <c-e> <c-w>5-
-nnoremap <c-.> <c-w>5+
-nnoremap <c-u> <c-w>5>
-	"}}}
 "}}}
 
 "{{{ theming
@@ -636,11 +620,14 @@ colorscheme myColors
 	"{{{ folding
 		"{{{ fold text
 function! FoldText()
-	let l:label="{{" . "{ " . substitute(substitute(getline(v:foldstart), '.*{{' . '{\s*', "", ""), '\*/$', "", "") . " }" . "}}"
+	if(match(&commentstring, '%s') != -1)
+		let l:label="{{" . "{ " . substitute(substitute(getline(v:foldstart), '.*{{' . '{\s*', "", ""), '\s*\V' . substitute(&commentstring, '.*%s', "", "") . '\m$', "", "") . " }" . "}}"
+	else
+		let l:label="{{" . "{ " . substitute(getline(v:foldstart), '.*{{' . '{\s*', "", "") . " }" . "}}"
+	endif
 	" +2 chars at beginning makes it more obvious when something is opened
 	return repeat("-", v:foldlevel*2+2) . l:label . repeat(" ", winwidth(0))
 endfunction
-set foldtext=FoldText()
 		"}}}
 
 		"{{{ fold markers
@@ -648,13 +635,21 @@ hi link FoldMarker Folded
 hi FoldMarkerSpace ctermfg=8 ctermbg=8
 augroup FoldMarkerHighlight
 	autocmd!
-	" this horrible regex is to color fold markers - only in comments
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarker", '\V' . (substitute(&commentstring, '%s', '\\m.*\\%({{{\\|}}}\\).*\\V', ""))) | endif
-	" spaces immediately before/after comment chars
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '\s\+\%(\V' . (substitute(&commentstring, '%s', '\\m\\s*\\%({{{\\|}}}\\)\\)\\@=\\V', ""))) | endif
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m\\)\\@<=\\s\\+\\%({{{\\|}}}\\)\\@=\\V', ""))) | endif
-	" spaces after fold marks
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m\\s*\\%({{{\\|}}}\\).*\\)\\@<=\\s\\+\\V', ""))) | endif
+	autocmd BufNewfile,Bufread * set foldtext=FoldText()
+	" remove commentchar spaces, here so it's before these
+	autocmd BufNewfile,Bufread * let &commentstring=substitute(&commentstring, '\s\+', "", "g")
+
+	" color fold markers - only in comments
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarker", '\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\V', "")) . ((substitute(&commentstring, '.*%s', "", "") != "") ? "" : '\m$')) | endif
+	" whitespace before comment chars
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '^\s\+\%(\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\V', "")) . '\m\)\@=') | endif
+	" closing part of commentstring + its preceding spaces if at end of line
+	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1 && substitute(&commentstring, '.*%s', "", "") != "") | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\)\\@<=\\s*\\V', "")) . '\m$') | endif
+	" matching spaces in fold comment is near impossible because if you match
+	" the fold comment with zero width and then non-matching .\{-} and \s* it
+	" will match the fold comment once, get one space group, and move on
+	" matching the space and lookbehind/ahead is horribly inefficient as it is
+	" on every space in the file
 augroup end
 		"}}}
 	"}}}

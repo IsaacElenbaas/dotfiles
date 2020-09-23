@@ -1,0 +1,46 @@
+# the mouse option breaks things - click to select works, but scrolling just sends escape codes and enabling vim mouse support at the same time makes escape wait forever regardless of maptimeout
+
+# ew
+vbell off
+startup_message off
+# makes fullscreen applications clear
+altscreen on
+# 256 colors
+term xterm-256color
+maptimeout 5
+
+#{{{ keybinds
+# showkey -a
+bindkey "^[G" windowlist
+# ctrl shift r
+bindkey "^[R" title
+bindkey "^[D" remove
+# ctrl return - start at 1 because ^Z/jobs does
+bindkey "^[^M" screen
+# ctrl shift s
+bindkey "^[^V" copy
+bindkey -m " " eval 'stuff \40' "writebuf" "exec bash -c 'cat /tmp/screen-exchange | xsel -b'"
+
+	#{{{ navigation
+bindkey "^[H" focus left
+bindkey "^[T" focus down
+bindkey "^[C" focus up
+bindkey "^[N" focus right
+bindkey "^[L" prev
+# ctrl backspace
+bindkey "^[\177" next
+bindkey "^['" focus next
+bindkey "^[," focus prev
+	#}}}
+
+	#{{{ frames
+bindkey "^[M" eval "split" "focus next"
+bindkey "^[S" eval "split -v" "focus next"
+bindkey "^[O" resize -h -12
+bindkey "^[E" resize -v -6
+bindkey "^[." resize -v +6
+bindkey "^[U" resize -h +12
+
+bindkey "^[B" eval "split" "focus next" "resize 20%" "screen 1"
+	#}}}
+#}}}

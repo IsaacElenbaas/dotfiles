@@ -3,15 +3,37 @@ xterm*faceName: droid:size=10
 xterm*ScrollBar: false
 xterm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
 xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift-fonts
+! https://cgit.freedesktop.org/xorg/proto/x11proto/tree/keysymdef.h
 *VT100*translations: #override \n\
+    Ctrl Shift <Key>Q: string(0x3) \n\
+    Ctrl Shift <Key>R: string(0x1b) string("R") \n\
+    Ctrl <Key>G: string(0x1b) string("G") \n\
+    Ctrl <Key>D: string(0x1b) string("D") \n\
+    Ctrl <Key>Return: string(0x1b) string("0xd") \n\
+    Ctrl Shift <Key>S: string(0x1b) string("0x16") \n\
+    Ctrl <Key>H: string(0x1b) string("H") \n\
+    Ctrl <Key>T: string(0x1b) string("T") \n\
+    Ctrl <Key>C: string(0x1b) string("C") \n\
+    Ctrl <Key>N: string(0x1b) string("N") \n\
+    Ctrl <Key>L: string(0x1b) string("L") \n\
+    Ctrl <Key>BackSpace: string(0x1b) string("0x7f") \n\
+    Ctrl <Key>apostrophe: string(0x1b) string("'") \n\
+    Ctrl <Key>comma: string(0x1b) string(",") \n\
+    Ctrl <Key>M: string(0x1b) string("M") \n\
+    Ctrl <Key>S: string(0x1b) string("S") \n\
+    Ctrl <Key>O: string(0x1b) string("O") \n\
+    Ctrl <Key>E: string(0x1b) string("E") \n\
+    Ctrl <Key>period: string(0x1b) string("0x2e") \n\
+    Ctrl <Key>U: string(0x1b) string("U") \n\
+    Ctrl <Key>B: string(0x1b) string("B") \n\
     Ctrl Shift <Key>C: copy-selection(CLIPBOARD) \n\
     Ctrl Shift <Key>V: insert-selection(CLIPBOARD) \n\
     Super Shift <Key>apostrophe: larger-vt-font() \n\
     Super Shift <Key>slash: smaller-vt-font() \n\
-    Ctrl <Key> plus: larger-vt-font() \n\
-    Ctrl <Key> minus: smaller-vt-font() \n\
-    Ctrl Shift<Key>Left: ignore() \n\
-    Ctrl Shift<Key>Right: ignore() \n\
+    Ctrl <Key>plus: larger-vt-font() \n\
+    Ctrl <Key>minus: smaller-vt-font() \n\
+    Ctrl Shift <Key>Left: ignore() \n\
+    Ctrl Shift <Key>Right: ignore() \n\
     Shift <Key>Home: ignore() \n\
     Shift <Key>End: ignore() \n\
     Shift <Key>Up: ignore() \n\
