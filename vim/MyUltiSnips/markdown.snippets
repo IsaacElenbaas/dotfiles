@@ -1,13 +1,7 @@
 # Gets angry if I don't use $0
-snippet "(^| )m" "math delimiters" r
+snippet "(^| |\()m" "math delimiters" r
 `!p snip.rv = match.group(1)`\\\`$0\\\`
 endsnippet
-
-#snippet \` "multi-line math delimiters" "snip.buffer[snip.line] == '\`\`' and snip.column == 1" ie
-#\\\`\\\`\\\`
-#$1
-#\\\`\\\`
-#endsnippet
 
 snippet "\\`([^ ]*)int" "integral" r
 \\\``!p snip.rv = match.group(1)`int_($1)^($2)

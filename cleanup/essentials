@@ -31,7 +31,6 @@ feh
 ffcast
 flex
 gcc
-gconf
 gendesk
 geoip
 git
@@ -84,7 +83,6 @@ screen
 sudo
 texinfo
 ttf-dejavu
-ttf-droid
 ttf-liberation
 ttf-roboto
 unclutter
@@ -106,6 +104,7 @@ xorg-xrandr
 xorg-xrdb
 xorg-xrefresh
 xorg-xset
+xorg-xsetroot
 xsel
 xterm
 youtube-dl
