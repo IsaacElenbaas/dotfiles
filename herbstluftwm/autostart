@@ -32,7 +32,7 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 	#{{{ launching commonly used
 # sleep fixes incorrect position when herbstluft has to rearrange windows
 hc keybind $Mod-Return spawn xterm -e "sleep 0.05; screen"
-hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c '\fff; cd \"\$(cat "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null)\"; rm "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null; bash'"
+hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; zsh'"
 hc keybind $Mod-Shift-v spawn xterm -e "screen vim"
 hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; screen \\mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
 	#}}}

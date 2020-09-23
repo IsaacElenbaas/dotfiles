@@ -375,12 +375,14 @@ command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"}}}
 
 	"{{{ broken keys/key combos
-nnoremap <silent> <kHome> :<c-u>call Home(0)<CR>
-inoremap <silent> <kHome> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
-xnoremap <silent> <kHome> :<c-u>call Home(1)<CR>
-nnoremap <silent> <kEnd> :<c-u>call End(0)<CR>
-inoremap <silent> <kEnd> <Esc>:<c-u>call End(0) <bar> startinsert<CR>
-xnoremap <silent> <kEnd> :<c-u>call End(1)<CR>
+nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
+inoremap <silent> <Home> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
+xnoremap <silent> <Home> :<c-u>call Home(1)<CR>
+map <kHome> <Home>
+nnoremap <silent> <End> :<c-u>call End(0)<CR>
+inoremap <silent> <End> <Esc>:<c-u>call End(0) <bar> startinsert<CR>
+xnoremap <silent> <End> :<c-u>call End(1)<CR>
+map <kEnd> <End>
 	"}}}
 
 	"{{{ misc.

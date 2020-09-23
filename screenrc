@@ -1,16 +1,23 @@
 # the mouse option breaks things - click to select works, but scrolling just sends escape codes and enabling vim mouse support at the same time makes escape wait forever regardless of maptimeout
 
+shell "/usr/bin/zsh"
 # ew
 vbell off
 startup_message off
 # makes fullscreen applications clear
 altscreen on
-# 256 colors
+# don't remember why I had this as screen-256color but xterm fixes ctrl+arrows in vim and nothing seems to be broken
 term xterm-256color
 maptimeout 5
 
 #{{{ keybinds
 # showkey -a
+	#{{{ broken keybinds
+markkeys "\^=\201"
+markkeys "$=\205"
+# unfortunately c-left and c-right aren't possible without lots of Xresources shenanigans and something to feed them normally here
+	#}}}
+
 bindkey "^[G" windowlist
 # ctrl shift r
 bindkey "^[R" title
