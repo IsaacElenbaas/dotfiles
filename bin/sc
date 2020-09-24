@@ -2,12 +2,14 @@
 
 div=" \e[0m|\e[1m "
 
+[ -n "$STY" ] && screen -X -S "${STY%%.*}" source ~/.screenrcunbind
 index=99
 while true; do
 	sockets=$(screen -ls | grep Detached | sed 's/^\s*//' | sed 's/\s*(Detached)$//' | tac)
 	if [ "$sockets" == "" ]; then
 		[ $index -ne 99 ] && clear
 		printf "No detached Sockets found.\n"
+		[ -n "$STY" ] && screen -X -S "${STY%%.*}" source ~/.screenrc
 		exit 1
 	fi
 	maxIndex=$(printf "$sockets" | wc -l)

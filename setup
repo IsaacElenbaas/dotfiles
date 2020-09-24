@@ -20,6 +20,7 @@ ln -s /home/isaacelenbaas/dotfiles/zshrc /home/isaacelenbaas/.zshrc
 ln -s /home/isaacelenbaas/dotfiles/inputrc /home/isaacelenbaas/.inputrc
 ln -s /home/isaacelenbaas/dotfiles/vimrc /home/isaacelenbaas/.vimrc
 ln -s /home/isaacelenbaas/dotfiles/screenrc /home/isaacelenbaas/.screenrc
+ln -s /home/isaacelenbaas/dotfiles/screenrcunbind /home/isaacelenbaas/.screenrcunbind
 ln -s /home/isaacelenbaas/dotfiles/xbindkeysrc /home/isaacelenbaas/.xbindkeysrc
 ln -s /home/isaacelenbaas/dotfiles/xinitrc /home/isaacelenbaas/.xinitrc
 ln -s /home/isaacelenbaas/dotfiles/Xresources /home/isaacelenbaas/.Xresources

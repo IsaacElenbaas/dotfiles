@@ -22,8 +22,8 @@ bindkey "^[G" windowlist
 # ctrl shift r
 bindkey "^[R" title
 bindkey "^[D" remove
-# ctrl return - start at 1 because ^Z/jobs does
-bindkey "^[^M" screen
+# ctrl return
+bindkey "^[Q" screen
 # ctrl shift s
 bindkey "^[^V" copy
 bindkey -m " " eval 'stuff \40' "writebuf" "exec bash -c 'cat /tmp/screen-exchange | xsel -b'"
@@ -43,7 +43,7 @@ bindkey "^[," focus prev
 	#{{{ frames
 bindkey "^[M" eval "split" "focus next"
 bindkey "^[S" eval "split -v" "focus next"
-bindkey "^[O" resize -h -12
+bindkey "^[V" resize -h -12
 bindkey "^[E" resize -v -6
 bindkey "^[." resize -v +6
 bindkey "^[U" resize -h +12

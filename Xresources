@@ -9,7 +9,7 @@ xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift
     Ctrl Shift <Key>R: string(0x1b) string("R") \n\
     Ctrl <Key>G: string(0x1b) string("G") \n\
     Ctrl <Key>D: string(0x1b) string("D") \n\
-    Ctrl <Key>Return: string(0x1b) string("0xd") \n\
+    Ctrl <Key>Return: string(0x1b) string("Q") \n\
     Ctrl Shift <Key>S: string(0x1b) string("0x16") \n\
     Ctrl <Key>H: string(0x1b) string("H") \n\
     Ctrl <Key>T: string(0x1b) string("T") \n\
@@ -21,7 +21,7 @@ xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift
     Ctrl <Key>comma: string(0x1b) string(",") \n\
     Ctrl <Key>M: string(0x1b) string("M") \n\
     Ctrl <Key>S: string(0x1b) string("S") \n\
-    Ctrl <Key>O: string(0x1b) string("O") \n\
+    Ctrl <Key>O: string(0x1b) string("V") \n\
     Ctrl <Key>E: string(0x1b) string("E") \n\
     Ctrl <Key>period: string(0x1b) string("0x2e") \n\
     Ctrl <Key>U: string(0x1b) string("U") \n\
