@@ -1,3 +1,14 @@
+#{{{ plugins
+	#{{{ You Should Use
+source /usr/share/zsh/plugins/zsh-you-should-use/you-should-use.plugin.zsh
+export YSU_MESSAGE_POSITION="after"
+# display all aliases
+export YSU_MODE=ALL
+# force use of aliases
+export YSU_HARDCORE=1
+	#}}}
+#}}}
+
 #{{{ settings
 	#{{{ history
 HISTFILE=${ZDOTDIR:-$HOME}/.zsh_history
@@ -51,7 +62,6 @@ alias pm='sudo pacman'
 alias q='exit'
 alias rm='rm -d'
 alias v='vim'
-alias vi='vim'
 
 	#{{{ files
 alias -s mkv="mpv"
@@ -63,12 +73,15 @@ alias -s ogg="mpv"
 #}}}
 
 #{{{ PROMPT
+# allows functions in PROMPT
+setopt prompt_subst
 # there's PROMPT stuff in preexec too
 # http://www.nparikh.org/unix/prompt.php#zsh
 NEWLINE=$'\n'
-c="%b%F{%c2}%K{%c3}%B"
+readonly c="%b%F{%c2}%K{%c3}%B"
 fgs=(
 	"black"
+	"255"
 	"255"
 	""
 	"255"
@@ -76,14 +89,27 @@ fgs=(
 bgs=( # needs extra 0 at end for final carat bg
 	"15"
 	"32"
+	"\$([ -d .git ] && printf '34' || printf '0')"
 	"0"
 	"32"
 	"0"
 )
 # c1 is fg c2 is bg c3 is next bg for carats
+#{{{ functions
+prompt-git() {
+	if [ -d .git ]; then
+		c2="${c//\%c2/$1}"
+		c2="${c2//\%c3/$2}"
+		printf "  $(git rev-parse --abbrev-ref HEAD) ${c2//\%/%%}"
+	else
+		printf ""
+	fi
+}
+#}}}
 sections=(
 	" %n ${c}"
 	" %~ ${c}"
+	"\$(prompt-git %c2 %c3)"
 	"${NEWLINE}"
 	" %(!.#.$) ${c}"
 )
@@ -112,7 +138,7 @@ preexec() {
 	end="${1##*|}"
 	end="${end#* }"
 	case "${start#\\}" in
-		"vim" | "fff" | "mocp") starttime=0 ;;
+		"bash" | "v" | "vim" | "f" | "fff" | "mocp" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;

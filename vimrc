@@ -259,6 +259,11 @@ onoremap as aw
 
 let g:fff#split="20new"
 
+let g:lightline = {
+	\ 'separator': { 'left': '', 'right': '' },
+	\ 'subseparator': { 'left': '', 'right': '' }
+	\ }
+
 		"{{{ vim-easy-align
 nmap a <Plug>(EasyAlign)
 xmap a <Plug>(EasyAlign)

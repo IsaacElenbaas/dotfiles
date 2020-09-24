@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+
+sudo pacman -Rsn $(pacman -Qdtq) 2>/dev/null
+pup="$(comm -23 <(pacman -Qqe | sort) <(sort <(cat ~/.config/cleanup/essentials ~/.config/cleanup/ignore)))"
+if [ -z "$pup" ]; then
+	echo "No unwanted packages!"
+else
+	echo "Potentially unwanted packages:"
+	printf "%s\n" "$pup"
+fi
