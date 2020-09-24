@@ -127,8 +127,13 @@ PROMPT="%B${PROMPT}%f%k%b "
 preexec() {
 	#{{{ PROMPT
 	printf "\033[2A\033[2K"
+	1="${1//\\/\\\\\\}"
+	1="${1//\\n/\\\\n}"
+	1="${1//\$/\\\\$}"
+	1="${1//\`/\\\\\`}"
+	1="${1//\%/%%}"
 	# middle bit is last line of final prompt with %(!.#.$) swapped for %1~
-	print -P "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $1"
+	print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $1"
 	# print moved us down a line
 	printf "\033[2K"
 	#}}}
