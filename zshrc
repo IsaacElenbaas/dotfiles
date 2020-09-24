@@ -127,21 +127,24 @@ PROMPT="%B${PROMPT}%f%k%b "
 preexec() {
 	#{{{ PROMPT
 	printf "\033[2A\033[2K"
-	1="${1//\\/\\\\\\}"
-	1="${1//\\n/\\\\n}"
-	1="${1//\$/\\\\$}"
-	1="${1//\`/\\\\\`}"
-	1="${1//\%/%%}"
+	0="${1//\\/\\\\\\\\}"
+	0="${0//\\n/\\\\n}"
+	0="${0//\$/\\\\$}"
+	0="${0//\`/\\\\\`}"
+	0="${0//\%/%%}"
 	# middle bit is last line of final prompt with %(!.#.$) swapped for %1~
-	print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $1"
+	print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $0"
 	# print moved us down a line
 	printf "\033[2K"
 	#}}}
 
+	start="$(printf -- "$0" | sed 's/^\s*//')"
+	start="${start%% *}"
+	end="${0##*|}"
+	end="$(printf -- "$end" | sed 's/^\s*//')"
+	end="${end%% *}"
+
 	#{{{ undistract-me
-	start="${1%% *}"
-	end="${1##*|}"
-	end="${end#* }"
 	case "${start#\\}" in
 		"bash" | "v" | "vim" | "f" | "fff" | "mocp" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
 		*)
@@ -152,6 +155,9 @@ preexec() {
 		;;
 	esac
 	#}}}
+
+	# screen automatic window title
+	printf -- $'\ek%s\e\\' "$start"
 }
 #}}}
 
