@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+ln -s /home/isaacelenbaas/dotfiles/zsh /home/isaacelenbaas/.zsh
 ln -s /home/isaacelenbaas/dotfiles/vim /home/isaacelenbaas/.vim
 mkdir -p /home/isaacelenbaas/.local/share
 ln -s /home/isaacelenbaas/dotfiles/icons /home/isaacelenbaas/.local/share/

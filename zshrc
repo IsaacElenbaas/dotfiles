@@ -1,4 +1,6 @@
 #{{{ plugins
+source ${ZDOTDIR:-${HOME}/.zsh}/plugins/sudo.plugin.zsh
+
 	#{{{ You Should Use
 source /usr/share/zsh/plugins/zsh-you-should-use/you-should-use.plugin.zsh
 export YSU_MESSAGE_POSITION="after"
@@ -59,7 +61,7 @@ alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
 alias pa='pacaur'
 alias ping='ping -c 5'
-alias pm='sudo pacman'
+alias pm='pacman'
 alias q='exit'
 alias rm='rm -d'
 alias v='vim'
