@@ -48,6 +48,7 @@ f() {
 
 #{{{ aliases
 alias c='clear'
+alias detach="[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach"
 alias dirsize='du -sh -- .'
 alias fff='f'
 alias less='less -x2'
@@ -157,17 +158,25 @@ preexec() {
 	#}}}
 
 	# screen automatic window title
-	printf -- $'\ek%s\e\\' "$start"
+	[ -n "$STY" ] && printf -- $'\ek%s\e\\' "$start"
 }
 #}}}
 
 #{{{ precmd
 precmd() {
-#{{{ undistract-me
+	# undistract-me
 	((starttime > 0 && SECONDS-starttime >= 10)) &&
 		(paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
 		printf "$((SECONDS-starttime))s\n"
+}
 #}}}
+
+#{{{ chpwd
+chpwd() {
+	# open new screen windows in last dir
+	if [ -n "$STY" ]; then
+		[ -z "$cd" ] && cd=1 && screen -X -S "${STY%%.*}" chdir "$PWD" || unset cd
+	fi
 }
 #}}}
 
