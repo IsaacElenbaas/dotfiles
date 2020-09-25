@@ -126,9 +126,10 @@ done
 PROMPT="%B${PROMPT}%f%k%b "
 #}}}
 
-#{{{ preexec
+#{{{ zsh hooks
+	#{{{ preexec
 preexec() {
-	#{{{ PROMPT
+		#{{{ PROMPT
 	printf "\033[2A\033[2K"
 	0="${1//\\/\\\\\\\\}"
 	0="${0//\\n/\\\\n}"
@@ -139,16 +140,18 @@ preexec() {
 	print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $0"
 	# print moved us down a line
 	printf "\033[2K"
-	#}}}
+		#}}}
 
+	# 0 is safe for printf by now
 	start="$(printf -- "$0" | sed 's/^\s*//')"
 	start="${start%% *}"
+	start="${start#\\}"
 	end="${0##*|}"
 	end="$(printf -- "$end" | sed 's/^\s*//')"
 	end="${end%% *}"
 
-	#{{{ undistract-me
-	case "${start#\\}" in
+		#{{{ undistract-me
+	case "$start" in
 		"bash" | "v" | "vim" | "f" | "fff" | "mocp" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
 		*)
 			case "${end%% *}" in
@@ -157,29 +160,47 @@ preexec() {
 			esac
 		;;
 	esac
-	#}}}
+		#}}}
 
 	# screen automatic window title
 	[ -n "$STY" ] && printf -- $'\ek%s\e\\' "$start"
 }
-#}}}
+	#}}}
 
-#{{{ precmd
+	#{{{ precmd
 precmd() {
 	# undistract-me
 	((starttime > 0 && SECONDS-starttime >= 10)) &&
 		(paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
 		printf "$((SECONDS-starttime))s\n"
 }
-#}}}
+	#}}}
 
-#{{{ chpwd
+	#{{{ chpwd
 chpwd() {
 	# open new screen windows in last dir
 	if [ -n "$STY" ]; then
 		[ -z "$cd" ] && cd=1 && screen -X -S "${STY%%.*}" chdir "$PWD" || unset cd
 	fi
 }
+	#}}}
+
+	#{{{ zshaddhistory
+zshaddhistory() {
+	0="${1//\\/\\\\\\\\}"
+	0="${0//\\n/\\\\n}"
+	0="${0//\$/\\\\$}"
+	0="${0//\`/\\\\\`}"
+	0="${0//\%/%%}"
+	start="$(printf -- "$0" | sed 's/^\s*//')"
+	start="${start%% *}"
+	start="${start#\\}"
+	case "$start" in
+		"q" | "exit" | "detach") return 1 ;;
+	esac
+	return 0;
+}
+	#}}}
 #}}}
 
 #{{{ keybinds
