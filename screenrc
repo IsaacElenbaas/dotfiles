@@ -12,6 +12,8 @@ maptimeout 5
 
 #{{{ keybinds
 # showkey -a
+escape "^Aa"
+
 	#{{{ broken keybinds
 markkeys "\^=\201"
 markkeys "$=\205"

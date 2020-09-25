@@ -2,5 +2,11 @@
 
 current=$(xdotool getactivewindow)
 if [ "$(echo -e 'yes\nno' | dmenu -h $1 -p 'Close window?')" == "yes" ]; then
-	[ "$(herbstclient get_attr clients.focus.class)" == "qutebrowser" ] && xdotool key --clearmodifiers Escape w l || herbstclient close $current
+	if [ "$(herbstclient get_attr clients.focus.class)" == "qutebrowser" ]; then
+		xdotool key --clearmodifiers Escape w l
+	elif [ -n "$(herbstclient get_attr clients.focus.title | grep screen)" ]; then
+		xdotool key --clearmodifiers Control_L+a d
+	else
+		herbstclient close $current
+	fi
 fi

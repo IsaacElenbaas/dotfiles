@@ -62,6 +62,7 @@ alias mutt='neomutt'
 alias pa='pacaur'
 alias ping='ping -c 5'
 alias pm='pacman'
+alias sc='sc || exit'
 alias q='exit'
 alias rm='rm -d'
 alias v='vim'
@@ -127,6 +128,7 @@ PROMPT="%B${PROMPT}%f%k%b "
 #}}}
 
 #{{{ zsh hooks
+# http://zsh.sourceforge.net/Doc/Release/Functions.html#Hook-Functions
 	#{{{ preexec
 preexec() {
 		#{{{ PROMPT
@@ -152,7 +154,7 @@ preexec() {
 
 		#{{{ undistract-me
 	case "$start" in
-		"bash" | "v" | "vim" | "f" | "fff" | "mocp" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
+		"bash" | "sc" | "v" | "vim" | "f" | "fff" | "mocp" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;
@@ -215,3 +217,6 @@ bindkey '^[[1;5C' forward-word
 bindkey '^[[A' up-line-or-search
 bindkey '^[[B' down-line-or-search
 #}}}
+
+# auto save screen layouts
+[ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next"
