@@ -214,6 +214,258 @@ bindkey '^[[1;5D' backward-word
 bindkey '^[[1;5C' forward-word
 	#}}}
 
+	#{{{ enclosing characters
+		#{{{ parentheses
+			#{{{ ()
+snip_parens() {
+	LBUFFER="${LBUFFER}("
+	RBUFFER=")${RBUFFER}"
+}
+zle -N snip_parens
+bindkey '()' snip_parens
+			#}}}
+			#{{{ ();
+snip_parens-semi() {
+	LBUFFER="${LBUFFER}();"
+}
+zle -N snip_parens-semi
+bindkey '();' snip_parens-semi
+			#}}}
+			#{{{ ().
+snip_parens-dot() {
+	LBUFFER="${LBUFFER}()."
+}
+zle -N snip_parens-dot
+bindkey '().' snip_parens-dot
+			#}}}
+			#{{{ (),
+snip_parens-comma() {
+	LBUFFER="${LBUFFER}(),"
+}
+zle -N snip_parens-comma
+bindkey '(),' snip_parens-comma
+			#}}}
+			#{{{ ():
+snip_parens-colon() {
+	LBUFFER="${LBUFFER}():"
+}
+zle -N snip_parens-colon
+bindkey '():' snip_parens-colon
+			#}}}
+			#{{{ ()<Space>
+snip_parens-space() {
+	LBUFFER="${LBUFFER}() "
+}
+zle -N snip_parens-space
+bindkey '() ' snip_parens-space
+			#}}}
+			#{{{ ()<CR>
+snip_parens-cr() {
+	LBUFFER="${LBUFFER}()"
+	zle accept-line
+}
+zle -N snip_parens-cr
+bindkey '()^M' snip_parens-cr
+			#}}}
+		#}}}
+		#{{{ brackets
+			#{{{ []
+snip_brackets() {
+	LBUFFER="${LBUFFER}["
+	RBUFFER="]${RBUFFER}"
+}
+zle -N snip_brackets
+bindkey '[]' snip_brackets
+			#}}}
+			#{{{ [],
+snip_brackets-comma() {
+	LBUFFER="${LBUFFER}[],"
+}
+zle -N snip_brackets-comma
+bindkey '[],' snip_brackets-comma
+			#}}}
+			#{{{ []<Space>
+snip_brackets-space() {
+	LBUFFER="${LBUFFER}[] "
+}
+zle -N snip_brackets-space
+bindkey '[] ' snip_brackets-space
+			#}}}
+			#{{{ []<CR>
+snip_brackets-cr() {
+	LBUFFER="${LBUFFER}[]"
+	zle accept-line
+}
+zle -N snip_brackets-cr
+bindkey '[]^M' snip_brackets-cr
+			#}}}
+		#}}}
+		#{{{ carats
+			#{{{ <>
+snip_carats() {
+	LBUFFER="${LBUFFER}<"
+	RBUFFER=">${RBUFFER}"
+}
+zle -N snip_carats
+bindkey '<>' snip_carats
+			#}}}
+			#{{{ <><Space>
+snip_carats-space() {
+	LBUFFER="${LBUFFER}< "
+	RBUFFER=" >${RBUFFER}"
+}
+zle -N snip_carats-space
+bindkey '<> ' snip_carats-space
+			#}}}
+			#{{{ <><CR>
+snip_carats-cr() {
+	LBUFFER="${LBUFFER}<>"
+	zle accept-line
+}
+zle -N snip_carats-cr
+bindkey '<>^M' snip_carats-cr
+			#}}}
+		#}}}
+		#{{{ double quotes
+			#{{{ ""
+snip_double-quotes() {
+	LBUFFER="${LBUFFER}"'"'
+	RBUFFER='"'"${RBUFFER}"
+}
+zle -N snip_double-quotes
+bindkey '""' snip_double-quotes
+			#}}}
+			#{{{ "".
+snip_double-quotes-dot() {
+	LBUFFER="${LBUFFER}"'"".'
+}
+zle -N snip_double-quotes-dot
+bindkey '"".' snip_double-quotes-dot
+			#}}}
+			#{{{ "",
+snip_double-quotes-comma() {
+	LBUFFER="${LBUFFER}"'"",'
+}
+zle -N snip_double-quotes-comma
+bindkey '"",' snip_double-quotes-comma
+			#}}}
+			#{{{ ""<Space>
+snip_double-quotes-space() {
+	LBUFFER="${LBUFFER}"'"" '
+}
+zle -N snip_double-quotes-space
+bindkey '"" ' snip_double-quotes-space
+			#}}}
+			#{{{ ""<CR>
+snip_double-quotes-cr() {
+	LBUFFER="${LBUFFER}"'""'
+	zle accept-line
+}
+zle -N snip_double-quotes-cr
+bindkey '""^M' snip_double-quotes-cr
+			#}}}
+		#}}}
+		#{{{ single quotes
+			#{{{ ''
+snip_single-quotes() {
+	LBUFFER="${LBUFFER}'"
+	RBUFFER="'${RBUFFER}"
+}
+zle -N snip_single-quotes
+bindkey "''" snip_single-quotes
+			#}}}
+			#{{{ ''.
+snip_single-quotes-dot() {
+	LBUFFER="${LBUFFER}''."
+}
+zle -N snip_single-quotes-dot
+bindkey "''." snip_single-quotes-dot
+			#}}}
+			#{{{ '',
+snip_single-quotes-comma() {
+	LBUFFER="${LBUFFER}'',"
+}
+zle -N snip_single-quotes-comma
+bindkey "''," snip_single-quotes-comma
+			#}}}
+			#{{{ ''<Space>
+snip_single-quotes-space() {
+	LBUFFER="${LBUFFER}' "
+	RBUFFER=" '${RBUFFER}"
+}
+zle -N snip_single-quotes-space
+bindkey "'' " snip_single-quotes-space
+			#}}}
+			#{{{ ''<CR>
+snip_single-quotes-cr() {
+	LBUFFER="${LBUFFER}''"
+	zle accept-line
+}
+zle -N snip_single-quotes-cr
+bindkey "''^M" snip_single-quotes-cr
+			#}}}
+		#}}}
+		#{{{ backticks
+			#{{{ ``
+snip_paren() {
+	LBUFFER="${LBUFFER}`"
+	RBUFFER="`${RBUFFER}"
+}
+zle -N snip_paren
+bindkey '``' snip_paren
+			#}}}
+			#{{{ ``<Space>
+snip_paren-space() {
+	LBUFFER="${LBUFFER}` "
+	RBUFFER=" `${RBUFFER}"
+}
+zle -N snip_paren-space
+bindkey '`` ' snip_paren-space
+			#}}}
+			#{{{ ``<CR>
+snip_paren-cr() {
+	LBUFFER="${LBUFFER}``"
+	zle accept-line
+}
+zle -N snip_paren-cr
+bindkey '``^M' snip_paren-cr
+			#}}}
+		#}}}
+		#{{{ curly brackets
+			#{{{ {)
+snip_braces() {
+	LBUFFER="${LBUFFER}{}"
+}
+zle -N snip_braces
+bindkey '{)' snip_braces
+			#}}}
+			#{{{ {}<Space>
+snip_braces-space() {
+	LBUFFER="${LBUFFER}{} "
+}
+zle -N snip_braces-space
+bindkey '{} ' snip_braces-space
+			#}}}
+		#}}}
+	#}}}
+
+	#{{{ spaces in enclosing characters
+snip_space() {
+	if ([ "${LBUFFER: -1}" = "(" ] && [ "${RBUFFER:0:1}" = ")" ]) ||
+	   ([ "${LBUFFER: -1}" = "[" ] && [ "${RBUFFER:0:1}" = "]" ]) ||
+	   ([ "${LBUFFER: -1}" = "{" ] && [ "${RBUFFER:0:1}" = "}" ]) ||
+	then
+		LBUFFER="${LBUFFER} " && RBUFFER=" ${RBUFFER}"
+	elif [ "${LBUFFER: -2}" = " +" ] && ([ "${RBUFFER:0:1}" = '"' ] || [ "${RBUFFER:0:1}" = "'" ]); then
+		LBUFFER="${LBUFFER:0:-2}${RBUFFER:0:1} + " && RBUFFER="${RBUFFER:1}"
+	else
+		LBUFFER="${LBUFFER} "
+	fi
+}
+zle -N snip_space
+bindkey ' ' snip_space
+	#}}}
+
 bindkey '^[[A' up-line-or-search
 bindkey '^[[B' down-line-or-search
 #}}}

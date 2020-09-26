@@ -14,10 +14,14 @@ snippet + "concatenation" "concatenate()" e
  + 
 endsnippet
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column+1]+' '+snip.buffer[snip.line][snip.column+1:]"
-snippet { "spaces in braces" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]=='}'" ie
-{ 
+snippet ( "spaces in braces" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ie
+( 
 endsnippet
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column+1]+' '+snip.buffer[snip.line][snip.column+1:]"
 snippet [ "spaces in brackets" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]==']'" ie
 [ 
+endsnippet
+pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column+1]+' '+snip.buffer[snip.line][snip.column+1:]"
+snippet { "spaces in braces" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]=='}'" ie
+{ 
 endsnippet

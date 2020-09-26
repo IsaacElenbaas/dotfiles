@@ -492,7 +492,6 @@ nnoremap t0 L
 	"}}}
 
 	"{{{ enclosing characters
-
 		"{{{ parentheses
 inoremap () ()<Left>
 inoremap (); ();
