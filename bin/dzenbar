@@ -26,6 +26,9 @@ tagText() {
 #}}}
 
 #{{{ setup
+pgid="$(ps -o pgid,cmd -U "$USER" | grep dzenbar | head -n1)"
+pgid="${pgid# }"
+pgid="${pgid%% *}"
 m=$(herbstclient get_attr monitors.count)
 t=$(herbstclient get_attr tags.count)
 primary="$(xrandr --query | grep " connected" | sed -n '/primary/q;p' | wc -l)"
@@ -51,17 +54,18 @@ herbstclient -i | while read line; do
 	update=0
 	case "$line" in
 		"song")
-			dzsonglast="$dzsong"
-			mocp="$(mocp --format '%tl %song %state')"
-			title="${mocp#* }"
-			title="${title% *}"
-			[ "${title##* }" == "" ] && title="----------------"
-			# pause play will for sure have timer come in before song ends, that starts another timer at right time (so pause/play doesn't call this)
-			# skip/prev will start another timer as old could come in after song ends
-			# any superfleous timers are only so because another was started in current song, and so title==dzsonglast
-			[ "$title" != "$dzsonglast" ] && [ "${mocp##* }" == "PLAY" ] && ( t=${mocp%% *}; sleep $((${t%:*}*60+${t#*:}+1)); herbstclient emit_hook song ) &
-			dzsong="$title"
-			update=1
+			mocp="$(mocp --format '%tl %song')"
+			# pause play will for sure have this run again before song ends, that sets again to right time (so pause/play doesn't call this)
+			# skip/prev will call this as old could come in after new song ends
+			songTrigger="${mocp%% *}"
+			if [ "$songTrigger" != "" ]; then
+				songTrigger="$((SECONDS+${songTrigger%:*}*60+${songTrigger#*:}+1))"
+				title="${mocp#* }"
+			else
+				songTrigger=0
+				title="----------------"
+			fi
+			[ "$title" != "$dzsong" ] && dzsong="$title" && update=1
 		;;
 		"updates")
 			# unfortunately this has to be blocking
@@ -75,7 +79,10 @@ herbstclient -i | while read line; do
 			dzram=$ram
 		;;
 		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit }' <(amixer sget Master))"; update=1 ;;
-		"time") dzdate="$(date +'%a %d %b %r')" ;;
+		"time")
+			dzdate="$(date +'%a %d %b %r')"
+			[ "$songTrigger" -gt 0 ] && [ "$SECONDS" -ge "$songTrigger" ] && herbstclient emit_hook song
+		;;
 		"tag_changed"*)
 			tag="${line#*${line:11:1}}"
 			tag="${tag%%${line:11:1}*}"
