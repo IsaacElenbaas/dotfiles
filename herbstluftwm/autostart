@@ -46,8 +46,8 @@ hc keybind $Mod-apostrophe cycle 1
 hc keybind $Mod-comma cycle -1
 
 		#{{{ tags
-hc keybind $Mod-l chain , use_index -$m , spawn updatedzen
-hc keybind $Mod-BackSpace chain , use_index +$m , spawn updatedzen
+hc keybind $Mod-l use_index -$m
+hc keybind $Mod-BackSpace use_index +$m
 		#}}}
 	#}}}
 
@@ -125,7 +125,8 @@ hc rule class='mpv' not title='noMin' focus=off index='/'
 hc set tree_style '╾│ ├└╼─┐' # For printing window list
 hc unlock
 hc detect_monitors
-killall dzen2
+ps -o pgid,cmd -U "$USER" | grep dzenbar | while read line; do [[ "$line" != *"grep"* ]] && line="${line# }" && pkill -9 -g "${line%% *}"; done
 killall dzenbar
-dzenbar $h | dzen2 -ta l -e '' -h $h -fn "DejaVu" -p
+killall dzen2
+dzenbar $h &
 #}}}

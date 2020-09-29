@@ -26,4 +26,5 @@ if [ "$w" ]; then
 	herbstclient jumpto $current
 else
 	\mocp --next
+	herbstclient emit_hook song
 fi

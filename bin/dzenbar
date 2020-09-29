@@ -1,94 +1,118 @@
 #!/usr/bin/bash
 
-m=$(herbstclient sprintf X %s monitors.count echo X)
-t=$(herbstclient sprintf X %s tags.count echo X)
-x=$(xrandr --query | awk -F 'primary |x' '/primary/{print $2}')
-h=$1
+h="$1"
+div=" ‖ "
+
+#{{{ functions
+	#{{{ tagText
+		#{{{ tag indicator box sizes
 ts1=$(($h/4))
 ts2=$(($h/2))
-delimiter="␝" # can be multiple characters
+ts3=$(($ts2-$h/10))
+		#}}}
 
-makecoproc () {
-	cops[${#cops[@]}]=$1
-	rparams[${#cops[@]}]="<(t=;if read -t0 t <&\"\${co$1[0]}\";then read t <&\"\${co$1[0]}\"; fi; echo \"\${t:-\$$1}$delimiter\" | sed -e 's/\\\\/\\\\\\\\\\\\\\\\\\\/g')"
-	coproc $(echo "co$1") (while true; do
-		echo $(eval $3)
-		sleep $2
-	done)
-}
-joinvals () {
-	vals=""
-	for i in "$@"; do vals+="$(cat $i)"; done
-	dlength=${#delimiter}
-	echo ${vals::-$dlength}
-}
-tags () { # 2 -> 1
-	tactive=$(eval "herbstclient sprintf X %s monitors.$1.tag echo X")
+tagText() {
 	final="^p(_LOCK_X)^p($ts1;$ts1)"
 	for ((i=($1+1); i<=$t; i=($i+$m))); do
-		if [ "$i" == "$tactive" ]; then
-			final="$final^p(-$ts1;-$ts1)^r($h""x""$h)^p($ts1;$ts1)^fg(black)^r($ts2""x""$ts2)^p($h)^fg()"
+		if [ "$i" == "$2" ]; then
+			final="$final^p(-$ts1;-$ts1)^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^p($h)^fg()"
 		else
-			final="$final^ro($ts2""x""$ts2)^p(1;1)^ro($(($ts2-2))""x""$(($ts2-2)))^p($(($h-1));-1)"
+			final="$final^ro(${ts2}x$ts2)^p(1;1)^ro(${ts3}x$ts3)^p($(($h-1));-1)"
 		fi
 	done
-	echo "$final^p(_UNLOCK_X)"
+	printf "$final^p(_UNLOCK_X)"
 }
+	#}}}
+#}}}
 
-# create variables here - "name" "update time" "command" (remember to escape
-# special characters!)
-# nothing can update at a equal or lesser interval as the sleep (delay will
-# accumilate), and should ideally be multiples of it
-makecoproc "dztime" "1s" "date +\"%a %d %b %r\""
-# https://www.linuxatemyram.com/
-#makecoproc "dzram" "10s" "free | awk '/Mem/ { printf \"%d%% RAM\", \$3/\$2*100 }'"
-makecoproc "dzram" "10s" "free | awk '/Mem/ { printf \"%d%% RAM\", (\$2-\$7)/\$2*100 }'"
-makecoproc "dzupdates" "1h" "( checkupdates; pacaur -Qu ) | wc -l"
-#makecoproc "dzsongraw" "5s" "xdotool getwindowname \$(xdotool search --name ' - youtube-playlist-randomizer' || xdotool search --name ' - YouTube') | sed -e 's/\((.*)\|(\|)\|\#\||\|&\)//g' -e 's/'\"'\"'/’/g'" # old, greedy (.*) which broke some song titles
-makecoproc "dzsongraw" "5s" "(i=\$(xdotool search --name ' - YouTube') && xdotool getwindowname \$i || mocp --format %song 2>/dev/null) | awk '{ gsub(/【/,\" [\"); gsub(/】/,\"] \"); gsub(/~/,\"-\"); gsub(/[^\\0-\\177]/,\"\"); gsub(/(\(.[^\)]*\))|\(|\)|\||&|#/,\"\"); gsub(/ {2,}/,\" \"); gsub(/'\''/,\"\\\\\\\'\''\"); print }' | awk '{ if(\$1 ~ /^[ ]*\$/) print \"----------------\"; else print }'" # actually faster than sed
+#{{{ setup
+m=$(herbstclient get_attr monitors.count)
+t=$(herbstclient get_attr tags.count)
+primary="$(xrandr --query | grep " connected" | sed -n '/primary/q;p' | wc -l)"
+primaryW=$(xrandr --query | awk -F 'primary |x' '/primary/{print $2}')
 
-joinparam="${rparams[@]}"
-div=" ‖ "
-fg=$(xrdb -query | awk -F1 '/foreground:/ { gsub(/.*\s/,""); print }')
-for monitor in $(herbstclient list_monitors | cut -d: -f1); do
-	herbstclient pad $monitor $h
-done
+	#{{{ tag setup
+declare -a mOffsets
+declare -a tags
+declare -a tagTexts
+dztags=""
+for (( i=0; i<m; i++ )) {
+	herbstclient pad $i $h
+	mOffsets+=($(xrandr --query | grep " connected" | sed "$((i+1))q;d" | awk -F 'connected primary |connected |x|+' '{print $4}'))
+	tags+=($(herbstclient get_attr monitors.$i.tag))
+	tagTexts+=("$(tagText $i ${tags[i]})")
+	dztags="$dztags^pa(${mOffsets[$i]};0)${tagTexts[$i]}"
+}
+	#}}}
+#}}}
 
-trap ":" 10
-while true; do
-	vals=$(eval "joinvals $joinparam")
-	eval "IFS=$delimiter read ${cops[@]} < <(echo $vals)"
-	sleep 0.5s &
+#{{{ updating variables
+herbstclient -i | while read line; do
+	update=0
+	case "$line" in
+		"song")
+			dzsonglast="$dzsong"
+			mocp="$(mocp --format '%tl %song %state')"
+			title="${mocp#* }"
+			title="${title% *}"
+			[ "${title##* }" == "" ] && title="----------------"
+			# pause play will for sure have timer come in before song ends, that starts another timer at right time (so pause/play doesn't call this)
+			# skip/prev will start another timer as old could come in after song ends
+			# any superfleous timers are only so because another was started in current song, and so title==dzsonglast
+			[ "$title" != "$dzsonglast" ] && [ "${mocp##* }" == "PLAY" ] && ( t=${mocp%% *}; sleep $((${t%:*}*60+${t#*:}+1)); herbstclient emit_hook song ) &
+			dzsong="$title"
+			update=1
+		;;
+		"updates")
+			# unfortunately this has to be blocking
+			dzupdates="$( ( checkupdates; pacaur -Qu ) | wc -l)"
+			updateplural=$([ "$dzupdates" = "1" ] && printf "" || printf "s")
+			update=1
+		;;
+		"ram")
+			ram="$(free | awk '/Mem/ { printf "%d%% RAM", ($2-$7)/$2*100 }')"
+			[ "$ram" != "$dzram" ] && update=1
+			dzram=$ram
+		;;
+		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit }' <(amixer sget Master))"; update=1 ;;
+		"time") dzdate="$(date +'%a %d %b %r')" ;;
+		"tag_changed"*)
+			tag="${line#*${line:11:1}}"
+			tag="${tag%%${line:11:1}*}"
+			monitor="${line##*${line:11:1}}"
+			if [ "${tags[$monitor]}" != "$tag" ]; then
+				update=2
+				tagTexts[$monitor]="$(tagText $monitor $tag)"
+			fi
+			tags[$monitor]=$tag
+		;;
+	esac
+	case $update in
+		0) ;;
+		2)
+			dztags=""
+			for ((i=0; i<$m; i++)); do
+				dztags="$dztags^pa(${mOffsets[$i]};0)${tagTexts[$i]}"
+			done
+		;&
+		*)
+			dzenbar="^ib(1)$dztags^pa(${mOffsets[$primary]};0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzram$div$dzvol$div"
+			dzenbar="${dzenbar//\\/\\\\\\\\}"
+			dzenbar="${dzenbar//\$/\\\\$}"
+			dzenbar="${dzenbar//\`/\\\\\`}"
+			dzenbar="${dzenbar//\%/%%}"
+		;;
+	esac
+	printf "$dzenbar$dzdate$div\n"
+#done &
+done | dzen2 -ta l -e '' -h $h -fn "DejaVu" -p &
+#}}}
 
-
-	# output
-	dzvol=$(awk -F "[][]" '/\[/ { print $2; exit }' <(amixer sget Master))
-
-	tactive=0
-	for ((i=0; i<=($m-1); i++)); do
-		if [ "$tactive" ]; then
-			tactive=$(($tactive+$(eval "herbstclient sprintf X %s monitors.$i.tag echo X")))
-		fi
-	done
-	if [ "$tactive" != "$tactivelast" ]; then
-		dztags1=$(tags "0")
-		dztags=""
-		for ((i=1; i<=($m-1); i++)); do
-			dztags=$(echo "$dztags^pa($(($x*$i)))$(tags $i)")
-		done
-	fi
-	tactivelast=$tactive
-
-	if [ "$dzsongraw" != "$dzsong" ]; then
-		dzsong=$(echo $dzsongraw | sed -e 's/ - YouTube - qutebrowser//' -e 's/  / /g' | sed -e 's/\\//g' | awk 'length > 40 {$0=substr($0,0,37)"..."}1')
-	fi
-
-	updateplural=$([ "$dzupdates" = "1" ] && echo "" || echo "s")
-
-	echo "^ib(1)$dztags1^pa(0;0)^ba(1920,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzram$div$dzvol$div$dztime$div$dztags"
-
-
-	wait $!
-done
-# To trigger an update early, run the following (useful for volume, changing tags, etc.)
-# kill -10 $(ps ax --sort=-time | grep dzenbar | head -1 | cut -d " " -f1)
+#{{{ timers
+herbstclient emit_hook song
+herbstclient emit_hook updates
+herbstclient emit_hook volume
+watch -n 1 -pt "herbstclient emit_hook time" &>/dev/null &
+watch -n 10 -t "herbstclient emit_hook ram" &>/dev/null &
+watch -n 216000 -t "herbstclient emit_hook updates" &>/dev/null &
+#}}}
