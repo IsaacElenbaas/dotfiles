@@ -5,3 +5,4 @@
 while [ -f /home/isaacelenbaas/.moc/pid ]; do sleep 0.5; done
 \mocp --server >/dev/null
 \mocp --on shuffle --append /home/isaacelenbaas/Music/Ori/BF\ Original /home/isaacelenbaas/Music/Ori/BF\ Additional
+sleep 0.5; herbstclient emit_hook song

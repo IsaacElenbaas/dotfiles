@@ -59,7 +59,7 @@ herbstclient -i | while read line; do
 			# skip/prev will call this as old could come in after new song ends
 			songTrigger="${mocp%% *}"
 			if [ "$songTrigger" != "" ]; then
-				songTrigger="$((SECONDS+${songTrigger%:*}*60+${songTrigger#*:}+1))"
+				songTrigger="$((SECONDS+10#${songTrigger%:*}*60+10#${songTrigger#*:}+1))"
 				title="${mocp#* }"
 			else
 				songTrigger=0
