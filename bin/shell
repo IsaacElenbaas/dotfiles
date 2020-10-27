@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+
+vim '+terminal ++close ++curwin ++norestore zsh'

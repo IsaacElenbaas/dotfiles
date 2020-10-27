@@ -209,29 +209,6 @@ function SelectFold(around)
 	call feedkeys("", "x")
 endfunction
 	"}}}
-
-	"{{{ GetSynGroup
-function GetSynGroup()
-	let l:s=synID(line("."), col("."), 1)
-	echo synIDattr(l:s, "name") . ' -> ' . synIDattr(synIDtrans(l:s), "name")
-endfunction
-	"}}}
-
-	"{{{ GetScriptNumber
-function GetScriptNumber(script_name)
-	redir => scriptnames
-	silent! scriptnames
-	redir END
-
-	for script in split(l:scriptnames, "\n")
-		if l:script =~ a:script_name
-			return str2nr(split(l:script, ":")[0])
-		endif
-	endfor
-
-	return -1
-endfunction
-	"}}}
 "}}}
 
 "{{{ plugins
@@ -345,17 +322,23 @@ set virtualedit+=onemore
 set gdefault
 " don't timeout multi-stroke mappings
 set notimeout
+" control sequence delay
+set ttimeoutlen=10
 " enable fold markers
 set foldmethod=marker
 " makes things that use h and l to keep active line work better
 set scrolloff=0
+" speed
+set lazyredraw
+set ttyfast
 " scroll through history
-set mouse=n
-nnoremap <ScrollWheelDown> u
-nnoremap <ScrollWheelUp> <c-r>
+" mouse support breaks everything in the weirdest of ways never touch it again
+"set mouse=n
+"nnoremap <ScrollWheelDown> u
+"nnoremap <ScrollWheelUp> <c-r>
 
 set undofile
-call system("mkdir -p ~/.vim/undo")
+silent call mkdir($HOME . "/.vim/undo", "p")
 set undodir=$HOME/.vim/undo
 
 	"{{{ searching
@@ -417,9 +400,9 @@ nmap xX g^X
 nnoremap Y y$
 nmap yY g^Y
 " may be iffy if there's weird characters, add any basic vim special ones to innermost substitute group
-vnoremap Y ""y:silent execute "!printf '" . substitute(substitute(substitute(substitute(getreg('"'), '\(\\\\|#\)\@=', '\\', "g"), '%', '\\%\\%', "g"), '\n', '\\n', "g"), "'", "'\\\\''", "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+vnoremap Y ""y:silent execute "!printf -- '" . substitute(substitute(substitute(substitute(substitute(getreg('"'), '\(\\\\|#\)\@=', '\\', "g"), '%', '\\%\\%', "g"), '!', '\\!', "g"), '\n', '\\n', "g"), "'", "'\\\\''", "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
 " better chance of working but leaves newlines as \n
-"vnoremap Y ""y:silent execute "!printf '\\%s' '" . substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\n', '\\n', "g"), '%', '\\%', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+"vnoremap Y ""y:silent execute "!printf -- '\\%s' '" . substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\n', '\\n', "g"), '%', '\\%', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
 nnoremap <silent> <Leader>/ :<c-u>noh<CR>
 nnoremap j gJ
 inoremap <bar>& <bar><bar>
@@ -506,21 +489,22 @@ nnoremap t0 L
 	"}}}
 
 	"{{{ enclosing characters
+" {) -> {)<Left> and similar are still necessary with snippets because mappings break them
+
 		"{{{ parentheses
 inoremap () ()<Left>
-inoremap (); ();
+inoremap ()<Left> ()<Left>
 inoremap (). ().
 inoremap (), (),
-inoremap (): ():
 inoremap ()<Space> ()<Space>
 inoremap ()<CR> ()<CR>
 xnoremap ( di(<c-r>")<Esc>
-imap )( ()
 xmap ) (
 		"}}}
 
 		"{{{ brackets
 inoremap [] []<Left>
+inoremap []<Left> []<Left>
 inoremap [], [],
 inoremap []<Space> []<Space>
 inoremap []<CR> []<CR>
@@ -531,12 +515,14 @@ xmap ] [
 
 		"{{{ carats
 inoremap <> <><Left>
+inoremap <><Left> <><Left>
 inoremap <><Space> <><Space>
 inoremap <><CR> <><CR>
 		"}}}
 
 		"{{{ double quotes
 inoremap "" ""<Left>
+inoremap ""<Left> ""<Left>
 inoremap "". "".
 inoremap "", "",
 inoremap ""<Space> ""<Space>
@@ -548,6 +534,7 @@ xnoremap " di"<c-r>""<Esc>
 
 		"{{{ single quotes
 inoremap '' ''<Left>
+inoremap ''<Left> ''<Left>
 inoremap ''. ''.
 inoremap '', '',
 inoremap ''<Space> ''<Space>
@@ -557,6 +544,7 @@ xnoremap ' di'<c-r>"'<Esc>
 
 		"{{{ backticks
 inoremap `` ``<Left>
+inoremap ``<Left> ``<Left>
 inoremap ``<Space> ``<Space>
 inoremap ``<CR> ``<CR>
 xnoremap ` di`<c-r>"`<Esc>
@@ -564,6 +552,7 @@ xnoremap ` di`<c-r>"`<Esc>
 
 		"{{{ curly brackets
 inoremap {} {}<Left>
+inoremap {}<Left> {}<Left>
 imap {) {}
 " the t is to keep indent level
 inoremap {<CR> {<CR>t<CR>}<Up><kEnd><BS>
@@ -677,8 +666,7 @@ augroup end
 	"{{{ leading and bad whitespace
 set list
 set listchars=tab:\|\ ,space:·
-" hides listchars for non-leading whitespace (as best as possible, BG doesn't
-" seem to be referenceable and 0 is as close as you can get without hardcoding
+" hides listchars for non-leading whitespace (as best as possible, BG doesn't seem to be referenceable and 0 is as close as you can get without hardcoding
 highlight NormalWhitespace ctermfg=0
 call matchadd("NormalWhitespace", ' \+')
 highlight LeadingWhitespace ctermfg=255
@@ -703,7 +691,216 @@ augroup MySh
 	autocmd!
 	" cursor fixes
 	autocmd InsertLeave * call cursor([getpos(".")[1], getpos(".")[2]+1])
+	autocmd BufNewFile,BufRead * set textwidth=0
 	" per filetype
 	autocmd BufNewFile,BufRead *.pde let &makeprg="processing-java --sketch=" . expand("%:p:h") . " --run >/dev/null &"
 augroup END
+"}}}
+
+"{{{ terminal
+	"{{{ Terminal
+function Terminal()
+	call lightline#disable()
+	set laststatus=0
+	set noruler
+	" sets up terminal mode mappings
+	call Tapi_scEnd(1, [])
+
+		"{{{ normal mode mappings
+	" normal mode mappings can always be present as they don't need to be disabled for sc or paste (you'll be in insert and can't even get to normal in sc's case)
+	nnoremap r :<c-u>call Tapi_rename(0, [0])<CR>
+	" <BS> is for if it's not zsh
+	nnoremap <silent> dt :<c-u>call term_sendkeys(1, "\<lt>c-u>t\<lt>BS>")<CR>i
+	nnoremap <silent> dd :<c-u>call term_sendkeys(1, "\<lt>c-u>d\<lt>BS>")<CR>i
+	nnoremap <silent> xx :<c-u>call term_sendkeys(1, "\<lt>c-u>x\<lt>BS>")<CR>i
+	nnoremap <silent> p :<c-u>call setreg("", substitute(substitute(getreg(""), '\(\n\)\?[^\n]* ', '\1', "g"), '\n$', '', "g"))<CR>i<c-w>""
+		"}}}
+
+endfunction
+	"}}}
+
+augroup Terminal
+	autocmd!
+	autocmd VimEnter * if mode() == "t" && $VIM_TERMINAL == "" | call Terminal() | endif
+	autocmd VimEnter * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
+	autocmd VimLeave * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
+augroup END
+
+"{{{ Tapi_rename
+" automatically or manually changes title in screen
+function Tapi_rename(bufnum, arglist)
+	if $STY
+		if a:bufnum
+			let name=a:arglist[0]
+		else
+			call inputsave()
+			let name=input("Enter name: ")
+			call inputrestore()
+			let g:screenTitle=1
+			if l:name == ""
+				unlet g:screenTitle
+				let name="-----"
+			endif
+		endif
+		if !a:bufnum || (a:bufnum && !exists("g:screenTitle"))
+			exe "set t_ts=\<Esc>k t_fs=\<Esc>\\"
+			let &titlestring = l:name
+			set title
+			redraw
+			set notitle
+			set t_ts& t_fs&
+		endif
+	endif
+endfunction
+"}}}
+
+	"{{{ Tapi_mappings
+function Tapi_mappings()
+		"{{{ misc.
+tnoremap <bar>& <bar><bar>
+		"}}}
+
+		"{{{ enclosing characters
+			"{{{ parentheses
+tnoremap () ()<Left>
+tnoremap (). ().
+tnoremap (), (),
+tnoremap ()<Space> ()<Space>
+tnoremap ()<CR> ()<CR>
+			"}}}
+
+			"{{{ brackets
+tnoremap [] []<Left>
+tnoremap [], [],
+tnoremap []<Space> []<Space>
+tnoremap []<CR> []<CR>
+tmap [) []
+			"}}}
+
+			"{{{ carats
+tnoremap <> <><Left>
+tnoremap <><Space> <><Space>
+tnoremap <><CR> <><CR>
+			"}}}
+
+			"{{{ double quotes
+tnoremap "" ""<Left>
+tnoremap "". "".
+tnoremap "", "",
+tnoremap ""<Space> ""<Space>
+tnoremap ""<CR> ""<CR>
+tmap "' ""
+tmap '" ""
+			"}}}
+
+			"{{{ single quotes
+tnoremap '' ''<Left>
+tnoremap ''. ''.
+tnoremap '', '',
+tnoremap ''<Space> ''<Space>
+tnoremap ''<CR> ''<CR>
+			"}}}
+
+			"{{{ backticks
+tnoremap `` ``<Left>
+tnoremap ``<Space> ``<Space>
+tnoremap ``<CR> ``<CR>
+			"}}}
+
+			"{{{ curly brackets
+tnoremap {} {}<Left>
+tmap {) {}
+			"}}}
+		"}}}
+endfunc
+	"}}}
+
+	"{{{ Tapi_sc
+" disable outer binds on sc or in vim
+function Tapi_sc(bufnum, arglist)
+	try
+		"{{{ mappings
+			"{{{ misc.
+		tunmap <bar>&
+			"}}}
+
+			"{{{ enclosing characters
+				"{{{ parentheses
+		tunmap ()
+		tunmap ().
+		tunmap (),
+		tunmap ()<Space>
+		tunmap ()<CR>
+				"}}}
+
+				"{{{ brackets
+		tunmap []
+		tunmap [],
+		tunmap []<Space>
+		tunmap []<CR>
+		tunmap [)
+				"}}}
+
+				"{{{ carats
+		tunmap <>
+		tunmap <><Space>
+		tunmap <><CR>
+				"}}}
+
+				"{{{ double quotes
+		tunmap ""
+		tunmap "".
+		tunmap "",
+		tunmap ""<Space>
+		tunmap ""<CR>
+		tunmap "'
+		tunmap '"
+				"}}}
+
+				"{{{ single quotes
+		tunmap ''
+		tunmap ''.
+		tunmap '',
+		tunmap ''<Space>
+		tunmap ''<CR>
+				"}}}
+
+				"{{{ backticks
+		tunmap ``
+		tunmap ``<Space>
+		tunmap ``<CR>
+				"}}}
+
+				"{{{ curly brackets
+		tunmap {}
+		tunmap {)
+				"}}}
+			"}}}
+		"}}}
+	catch /^.*E31:.*/
+	endtry
+	" setting termwinkey doesn't make c-w pass through
+	tnoremap <expr> <c-w> (term_sendkeys(1, "\<c-w>"))?"":""
+endfunc
+	"}}}
+
+	"{{{ Tapi_scEnd
+" restore binds if aborted sc or exited vim
+function Tapi_scEnd(bufnum, arglist)
+	call Tapi_mappings()
+	tnoremap <c-w> <c-w>N
+endfunc
+	"}}}
+
+	"{{{ Tapi_yank
+function Tapi_yank(bufnum, arglist)
+	let @@=a:arglist[0]
+endfunc
+	"}}}
+
+	"{{{ broken keys/key combos
+" for some reason map kHome Home and similar above don't apply to this (so it is kHome not Home), and mapping to <Home> doesn't work but the escape sequence does
+tnoremap <kHome> [1~
+tnoremap <kEnd> [4~
+	"}}}
 "}}}

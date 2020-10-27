@@ -3,9 +3,10 @@
 # some just don't work on certain keys, eg. ^[Q can be on screen but not resize -h -12
 escape "^Yy"
 bindkey "^[G"
-bindkey "^[R"
+# bindkey "^[R"
 bindkey "^[D"
 bindkey "^[Q"
+bindkey "^[^V"
 bindkey "^[H"
 bindkey "^[T"
 bindkey "^[C"

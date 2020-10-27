@@ -46,16 +46,32 @@ f() {
 	rm "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null
 }
 	#}}}
+
+	#{{{ Paste
+Paste() { printf -- ']51;["call", "Tapi_sc", []]\a' }
+Nopaste() { printf -- ']51;["call", "Tapi_scEnd", []]\a' }
+	#}}}
+
+	#{{{ printfPrepare
+_printfPrepare() {
+	1="${1//\\/\\\\\\\\}"
+	1="${1//\$/\\\\\\\\$}"
+	1="${1//\`/\\\\\\\\\`}"
+	1="${1//\%/%%%%}"
+	printf -- "$1"
+}
+	#}}}
 #}}}
 
 #{{{ aliases
+alias sudo='sudo '
 alias c='clear'
-alias detach="[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach"
+alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
 alias dirsize='du -sh -- .'
 alias fff='f'
 alias less='less -x2'
 alias ln='ln -s'
-alias ls='ls -hlA --color=auto'
+alias ls='ls -hl --color=auto'
 alias m='neomutt'
 alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
@@ -64,6 +80,7 @@ alias ping='ping -c 5'
 alias pm='pacman'
 alias sc='sc || exit'
 alias q='exit'
+alias qq='exit'
 alias rm='rm -d'
 alias v='vim'
 
@@ -133,11 +150,7 @@ PROMPT="%B${PROMPT}%f%k%b "
 preexec() {
 		#{{{ PROMPT
 	printf "\033[2A\033[2K"
-	0="${1//\\/\\\\\\\\}"
-	0="${0//\\n/\\\\n}"
-	0="${0//\$/\\\\$}"
-	0="${0//\`/\\\\\`}"
-	0="${0//\%/%%}"
+	0="$(_printfPrepare $1)"
 	# middle bit is last line of final prompt with %(!.#.$) swapped for %1~
 	print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $0"
 	# print moved us down a line
@@ -154,7 +167,7 @@ preexec() {
 
 		#{{{ undistract-me
 	case "$start" in
-		"bash" | "sc" | "v" | "vim" | "f" | "fff" | "mocp" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
+		"bash" | "sc" | "v" | "vim" | "f" | "fff" | "mocp" | "mutt" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;
@@ -165,7 +178,9 @@ preexec() {
 		#}}}
 
 	# screen automatic window title
-	[ -n "$STY" ] && printf -- $'\ek%s\e\\' "$start"
+	if [ -n "$STY" ]; then
+		[ -z "$VIM_TERMINAL" ] && printf $'\ek%s\e\\' "$start" || printf ']51;["call", "Tapi_rename", ["'"$start"'"]]\a'
+	fi
 }
 	#}}}
 
@@ -175,6 +190,7 @@ precmd() {
 	((starttime > 0 && SECONDS-starttime >= 10)) &&
 		(paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
 		printf "$((SECONDS-starttime))s\n"
+	tput cnorm # vim can't handle guis run in it run in a screen lol https://groups.google.com/forum/#!topic/vim_dev/HhczoxAdcWE
 }
 	#}}}
 
@@ -207,246 +223,13 @@ zshaddhistory() {
 
 #{{{ keybinds
 # showkey -a
+KEYTIMEOUT=99999
+
 	#{{{ broken keys/key combos
 bindkey '^[[1~' beginning-of-line
 bindkey '^[[4~' end-of-line
 bindkey '^[[1;5D' backward-word
 bindkey '^[[1;5C' forward-word
-	#}}}
-
-	#{{{ enclosing characters
-		#{{{ parentheses
-			#{{{ ()
-snip_parens() {
-	LBUFFER="${LBUFFER}("
-	RBUFFER=")${RBUFFER}"
-}
-zle -N snip_parens
-bindkey '()' snip_parens
-			#}}}
-			#{{{ ();
-snip_parens-semi() {
-	LBUFFER="${LBUFFER}();"
-}
-zle -N snip_parens-semi
-bindkey '();' snip_parens-semi
-			#}}}
-			#{{{ ().
-snip_parens-dot() {
-	LBUFFER="${LBUFFER}()."
-}
-zle -N snip_parens-dot
-bindkey '().' snip_parens-dot
-			#}}}
-			#{{{ (),
-snip_parens-comma() {
-	LBUFFER="${LBUFFER}(),"
-}
-zle -N snip_parens-comma
-bindkey '(),' snip_parens-comma
-			#}}}
-			#{{{ ():
-snip_parens-colon() {
-	LBUFFER="${LBUFFER}():"
-}
-zle -N snip_parens-colon
-bindkey '():' snip_parens-colon
-			#}}}
-			#{{{ ()<Space>
-snip_parens-space() {
-	LBUFFER="${LBUFFER}() "
-}
-zle -N snip_parens-space
-bindkey '() ' snip_parens-space
-			#}}}
-			#{{{ ()<CR>
-snip_parens-cr() {
-	LBUFFER="${LBUFFER}()"
-	zle accept-line
-}
-zle -N snip_parens-cr
-bindkey '()^M' snip_parens-cr
-			#}}}
-		#}}}
-		#{{{ brackets
-			#{{{ []
-snip_brackets() {
-	LBUFFER="${LBUFFER}["
-	RBUFFER="]${RBUFFER}"
-}
-zle -N snip_brackets
-bindkey '[]' snip_brackets
-			#}}}
-			#{{{ [],
-snip_brackets-comma() {
-	LBUFFER="${LBUFFER}[],"
-}
-zle -N snip_brackets-comma
-bindkey '[],' snip_brackets-comma
-			#}}}
-			#{{{ []<Space>
-snip_brackets-space() {
-	LBUFFER="${LBUFFER}[] "
-}
-zle -N snip_brackets-space
-bindkey '[] ' snip_brackets-space
-			#}}}
-			#{{{ []<CR>
-snip_brackets-cr() {
-	LBUFFER="${LBUFFER}[]"
-	zle accept-line
-}
-zle -N snip_brackets-cr
-bindkey '[]^M' snip_brackets-cr
-			#}}}
-		#}}}
-		#{{{ carats
-			#{{{ <>
-snip_carats() {
-	LBUFFER="${LBUFFER}<"
-	RBUFFER=">${RBUFFER}"
-}
-zle -N snip_carats
-bindkey '<>' snip_carats
-			#}}}
-			#{{{ <><Space>
-snip_carats-space() {
-	LBUFFER="${LBUFFER}< "
-	RBUFFER=" >${RBUFFER}"
-}
-zle -N snip_carats-space
-bindkey '<> ' snip_carats-space
-			#}}}
-			#{{{ <><CR>
-snip_carats-cr() {
-	LBUFFER="${LBUFFER}<>"
-	zle accept-line
-}
-zle -N snip_carats-cr
-bindkey '<>^M' snip_carats-cr
-			#}}}
-		#}}}
-		#{{{ double quotes
-			#{{{ ""
-snip_double-quotes() {
-	LBUFFER="${LBUFFER}"'"'
-	RBUFFER='"'"${RBUFFER}"
-}
-zle -N snip_double-quotes
-bindkey '""' snip_double-quotes
-			#}}}
-			#{{{ "".
-snip_double-quotes-dot() {
-	LBUFFER="${LBUFFER}"'"".'
-}
-zle -N snip_double-quotes-dot
-bindkey '"".' snip_double-quotes-dot
-			#}}}
-			#{{{ "",
-snip_double-quotes-comma() {
-	LBUFFER="${LBUFFER}"'"",'
-}
-zle -N snip_double-quotes-comma
-bindkey '"",' snip_double-quotes-comma
-			#}}}
-			#{{{ ""<Space>
-snip_double-quotes-space() {
-	LBUFFER="${LBUFFER}"'"" '
-}
-zle -N snip_double-quotes-space
-bindkey '"" ' snip_double-quotes-space
-			#}}}
-			#{{{ ""<CR>
-snip_double-quotes-cr() {
-	LBUFFER="${LBUFFER}"'""'
-	zle accept-line
-}
-zle -N snip_double-quotes-cr
-bindkey '""^M' snip_double-quotes-cr
-			#}}}
-		#}}}
-		#{{{ single quotes
-			#{{{ ''
-snip_single-quotes() {
-	LBUFFER="${LBUFFER}'"
-	RBUFFER="'${RBUFFER}"
-}
-zle -N snip_single-quotes
-bindkey "''" snip_single-quotes
-			#}}}
-			#{{{ ''.
-snip_single-quotes-dot() {
-	LBUFFER="${LBUFFER}''."
-}
-zle -N snip_single-quotes-dot
-bindkey "''." snip_single-quotes-dot
-			#}}}
-			#{{{ '',
-snip_single-quotes-comma() {
-	LBUFFER="${LBUFFER}'',"
-}
-zle -N snip_single-quotes-comma
-bindkey "''," snip_single-quotes-comma
-			#}}}
-			#{{{ ''<Space>
-snip_single-quotes-space() {
-	LBUFFER="${LBUFFER}' "
-	RBUFFER=" '${RBUFFER}"
-}
-zle -N snip_single-quotes-space
-bindkey "'' " snip_single-quotes-space
-			#}}}
-			#{{{ ''<CR>
-snip_single-quotes-cr() {
-	LBUFFER="${LBUFFER}''"
-	zle accept-line
-}
-zle -N snip_single-quotes-cr
-bindkey "''^M" snip_single-quotes-cr
-			#}}}
-		#}}}
-		#{{{ backticks
-			#{{{ ``
-snip_paren() {
-	LBUFFER="${LBUFFER}`"
-	RBUFFER="`${RBUFFER}"
-}
-zle -N snip_paren
-bindkey '``' snip_paren
-			#}}}
-			#{{{ ``<Space>
-snip_paren-space() {
-	LBUFFER="${LBUFFER}` "
-	RBUFFER=" `${RBUFFER}"
-}
-zle -N snip_paren-space
-bindkey '`` ' snip_paren-space
-			#}}}
-			#{{{ ``<CR>
-snip_paren-cr() {
-	LBUFFER="${LBUFFER}``"
-	zle accept-line
-}
-zle -N snip_paren-cr
-bindkey '``^M' snip_paren-cr
-			#}}}
-		#}}}
-		#{{{ curly brackets
-			#{{{ {)
-snip_braces() {
-	LBUFFER="${LBUFFER}{}"
-}
-zle -N snip_braces
-bindkey '{)' snip_braces
-			#}}}
-			#{{{ {}<Space>
-snip_braces-space() {
-	LBUFFER="${LBUFFER}{} "
-}
-zle -N snip_braces-space
-bindkey '{} ' snip_braces-space
-			#}}}
-		#}}}
 	#}}}
 
 	#{{{ spaces in enclosing characters
@@ -466,9 +249,30 @@ zle -N snip_space
 bindkey ' ' snip_space
 	#}}}
 
+	#{{{ vim terminal
+		#{{{ cutting/deleting
+_trash() {
+	BUFFER=
+}
+_delete() {
+	copy="$(_printfPrepare "${LBUFFER}${RBUFFER}")"
+	copy="${copy//\\/\\\\}"
+	copy="${copy//\"/\\\\\"}"
+	printf ']51;["call", "Tapi_yank", ["'"$copy"'"]]\a'
+	_trash
+}
+zle -N _trash
+bindkey '^Ux' _trash
+zle -N _delete
+bindkey '^Ud' _delete
+bindkey '^Ut' push-line
+		#}}}
+	#}}}
+
 bindkey '^[[A' up-line-or-search
 bindkey '^[[B' down-line-or-search
 #}}}
 
 # auto save screen layouts
-[ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next"
+[ -z "$VIM_TERMINAL" ] && [ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next"
+[ -n "$VIM_TERMINAL" ] && export SHELL="/usr/bin/zsh"

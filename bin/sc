@@ -2,6 +2,7 @@
 
 div=" \e[0m|\e[1m "
 
+[ -n "$VIM_TERMINAL" ] && printf ']51;["call", "Tapi_sc", []]\a' # for terminal in vim, see vimrc
 [ -n "$STY" ] && screen -X -S "${STY%%.*}" source ~/.screenrcunbind
 index=99
 while true; do
@@ -57,4 +58,5 @@ while true; do
 			;;
 	esac
 done
+[ -n "$VIM_TERMINAL" ] && printf ']51;["call", "Tapi_scEnd", []]\a' # for terminal in vim, see vimrc
 [ -n "$STY" ] && screen -X -S "${STY%%.*}" source ~/.screenrc

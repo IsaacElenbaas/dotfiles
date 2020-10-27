@@ -1,7 +1,10 @@
+# not sure what's setting foldmethod to syntax, just do `set foldmethod=marker`
+
 # snippet test "Just a test"
 # yay snippets are working
 # endsnippet
 
+#{{{ concatenating strings
 global !p
 def concatenate():
 	match = re.search(' \+(["\'`])\Z', snip.buffer[snip.line][:snip.column+2])
@@ -13,8 +16,11 @@ endglobal
 snippet + "concatenation" "concatenate()" e
  + 
 endsnippet
+#}}}
+
+#{{{ putting spaces in surrounding characters
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column+1]+' '+snip.buffer[snip.line][snip.column+1:]"
-snippet ( "spaces in braces" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ie
+snippet ( "spaces in parentheses" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ie
 ( 
 endsnippet
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column+1]+' '+snip.buffer[snip.line][snip.column+1:]"
@@ -25,3 +31,30 @@ pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column+1]+' '+sn
 snippet { "spaces in braces" "len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]=='}'" ie
 { 
 endsnippet
+#}}}
+
+#{{{ enclosing characters
+	#{{{ parentheses
+pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+')'+snip.buffer[snip.line][snip.column]+snip.buffer[snip.line][snip.column+2:]; snip.cursor.set(snip.line, snip.column+1)"
+snippet ; "semicolon in parentheses at end of line" "len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ieA
+endsnippet
+	#}}}
+
+	#{{{ brackets
+pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+']'+snip.buffer[snip.line][snip.column+1:]; snip.cursor.set(snip.line, snip.column)"
+snippet ) "close bracket with parentheses" "len(snip.buffer[snip.line])>0 and snip.buffer[snip.line][snip.column-1]=='['" ieA
+endsnippet
+pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+']'+snip.buffer[snip.line][snip.column]; snip.cursor.set(snip.line, snip.column+1)"
+snippet ; "semicolon in brackets at end of line" "len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]==']'" ieA
+endsnippet
+	#}}}
+
+	#{{{ curly brackets
+pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+'}'+snip.buffer[snip.line][snip.column+1:]; snip.cursor.set(snip.line, snip.column)"
+snippet ) "close curly bracket with parentheses" "len(snip.buffer[snip.line])>0 and snip.buffer[snip.line][snip.column-1]=='{'" ieA
+endsnippet
+pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+'}'+snip.buffer[snip.line][snip.column]; snip.cursor.set(snip.line, snip.column+1)"
+snippet ; "semicolon in curly brackets at end of line" "len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]=='}'" ieA
+endsnippet
+	#}}}
+#}}}
