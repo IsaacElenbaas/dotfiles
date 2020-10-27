@@ -7,13 +7,22 @@ function Word(forward, big, visual)
 		normal! gv
 	endif
 	if a:forward
-		call eval(printf("<SNR>%d_WordMotion(v:count1, " . ((a:visual) ? "'x'" : "'n'") . ", '', [])", GetScriptNumber("wordmotion.vim")))
+		if !a:big
+			call wordmotion#motion(v:count1, (a:visual) ? "x" : "n", "", 0, [])
+		else
+			call feedkeys("W", "nx")
+		endif
 		"call feedkeys((a:big) ? "W" : "w", "nx")
 		if line(".") != l:position
 			call feedkeys("kg$", "n")
 		endif
 	else
-		call feedkeys((a:big) ? "B" : "b", "nx")
+		if !a:big
+			call wordmotion#motion(v:count1, (a:visual) ? "x" : "n", "b", 0, [])
+		else
+			call feedkeys("B", "nx")
+		endif
+		"call feedkeys((a:big) ? "B" : "b", "nx")
 		if line(".") != l:position
 			call feedkeys("j^", "n")
 		endif
@@ -25,12 +34,15 @@ endfunction
 	"{{{ Home
 " makes home go left of whitespace only if already at 'beginning' of line
 function Home(visual)
-	let l:position=virtcol(".")
+	let l:position=col(".")
 	if a:visual
 		normal! gv
 	endif
 	call feedkeys("g^", "nx")
-	if virtcol(".") == l:position
+	if col(".") == l:position
+		call feedkeys("0g^", "nx")
+	endif
+	if col(".") == l:position
 		call feedkeys("0", "n")
 	endif
 	call feedkeys("", "x")
@@ -40,39 +52,41 @@ endfunction
 	"{{{ End
 " makes end go right of comment only if already at/past its start
 function End(visual)
-	let l:last=@/
 	if a:visual
 		normal! gv
 	endif
-	let l:position=virtcol(".")
-	let l:line=line(".")
+	let l:oldcol=col(".")
+	let l:oldnum=line(".")
+	call feedkeys("^", "nx")
 	if match(&commentstring, '%s') != -1
-		try
-			call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
-		catch /^Vim(call):E385:.*/
-		endtry
-		call histdel("/", -1)
+		" no c flag to prevent going to beginning on only comment lines
+		let [cnum, ccol]=searchpos('\s*\V' . substitute(&commentstring, '%s', '\\m.*\\V', "") . '\m$', "n")
 	endif
-	if line(".") != l:line
-		call feedkeys("\<c-o>g$", "n")
+	call cursor(0, l:oldcol)
+	" no comment on line
+	if l:cnum != l:oldnum
+		call feedkeys("g$", "nx")
+		if col(".") == l:oldcol
+			call feedkeys("$g$", "n")
+		endif
+	" comment on line
 	else
-		if virtcol(".") <= l:position
-			call feedkeys("g$", "nx")
-		endif
-		if virtcol(".") == l:position && match(&commentstring, '%s') != -1
-			try
-				call feedkeys("g^/\\s*\\V" . substitute(substitute(&commentstring, '%s', '\\m.*\\V', ""), '/', '\\/', "g") . "\\m$\<CR>", "nx")
-			catch /^Vim(call):E385:.*/
-				call feedkeys("g$", "nx")
-			endtry
-			call histdel("/", -1)
-		endif
-		if virtcol(".") == l:position
-			call feedkeys("$l", "n")
+		call feedkeys("g$", "nx")
+		" at/past comment start
+		if l:ccol <= l:oldcol
+			" soft wrapped line
+			if col(".") == l:oldcol
+				call feedkeys("$g$", "nx")
+			endif
+			if col(".") == l:oldcol
+				call cursor(0, l:ccol)
+			endif
+		" before comment start
+		elseif col(".") == l:oldcol || col(".") > l:ccol
+			" comment starts before end of soft wrapped line or already at end of soft wrapped
+			call cursor(0, l:ccol)
 		endif
 	endif
-	echo
-	let @/=l:last
 	call feedkeys("", "x")
 endfunction
 	"}}}
