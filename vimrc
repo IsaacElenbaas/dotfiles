@@ -700,15 +700,19 @@ augroup END
 "{{{ terminal
 	"{{{ Terminal
 function Terminal()
-	call lightline#disable()
-	set laststatus=0
-	set noruler
+	if $VIM_TERMINAL == ""
+		call lightline#disable()
+		set laststatus=0
+		set noruler
+	endif
 	" sets up terminal mode mappings
 	call Tapi_scEnd(1, [])
 
 		"{{{ normal mode mappings
 	" normal mode mappings can always be present as they don't need to be disabled for sc or paste (you'll be in insert and can't even get to normal in sc's case)
-	nnoremap r :<c-u>call Tapi_rename(0, [0])<CR>
+	if $VIM_TERMINAL == ""
+		nnoremap r :<c-u>call Tapi_rename(0, [0])<CR>
+	endif
 	" <BS> is for if it's not zsh
 	nnoremap <silent> dt :<c-u>call term_sendkeys(1, "\<lt>c-u>t\<lt>BS>")<CR>i
 	nnoremap <silent> dd :<c-u>call term_sendkeys(1, "\<lt>c-u>d\<lt>BS>")<CR>i
@@ -721,7 +725,7 @@ endfunction
 
 augroup Terminal
 	autocmd!
-	autocmd VimEnter * if mode() == "t" && $VIM_TERMINAL == "" | call Terminal() | endif
+	autocmd TerminalWinOpen * call Terminal()
 	autocmd VimEnter * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
 	autocmd VimLeave * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
 augroup END
@@ -903,4 +907,6 @@ endfunc
 tnoremap <kHome> [1~
 tnoremap <kEnd> [4~
 	"}}}
+
+tnoremap <c-w> <c-w>N
 "}}}
