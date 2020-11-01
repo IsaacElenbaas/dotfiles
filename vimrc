@@ -2,7 +2,7 @@
 	"{{{ Word
 " does w or b but stops at end/beginning of line
 function Word(forward, big, visual)
-	let l:position=line(".")
+	let l:position=winline()
 	if a:visual
 		normal! gv
 	endif
@@ -13,8 +13,8 @@ function Word(forward, big, visual)
 			call feedkeys("W", "nx")
 		endif
 		"call feedkeys((a:big) ? "W" : "w", "nx")
-		if line(".") != l:position
-			call feedkeys("kg$", "n")
+		if winline() != l:position
+			call feedkeys("gkg$", "n")
 		endif
 	else
 		if !a:big
@@ -23,8 +23,8 @@ function Word(forward, big, visual)
 			call feedkeys("B", "nx")
 		endif
 		"call feedkeys((a:big) ? "B" : "b", "nx")
-		if line(".") != l:position
-			call feedkeys("j^", "n")
+		if winline() != l:position
+			call feedkeys("gjg^", "n")
 		endif
 	endif
 	call feedkeys("", "x")
