@@ -315,6 +315,8 @@ set number
 set relativenumber
 " don't show mode on command line
 set noshowmode
+" show pending keys
+set showcmd
 " allow going to end of line in normal mode
 set virtualedit+=onemore
 
@@ -703,6 +705,7 @@ function Terminal()
 	if $VIM_TERMINAL == ""
 		call lightline#disable()
 		set laststatus=0
+		set noshowcmd
 		set noruler
 	endif
 	" sets up terminal mode mappings
@@ -721,6 +724,22 @@ function Terminal()
 		"}}}
 
 endfunction
+"}}}
+
+	"{{{ TerminalEnd
+function TerminalEnd()
+	try
+		nunmap r
+	catch /^.*E31:.*/
+	endtry
+	try
+		nunmap dt
+		nunmap dd
+		nunmap xx
+		nunmap p
+	catch /^.*E31:.*/
+	endtry
+endfunction
 	"}}}
 
 augroup Terminal
@@ -728,6 +747,7 @@ augroup Terminal
 	autocmd TerminalWinOpen * call Terminal()
 	autocmd VimEnter * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
 	autocmd VimLeave * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
+	autocmd BufDelete * call TerminalEnd()
 augroup END
 
 "{{{ Tapi_rename
