@@ -179,7 +179,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ -z "$VIM_TERMINAL" ] && printf $'\ek%s\e\\' "$start" || printf ']51;["call", "Tapi_rename", ["'"$start"'"]]\a'
+		[ -z "$VIM_TERMINAL" ] && printf $'\ek%s\e\\' "$start" || printf ']51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\a'
 	fi
 }
 	#}}}

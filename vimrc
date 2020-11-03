@@ -702,11 +702,12 @@ augroup END
 "{{{ terminal
 	"{{{ Terminal
 function Terminal()
-	if $VIM_TERMINAL == ""
+	if $VIM_TERMINAL == "" && $STY != ""
 		call lightline#disable()
 		set laststatus=0
 		set noshowcmd
 		set noruler
+		set shell=/usr/bin/bash
 	endif
 	" sets up terminal mode mappings
 	call Tapi_scEnd(1, [])
