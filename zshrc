@@ -66,6 +66,7 @@ _printfPrepare() {
 #{{{ aliases
 alias sudo='sudo '
 alias c='clear'
+alias CAPSLOCK='xdotool key Caps_Lock'
 alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
 alias dirsize='du -sh -- .'
 alias fff='f'
@@ -274,5 +275,6 @@ bindkey '^[[B' down-line-or-search
 #}}}
 
 # auto save screen layouts
-[ -z "$VIM_TERMINAL" ] && [ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next"
+# doesn't trigger in vim terminal, equivalent method in vimrc
+[ -z "$VIM_TERMINAL" ] && [ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" && VIM_TERMINAL=-1
 [ -n "$VIM_TERMINAL" ] && export SHELL="/usr/bin/zsh"

@@ -708,6 +708,11 @@ function Terminal()
 		set noshowcmd
 		set noruler
 		set shell=/usr/bin/bash
+		" doesn't trigger outside of vim terminal due to VIM_TERMAL=-1 in zshrc
+		if str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
+			" auto save screen layouts and fix size
+			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset"')
+		endif
 	endif
 	" sets up terminal mode mappings
 	call Tapi_scEnd(1, [])
