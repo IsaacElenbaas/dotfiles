@@ -711,7 +711,9 @@ function Terminal()
 		" doesn't trigger outside of vim terminal due to VIM_TERMAL=-1 in zshrc
 		if str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
 			" auto save screen layouts and fix size
-			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset"')
+			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset" "source ~/.screenrc"')
+			" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
+			suspend
 		endif
 	endif
 	" sets up terminal mode mappings
