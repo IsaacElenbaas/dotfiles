@@ -14,6 +14,7 @@ f() {
 export -f f
 
 alias c='clear'
+alias CAPSLOCK='xdotool key Caps_Lock'
 alias dirsize='du -sh -- .'
 alias fff='f'
 alias less='less -x2'
