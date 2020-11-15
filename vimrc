@@ -58,6 +58,7 @@ function End(visual)
 	let l:oldcol=col(".")
 	let l:oldnum=line(".")
 	call feedkeys("^", "nx")
+	let cnum=0
 	if match(&commentstring, '%s') != -1
 		" no c flag to prevent going to beginning on only comment lines
 		let [cnum, ccol]=searchpos('\s*\V' . substitute(&commentstring, '%s', '\\m.*\\V', "") . '\m$', "n")
@@ -368,7 +369,7 @@ filetype indent off
 "}}}
 
 "{{{ mappings
-" do : then Ctrl+k then a key to see what it is to vim (eg. <End> is <kEnd> for some reason)
+" do : then Ctrl+k then a key to see what it is to vim
 " :verbose map key to see what binds begin with a key
 " can't use <c-o> because of autocmd cursor fix, use <Esc>...i
 
@@ -379,14 +380,10 @@ command M silent make<bar>call feedkeys("\<lt>CR>", "n")
 	"}}}
 
 	"{{{ broken keys/key combos
-nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
-inoremap <silent> <Home> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
-xnoremap <silent> <Home> :<c-u>call Home(1)<CR>
 map <kHome> <Home>
-nnoremap <silent> <End> :<c-u>call End(0)<CR>
-inoremap <silent> <End> <Esc>:<c-u>call End(0) <bar> startinsert<CR>
-xnoremap <silent> <End> :<c-u>call End(1)<CR>
+map! <kHome> <Home>
 map <kEnd> <End>
+map! <kEnd> <End>
 	"}}}
 
 	"{{{ misc.
@@ -418,6 +415,12 @@ nnoremap $ g$
 map M zz
 nnoremap k <Nop>
 nnoremap l <Nop>
+nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
+inoremap <silent> <Home> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
+xnoremap <silent> <Home> :<c-u>call Home(1)<CR>
+nnoremap <silent> <End> :<c-u>call End(0)<CR>
+inoremap <silent> <End> <Esc>:<c-u>call End(0) <bar> startinsert<CR>
+xnoremap <silent> <End> :<c-u>call End(1)<CR>
 " soft lines
 nnoremap <Down> gj
 nnoremap <Up> gk
@@ -454,12 +457,10 @@ onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 
 	"{{{ travelling
 nnoremap tm '
-xnoremap tm '
 " back/forward in jump history
 nnoremap tb <c-o>
 nnoremap tf <c-i>
 nnoremap tv gv
-xnoremap tv gv
 
 		"{{{ scrolling
 nnoremap tmm <Nop>
@@ -469,10 +470,9 @@ nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
 nmap tmmN tN
 nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
 nmap tmm<Down> t<Down>
-nmap tmmt t<Down>
 nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
 nmap tmm<Up> t<Up>
-nmap tmmc t<Up>
+nmap tmmt t
 		"}}}
 
 		"{{{ scrolling to screen percentage
@@ -557,7 +557,7 @@ inoremap {} {}<Left>
 inoremap {}<Left> {}<Left>
 imap {) {}
 " the t is to keep indent level
-inoremap {<CR> {<CR>t<CR>}<Up><kEnd><BS>
+inoremap {<CR> {<CR>t<CR>}<Up><End><BS>
 xnoremap { di{<Space><c-r>"<Space>}<Esc>
 xmap } {
 		"}}}
@@ -931,7 +931,7 @@ endfunc
 	"}}}
 
 	"{{{ broken keys/key combos
-" for some reason map kHome Home and similar above don't apply to this (so it is kHome not Home), and mapping to <Home> doesn't work but the escape sequence does
+" for some reason mapping to <Home> doesn't work but the escape sequence does
 tnoremap <kHome> [1~
 tnoremap <kEnd> [4~
 	"}}}

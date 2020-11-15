@@ -7,7 +7,7 @@
 #{{{ concatenating strings
 global !p
 def concatenate():
-	match = re.search(' \+(["\'`])\Z', snip.buffer[snip.line][:snip.column+2])
+	match = re.search(' .(["\'`])\Z', snip.buffer[snip.line][:snip.column+2])
 	if match and snip.buffer[snip.line][:snip.column+1].count(snip.buffer[snip.line][snip.column+1])%2:
 		snip.buffer[snip.line] = snip.buffer[snip.line][:snip.column-1] + match.group(1) + " " + snip.buffer[snip.line][snip.column+2:]
 		return True
@@ -15,6 +15,9 @@ def concatenate():
 endglobal
 snippet + "concatenation" "concatenate()" e
  + 
+endsnippet
+snippet , "strings in lists" "concatenate()" e
+, 
 endsnippet
 #}}}
 
@@ -36,7 +39,7 @@ endsnippet
 #{{{ enclosing characters
 	#{{{ parentheses
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+')'+snip.buffer[snip.line][snip.column]+snip.buffer[snip.line][snip.column+2:]; snip.cursor.set(snip.line, snip.column+1)"
-snippet ; "semicolon in parentheses at end of line" "len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ieA
+snippet ; "semicolon in parentheses at end of line" "not re.search('^\s*for', snip.buffer[snip.line]) and len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ieA
 endsnippet
 	#}}}
 
