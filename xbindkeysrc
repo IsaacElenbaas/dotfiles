@@ -19,6 +19,10 @@
 # The release modifier ( + Release) is not a standard X modifier, but you can
 # use it if you want to catch release events instead of press events
 
+"herbstclient use_index -$(xrandr --query | awk '/ connected/{print}' | wc -l)"
+	b:9 + Release
+"herbstclient use_index +$(xrandr --query | awk '/ connected/{print}' | wc -l)"
+	b:8 + Release
 "[ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ] && xdotool key --clearmodifiers 9 || ( amixer set Master 5%-; herbstclient emit_hook volume )"
 	m:0x0 + c:122 + Release
 "[ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ] && xdotool key --clearmodifiers 0 || ( amixer set Master 5%+; herbstclient emit_hook volume )"

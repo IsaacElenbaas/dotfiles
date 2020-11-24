@@ -51,6 +51,6 @@ bindkey "^[E" resize -v -6
 bindkey "^[." resize -v +6
 bindkey "^[U" resize -h +12
 
-bindkey "^[B" eval "split" "focus next" "resize 20%" "screen 1"
+bindkey "^[B" eval "split" "focus next" "resize 20%" "screen"
 	#}}}
 #}}}
