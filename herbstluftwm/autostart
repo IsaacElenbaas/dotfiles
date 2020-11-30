@@ -55,6 +55,8 @@ hc keybind $Mod-c focus up
 hc keybind $Mod-n focus right
 hc keybind $Mod-apostrophe cycle 1
 hc keybind $Mod-comma cycle -1
+hc keybind $Mod-g \
+	chain , spawn /usr/share/doc/herbstluftwm/examples/maximize.sh grid , keybind Left focus left , keybind Down focus down , keybind Up focus up , keybind Right focus right , keybind Return spawn bash -c "/usr/share/doc/herbstluftwm/examples/maximize.sh grid; herbstclient keyunbind Left; herbstclient keyunbind Down; herbstclient keyunbind Up; herbstclient keyunbind Right; herbstclient keyunbind Return"
 
 		#{{{ tags
 hc keybind $Mod-l use_index -$m
@@ -63,9 +65,9 @@ hc keybind $Mod-BackSpace use_index +$m
 	#}}}
 
 	#{{{ layouts
-hc keybind $Mod-f cycle_layout 1 max grid
-hc keybind $Mod-Shift-f fullscreen toggle
-hc keybind $Mod-space cycle_layout 1 vertical horizontal
+hc keybind $Mod-f spawn /home/isaacelenbaas/dotfiles/bin/fullscreen
+hc keybind $Mod-Shift-f chain , or . and : compare tags.focus.fullscreen = true : spawn /home/isaacelenbaas/dotfiles/bin/fullscreen full . spawn /home/isaacelenbaas/dotfiles/bin/fullscreen , fullscreen toggle
+hc keybind $Mod-space cycle_layout 1 horizontal vertical max
 	#}}}
 
 	#{{{ clients
@@ -123,8 +125,8 @@ hc set mouse_recenter_gap 99999
 #}}}
 
 #{{{ rules
-hc rule focus=on # normally focus new clients
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on #floating=on
+hc rule focus=on ewmhrequests=off fullscreen=off # normally focus new clients and don't allow them to control their fullscreen or 'needs attention' state
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 hc rule class='discord' tag=2
 hc rule class='Steam' tag=3 focus=off
