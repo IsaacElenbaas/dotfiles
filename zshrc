@@ -1,5 +1,6 @@
 #{{{ plugins
 source ${ZDOTDIR:-${HOME}/.zsh}/plugins/sudo.plugin.zsh
+source ${ZDOTDIR:-${HOME}/.zsh}/plugins/manydots.plugin.zsh
 
 	#{{{ You Should Use
 source /usr/share/zsh/plugins/zsh-you-should-use/you-should-use.plugin.zsh
@@ -111,7 +112,7 @@ fgs=(
 bgs=( # needs extra 0 at end for final carat bg
 	"15"
 	"32"
-	"\$([ -d .git ] && printf '34' || printf '0')"
+	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf '34' || printf '0')"
 	"0"
 	"32"
 	"0"
@@ -119,13 +120,11 @@ bgs=( # needs extra 0 at end for final carat bg
 # c1 is fg c2 is bg c3 is next bg for carats
 #{{{ functions
 prompt-git() {
-	if [ -d .git ]; then
+	git rev-parse --is-inside-work-tree &>/dev/null && {
 		c2="${c//\%c2/$1}"
 		c2="${c2//\%c3/$2}"
 		printf "  $(git rev-parse --abbrev-ref HEAD) ${c2//\%/%%}"
-	else
-		printf ""
-	fi
+	}
 }
 #}}}
 sections=(

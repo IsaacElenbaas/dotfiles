@@ -130,7 +130,6 @@ hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
 hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 hc rule class='discord' tag=2
 hc rule class='Steam' tag=3 focus=off
-hc rule class='mpv' title='noMin' fullscreen=on
 hc rule class='mpv' not title='noMin' focus=off index='/'
 #}}}
 
