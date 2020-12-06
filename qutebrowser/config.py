@@ -135,6 +135,7 @@ c.bindings.commands['normal'] = {
     '<Shift-Q>'     : 'set-cmd-text :',
     '<Ctrl-n>'      : 'open -w',
     '<Ctrl-Shift-N>': 'open -p',
+    '<Ctrl-c>'      : 'fake-key <Ctrl-c>',
 
     'i'             : 'enter-mode insert',
     'I'             : 'hint inputs',

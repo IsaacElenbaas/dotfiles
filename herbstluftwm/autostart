@@ -66,7 +66,7 @@ hc keybind $Mod-BackSpace use_index +$m
 
 	#{{{ layouts
 hc keybind $Mod-f spawn /home/isaacelenbaas/dotfiles/bin/fullscreen
-hc keybind $Mod-Shift-f chain , or . and : compare tags.focus.fullscreen = true : spawn /home/isaacelenbaas/dotfiles/bin/fullscreen full . spawn /home/isaacelenbaas/dotfiles/bin/fullscreen , fullscreen toggle
+hc keybind $Mod-Shift-f chain , or . and : compare clients.focus.fullscreen = false : spawn /home/isaacelenbaas/dotfiles/bin/fullscreen full . spawn /home/isaacelenbaas/dotfiles/bin/fullscreen , fullscreen toggle
 hc keybind $Mod-space cycle_layout 1 horizontal vertical max
 	#}}}
 
