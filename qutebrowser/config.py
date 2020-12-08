@@ -103,7 +103,7 @@ c.bindings.commands['command'] = {
 c.bindings.commands['hint'] = {
     '<Return>': 'follow-hint',
     '<Escape>': 'leave-mode',
-    'f'       : 'set --temp hints.chars gcldhsvz ;; leave-mode ;; hint noinputs',
+    'f'       : 'set --temp hints.chars gcldhsv ;; leave-mode ;; hint noinputs',
     'i'       : 'hint inputs',
     'm'       : 'hint links spawn --detach mpv {hint-url} --pause',
     'nm'      : 'hint links spawn --detach mpv {hint-url} --title=noMin',

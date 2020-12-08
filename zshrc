@@ -20,6 +20,7 @@ SAVEHIST=1000
 setopt sharehistory
 setopt appendhistory
 setopt hist_ignore_dups
+setopt hist_ignore_space
 setopt hist_reduce_blanks
 	#}}}
 
@@ -188,7 +189,7 @@ preexec() {
 precmd() {
 	# undistract-me
 	((starttime > 0 && SECONDS-starttime >= 10)) &&
-		(paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
+		(notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
 		printf "$((SECONDS-starttime))s\n"
 	tput cnorm # vim can't handle guis run in it run in a screen lol https://groups.google.com/forum/#!topic/vim_dev/HhczoxAdcWE
 }

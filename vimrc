@@ -850,6 +850,8 @@ endfunc
 	"{{{ Tapi_sc
 " disable outer binds on sc or in vim
 function Tapi_sc(bufnum, arglist)
+	set termwinsize=
+	autocmd! TerminalResize
 	try
 		"{{{ mappings
 			"{{{ misc.
@@ -919,6 +921,10 @@ endfunc
 	"{{{ Tapi_scEnd
 " restore binds if aborted sc or exited vim
 function Tapi_scEnd(bufnum, arglist)
+	execute "set termwinsize=0x" . (winwidth("%")-6)
+	augroup TerminalResize
+		autocmd VimResized * execute "set termwinsize=0x" . (winwidth("%")-6)
+	augroup END
 	call Tapi_mappings()
 	tnoremap <c-w> <c-w>N
 endfunc
