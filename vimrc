@@ -193,7 +193,7 @@ endfunction
 
 	"{{{ ScrollScreenPercent
 function ScrollScreenPercent(percent, visual)
-	call feedkeys("H" . a:percent*winheight("%")/100 . "j", "n")
+	call feedkeys("H" . a:percent*winheight("%")/100 . "j", "nx")
 	if a:visual
 		let l:scroll=line(".")
 		call feedkeys("gv" . l:scroll . "gg", "n")
@@ -330,7 +330,7 @@ let g:undotree_SetFocusWhenToggle = 1
 call expand_region#custom_text_objects({"is" :0,"if" :0})
 nmap h <Plug>(expand_region_expand)
 xmap h <Plug>(expand_region_expand)
-xmap t <Plug>(expand_region_shrink)
+xmap H <Plug>(expand_region_shrink)
 		"}}}
 
 		"{{{ quick-scope
@@ -508,10 +508,10 @@ nnoremap <expr> G Find(0)
 xnoremap <expr> G Find(0)
 nnoremap / :<c-u>autocmd! Search<CR>/
 xnoremap / :<c-u>autocmd! Search<CR>gv/
-nnoremap <silent> <expr> . (!exists("g:search")) ? ((g:findforward) ? ";" : ",") : ":<c-u>call search(g:search, 'sW')\<lt>CR>"
-xnoremap <silent> <expr> . (!exists("g:search")) ? ((g:findforward) ? ";" : ",") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'sW')\<lt>CR>"
-nnoremap <silent> <expr> , (!exists("g:search")) ? ((g:findforward) ? "," : ";") : ":<c-u>call search(g:search, 'bsW')\<lt>CR>"
-xnoremap <silent> <expr> , (!exists("g:search")) ? ((g:findforward) ? "," : ";") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'bsW')\<lt>CR>"
+nnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call search(g:search, 'sW')\<lt>CR>"
+xnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'sW')\<lt>CR>"
+nnoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call search(g:search, 'bsW')\<lt>CR>"
+xnoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'bsW')\<lt>CR>"
 	"}}}
 
 	"{{{ pasting
@@ -541,36 +541,61 @@ onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 
 	"{{{ travelling
 nnoremap tm '
+xnoremap tm '
 " back/forward in jump history
 nnoremap tb <c-o>
+xnoremap tb <c-o>
 nnoremap tf <c-i>
+xnoremap tf <c-i>
 nnoremap tv gv
+xnoremap tv gv
 
 		"{{{ scrolling
 nnoremap tmm <Nop>
-nmap <silent> tn :<c-u>call signature#mark#Goto("next", "spot", "pos")<CR>tmm
-nmap tmmn tn
-nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
-nmap tmmN tN
-nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
-nmap tmm<Down> t<Down>
-nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
-nmap tmm<Up> t<Up>
+xnoremap tmm <Nop>
 nmap tmmt t
+xmap tmmt t
+nmap <silent> tn :<c-u>call signature#mark#Goto("next", "spot", "pos")<CR>tmm
+xmap <silent> tn :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("next", "spot", "pos")<CR>tmm
+nmap tmmn tn
+xmap tmmn tn
+nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
+xmap <silent> tN :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
+nmap tmmN tN
+xmap tmmN tN
+nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
+xmap <silent> t<Down> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>2\<lt>c-e>M'"<CR>tmm
+nmap tmm<Down> t<Down>
+xmap tmm<Down> t<Down>
+nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
+xmap <silent> t<Up> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>2\<lt>c-y>M'"<CR>tmm
+nmap tmm<Up> t<Up>
+xmap tmm<Up> t<Up>
 		"}}}
 
 		"{{{ scrolling to screen percentage
 nnoremap tt H
+xnoremap tt H
 nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 0)<CR>
+xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 1)<CR>
 nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 0)<CR>
+xnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 1)<CR>
 nnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 0)<CR>
+xnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 1)<CR>
 nnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 0)<CR>
+xnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 1)<CR>
 nnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 0)<CR>
+xnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 1)<CR>
 nnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 0)<CR>
+xnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 1)<CR>
 nnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 0)<CR>
+xnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 1)<CR>
 nnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 0)<CR>
+xnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 1)<CR>
 nnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 0)<CR>
+xnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 1)<CR>
 nnoremap t0 L
+xnoremap t0 L
 		"}}}
 	"}}}
 
@@ -659,27 +684,16 @@ nmap cmmc c<Up>
 
 	"{{{ centering to screen percentage
 nnoremap cc zt
-xnoremap cc zt
 nnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10, 0)<CR>
-xnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10, 1)<CR>
 nnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20, 0)<CR>
-xnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20, 1)<CR>
 nnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30, 0)<CR>
-xnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30, 1)<CR>
 nnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40, 0)<CR>
-xnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40, 1)<CR>
 nnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50, 0)<CR>
-xnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50, 1)<CR>
 nnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60, 0)<CR>
-xnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60, 1)<CR>
 nnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70, 0)<CR>
-xnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70, 1)<CR>
 nnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80, 0)<CR>
-xnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80, 1)<CR>
 nnoremap <silent> c9 :<c-u>call ScrollOnlyScreenPercent(90, 0)<CR>
-xnoremap <silent> c9 :<c-u>call ScrollOnlyScreenPercent(90, 1)<CR>
 nnoremap c0 zb
-xnoremap c0 zb
 	"}}}
 
 	"{{{ scrolling to document percentage (visible lines)
