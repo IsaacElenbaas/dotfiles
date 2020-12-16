@@ -92,6 +92,63 @@ function End(visual)
 endfunction
 	"}}}
 
+	"{{{ Search
+function Search(visual)
+	if a:visual
+		normal! gv
+	endif
+	let g:lastsearch=histget("/", -1)
+	augroup Search
+		autocmd!
+		" unfortunately doesn't :noh if searched same thing as last actual search, unavoidable (repeating this with same thing won't cause the error, due to histdel)
+		" lastsearch is to prevent this from triggering if esc was pressed
+		" can't use n or x for feedkeys :noh
+		if a:visual
+			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | silent call feedkeys(":\<c-u>noh\<CR>") | silent call feedkeys("gv", "n") | endif | autocmd! Search
+		else
+			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | silent call feedkeys(":\<c-u>noh\<CR>", "") | endif | autocmd! Search
+		endif
+	augroup END
+endfunction
+	"}}}
+
+	"{{{ GUnmap
+function GUnmap()
+	let l:maps=execute("map g")
+	let l:nl=0
+	while 1
+		let l:g=stridx(l:maps, "g", l:nl)
+		if l:g == -1
+			break
+		endif
+		let l:sp=stridx(l:maps, " ", l:g)
+		try
+			execute "unmap " . strcharpart(l:maps, l:g, l:sp-l:g)
+		catch /^.*E31:.*/
+		endtry
+		let l:nl=stridx(l:maps, "\n", l:sp)
+		if l:nl == -1
+			break
+		endif
+	endwhile
+endfunction
+	"}}}
+
+	"{{{ Find
+function Find(forward)
+	try
+		unlet g:search
+	catch
+	endtry
+	let l:char=nr2char(getchar())
+	if l:char == ""
+		return
+	endif
+	let g:findforward=a:forward
+	return ((a:forward) ? "f" : "F") . l:char
+endfunction
+	"}}}
+
 	"{{{ In/Outdent
 " makes 2>2j indent three lines two times
 function Indent(...)
@@ -284,6 +341,12 @@ augroup qs_colors
 augroup END
 		"}}}
 
+		"{{{ vim-commentary
+nmap zcc <Plug>CommentaryLine
+nmap zc <Plug>Commentary
+xmap zc <Plug>Commentary
+		"}}}
+
 " just here so I don't get confused when stuff in settings don't apply
 runtime! plugin/sensible.vim
 
@@ -376,7 +439,10 @@ filetype indent off
 	"{{{ commands
 cmap w!! w !sudo tee > /dev/null %
 command D execute "w !git diff --no-index --color=always -- % - | less -R" | execute "silent! !stty sane" | redraw!
-command M silent make<bar>call feedkeys("\<lt>CR>", "n")
+command M silent make<bar>call feedkeys("\<lt>CR>", "nx")
+set wildcharm=<C-z>
+cnoremap <expr> <Tab>   getcmdtype() =~ "[?/]" ? "<c-g>" : "<c-z>"
+cnoremap <expr> <s-Tab> getcmdtype() =~ "[?/]" ? "<c-t>" : "<c-z>"
 	"}}}
 
 	"{{{ broken keys/key combos
@@ -389,6 +455,7 @@ map! <kEnd> <End>
 	"{{{ misc.
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
+nnoremap ; .
 nnoremap dD g^D
 nnoremap cC g^C
 nnoremap x "_d
@@ -410,7 +477,7 @@ inoremap <bar>& <bar><bar>
 map <c-Right> w
 map <c-Left> b
 nnoremap <silent> <Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>/(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
-nnoremap <silent> <S-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
+nnoremap <silent> <s-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap $ g$
 map M zz
 nnoremap k <Nop>
@@ -428,6 +495,23 @@ xnoremap <Down> gj
 xnoremap <Up> gk
 inoremap <Down> <Esc>gji
 inoremap <Up> <Esc>gki
+" Search
+nnoremap <silent> f :<c-u>call Search(0)<CR>/
+xnoremap <silent> f :<c-u>call Search(1)<CR>/
+nnoremap <silent> F :<c-u>call Search(0)<CR>?
+xnoremap <silent> F :<c-u>call Search(1)<CR>?
+augroup Search
+	autocmd!
+	autocmd VimEnter * call GUnmap() | nnoremap <expr> g Find(1) | xnoremap <expr> g Find(1)
+augroup END
+nnoremap <expr> G Find(0)
+xnoremap <expr> G Find(0)
+nnoremap / :<c-u>autocmd! Search<CR>/
+xnoremap / :<c-u>autocmd! Search<CR>gv/
+nnoremap <silent> <expr> . (!exists("g:search")) ? ((g:findforward) ? ";" : ",") : ":<c-u>call search(g:search, 'sW')\<lt>CR>"
+xnoremap <silent> <expr> . (!exists("g:search")) ? ((g:findforward) ? ";" : ",") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'sW')\<lt>CR>"
+nnoremap <silent> <expr> , (!exists("g:search")) ? ((g:findforward) ? "," : ";") : ":<c-u>call search(g:search, 'bsW')\<lt>CR>"
+xnoremap <silent> <expr> , (!exists("g:search")) ? ((g:findforward) ? "," : ";") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'bsW')\<lt>CR>"
 	"}}}
 
 	"{{{ pasting
