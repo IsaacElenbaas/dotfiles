@@ -25,10 +25,10 @@ setopt hist_reduce_blanks
 	#}}}
 
 	#{{{ completion
-zstyle ':completion:*' completer _complete _ignored _correct
+zstyle ':completion:*' completer _files _complete _ignored _correct
 # case-insensitive matching
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
-# /h/i/do<Tab> -> /home/isaacelenbaas/Downloads
+# /h/i/dot<Tab> -> /home/isaacelenbaas/dotfiles
 zstyle ':completion:*' list-suffixes zstyle ':completion:*' expand prefix suffix
 
 autoload -Uz compinit && compinit
@@ -68,6 +68,7 @@ _printfPrepare() {
 #{{{ aliases
 alias sudo='sudo '
 alias c='clear'
+alias cp='cp -ri'
 alias CAPSLOCK='xdotool key Caps_Lock'
 alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
 alias dirsize='du -sh -- .'
@@ -76,8 +77,10 @@ alias less='less -x2'
 alias ln='ln -s'
 alias ls='ls -hl --color=auto'
 alias m='neomutt'
+alias mkdir='mkdir -p'
 alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
+alias mv='mv -i'
 alias pa='pacaur'
 alias ping='ping -c 5'
 alias pm='pacman'
@@ -256,7 +259,7 @@ _trash() {
 	BUFFER=
 }
 _delete() {
-	copy="$(_printfPrepare "${LBUFFER}${RBUFFER}")"
+	copy="$(_printfPrepare "$BUFFER")"
 	copy="${copy//\\/\\\\}"
 	copy="${copy//\"/\\\\\"}"
 	printf ']51;["call", "Tapi_yank", ["'"$copy"'"]]\a'
@@ -268,6 +271,36 @@ zle -N _delete
 bindkey '^Ud' _delete
 bindkey '^Ut' push-line
 		#}}}
+	#}}}
+
+	#{{{ prompt to expand currently typing path on enter
+_enter() {
+	checkpath=$LBUFFER
+	[[ "$RBUFFER" =~ ^([^[:space:]\\]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
+	if [[ "$checkpath" =~ ([^[:space:]\\\/]|\\\\[^\\])*\/([^[:space:]\\]|\\\\[^\\])*$ ]]; then
+		OLDBUF=$BUFFER
+		zle complete-word _files
+		# select first
+		while [[ "${LBUFFER%% }" =~ ([^[:space:]\\]|\\\\[^\\])*$ ]] && [[ ! -a "$MATCH" ]]; do
+			zle complete-word _files
+			[ "$BUFFER" = "$OLDBUF" ] && { zle accept-line; return; }
+		done
+		[[ "${LBUFFER%% }" =~ ([^[:space:]\\]|\\\\[^\\])*$ ]]
+		printf "\nzsh: do you wish to expand to $MATCH? "
+		while true; do
+			read -rs -k 1 key || { BUFFER=$OLDBUF; break; }
+			# remove garbage from arrows and such
+			read -rs -k 99 -t 0.05 key2
+			[[ "$key" == "y" || "$key" == $'\n' || "$key" == "" ]] && break
+			[ "$key" = "n" ] && { BUFFER=$OLDBUF; break; }
+			[ "$key$key1" = "" ] && { BUFFER=$OLDBUF; printf "\033[$(wc -l <<< \"$PROMPT\")A"; zle reset-prompt; return; }
+			printf "\r\033[Kzsh: do you wish to expand to $MATCH? "
+		done
+	fi
+	zle accept-line
+}
+zle -N _enter
+bindkey '^M' _enter
 	#}}}
 
 bindkey '^[[A' up-line-or-search

@@ -14,6 +14,7 @@ f() {
 export -f f
 
 alias c='clear'
+alias cp='cp -ri'
 alias CAPSLOCK='xdotool key Caps_Lock'
 alias dirsize='du -sh -- .'
 alias fff='f'
@@ -21,8 +22,10 @@ alias less='less -x2'
 alias ln='ln -s'
 alias ls='ls -hlA --color=auto'
 alias m='neomutt'
+alias mkdir='mkdir -p'
 alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
+alias mv='mv -i'
 alias pa='pacaur'
 alias ping='ping -c 5'
 alias pm='sudo pacman'

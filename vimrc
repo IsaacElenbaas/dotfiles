@@ -169,6 +169,21 @@ function Outdent(...)
 endfunction
 	"}}}
 
+	"{{{ VExpand
+function VExpand(left, right)
+	normal! gv
+	let l:col=col(".")
+	let l:line=line(".")
+	let l:swap=0
+	call feedkeys("o", "nx")
+	if (line(".") == l:line && col(".") > l:col) || line(".") > l:line
+		let l:swap=1
+		call feedkeys("o", "n")
+	endif
+	call feedkeys(a:left . "o" . a:right . ((l:swap) ? "o" : ""), "nx")
+endfunction
+	"}}}
+
 	"{{{ ScrollOnlyScreenPercent
 function ScrollOnlyScreenPercent(percent, visual)
 	let l:position=line(".")
@@ -437,7 +452,7 @@ filetype indent off
 " can't use <c-o> because of autocmd cursor fix, use <Esc>...i
 
 	"{{{ commands
-cmap w!! w !sudo tee > /dev/null %
+cnoremap w!! w !sudo tee > /dev/null %
 command D execute "w !git diff --no-index --color=always -- % - | less -R" | execute "silent! !stty sane" | redraw!
 command M silent make<bar>call feedkeys("\<lt>CR>", "nx")
 set wildcharm=<C-z>
@@ -462,24 +477,29 @@ nnoremap x "_d
 xnoremap x "_d
 nnoremap xx "_dd
 nnoremap X "_D
-nmap xX g^X
+nnoremap xX g^"_D
 nnoremap Y y$
-nmap yY g^Y
+nnoremap yY g^y$
 " may be iffy if there's weird characters, add any basic vim special ones to innermost substitute group
-vnoremap Y ""y:silent execute "!printf -- '" . substitute(substitute(substitute(substitute(substitute(getreg('"'), '\(\\\\|#\)\@=', '\\', "g"), '%', '\\%\\%', "g"), '!', '\\!', "g"), '\n', '\\n', "g"), "'", "'\\\\''", "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+vnoremap Y ""y:silent execute "!printf -- '".substitute(substitute(substitute(substitute(substitute(getreg('"'),'\(\\\\|#\)\@=','\\',"g"),'%','\\%\\%',"g"),'!','\\!',"g"),'\n','\\n',"g"),"'","'\\\\''","g")."'<bar>xsel -ib"<bar>redraw!<CR>
 " better chance of working but leaves newlines as \n
-"vnoremap Y ""y:silent execute "!printf -- '\\%s' '" . substitute(substitute(substitute(getreg('"'), "'", "'\\\\''", "g"), '\n', '\\n', "g"), '%', '\\%', "g") . "' <bar> xsel -ib" <bar> redraw!<CR>
+"vnoremap Y ""y:silent execute "!printf -- '\\%s' '".substitute(substitute(substitute(getreg('"'),"'","'\\\\''","g"),'\n','\\n',"g"),'%','\\%',"g")."'<bar>xsel -ib"<bar>redraw!<CR>
 nnoremap <silent> <Leader>/ :<c-u>noh<CR>
 nnoremap j gJ
 inoremap <bar>& <bar><bar>
+xnoremap <silent> <Space> :<c-u>if visualmode()==#"v"<bar>call VExpand("h","l")<bar>else<bar>execute "normal! gv"<bar>endif<CR>
+xnoremap <silent> <CR> :<c-u>if visualmode()==#"V"<bar>call VExpand("k0","jg$")<bar>else<bar>execute "normal! gv"<bar>endif<CR>
+xnoremap <silent> <BS> :<c-u>if visualmode()==#"v"<bar>call VExpand("l","h")<bar>else<bar>call VExpand("jg$","k0")<bar>endif<CR>
 
 	"{{{ basic movement
 map <c-Right> w
+map! <c-Right> w
 map <c-Left> b
-nnoremap <silent> <Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>/(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
-nnoremap <silent> <s-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1], getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
+map! <c-Left> b
+nnoremap <silent> <Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getpos(".")[2]-1])<CR>/(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
+nnoremap <silent> <s-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap $ g$
-map M zz
+noremap M zz
 nnoremap k <Nop>
 nnoremap l <Nop>
 nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
@@ -555,12 +575,12 @@ nnoremap tmm <Nop>
 xnoremap tmm <Nop>
 nmap tmmt t
 xmap tmmt t
-nmap <silent> tn :<c-u>call signature#mark#Goto("next", "spot", "pos")<CR>tmm
-xmap <silent> tn :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("next", "spot", "pos")<CR>tmm
+nmap <silent> tn :<c-u>call signature#mark#Goto("next","spot","pos")<CR>tmm
+xmap <silent> tn :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("next","spot","pos")<CR>tmm
 nmap tmmn tn
 xmap tmmn tn
-nmap <silent> tN :<c-u>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
-xmap <silent> tN :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("prev", "spot", "pos")<CR>tmm
+nmap <silent> tN :<c-u>call signature#mark#Goto("prev","spot","pos")<CR>tmm
+xmap <silent> tN :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("prev","spot","pos")<CR>tmm
 nmap tmmN tN
 xmap tmmN tN
 nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
@@ -576,24 +596,24 @@ xmap tmm<Up> t<Up>
 		"{{{ scrolling to screen percentage
 nnoremap tt H
 xnoremap tt H
-nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 0)<CR>
-xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10, 1)<CR>
-nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 0)<CR>
-xnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20, 1)<CR>
-nnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 0)<CR>
-xnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30, 1)<CR>
-nnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 0)<CR>
-xnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40, 1)<CR>
-nnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 0)<CR>
-xnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50, 1)<CR>
-nnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 0)<CR>
-xnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60, 1)<CR>
-nnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 0)<CR>
-xnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70, 1)<CR>
-nnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 0)<CR>
-xnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80, 1)<CR>
-nnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 0)<CR>
-xnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90, 1)<CR>
+nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10,0)<CR>
+xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10,1)<CR>
+nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20,0)<CR>
+xnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20,1)<CR>
+nnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30,0)<CR>
+xnoremap <silent> t3 :<c-u>call ScrollScreenPercent(30,1)<CR>
+nnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40,0)<CR>
+xnoremap <silent> t4 :<c-u>call ScrollScreenPercent(40,1)<CR>
+nnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50,0)<CR>
+xnoremap <silent> t5 :<c-u>call ScrollScreenPercent(50,1)<CR>
+nnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60,0)<CR>
+xnoremap <silent> t6 :<c-u>call ScrollScreenPercent(60,1)<CR>
+nnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70,0)<CR>
+xnoremap <silent> t7 :<c-u>call ScrollScreenPercent(70,1)<CR>
+nnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80,0)<CR>
+xnoremap <silent> t8 :<c-u>call ScrollScreenPercent(80,1)<CR>
+nnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90,0)<CR>
+xnoremap <silent> t9 :<c-u>call ScrollScreenPercent(90,1)<CR>
 nnoremap t0 L
 xnoremap t0 L
 		"}}}
@@ -684,15 +704,15 @@ nmap cmmc c<Up>
 
 	"{{{ centering to screen percentage
 nnoremap cc zt
-nnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10, 0)<CR>
-nnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20, 0)<CR>
-nnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30, 0)<CR>
-nnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40, 0)<CR>
-nnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50, 0)<CR>
-nnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60, 0)<CR>
-nnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70, 0)<CR>
-nnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80, 0)<CR>
-nnoremap <silent> c9 :<c-u>call ScrollOnlyScreenPercent(90, 0)<CR>
+nnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10,0)<CR>
+nnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20,0)<CR>
+nnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30,0)<CR>
+nnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40,0)<CR>
+nnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50,0)<CR>
+nnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60,0)<CR>
+nnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70,0)<CR>
+nnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80,0)<CR>
+nnoremap <silent> c9 :<c-u>call ScrollOnlyScreenPercent(90,0)<CR>
 nnoremap c0 zb
 	"}}}
 
@@ -700,24 +720,24 @@ nnoremap c0 zb
 nnoremap s<Esc> <Nop>
 nnoremap ss gg
 xnoremap ss gg
-nnoremap <silent> s1 :<c-u>call ScrollPercent(10, 0)<CR>
-xnoremap <silent> s1 :<c-u>call ScrollPercent(10, 1)<CR>
-nnoremap <silent> s2 :<c-u>call ScrollPercent(20, 0)<CR>
-xnoremap <silent> s2 :<c-u>call ScrollPercent(20, 1)<CR>
-nnoremap <silent> s3 :<c-u>call ScrollPercent(30, 0)<CR>
-xnoremap <silent> s3 :<c-u>call ScrollPercent(30, 1)<CR>
-nnoremap <silent> s4 :<c-u>call ScrollPercent(40, 0)<CR>
-xnoremap <silent> s4 :<c-u>call ScrollPercent(40, 1)<CR>
-nnoremap <silent> s5 :<c-u>call ScrollPercent(50, 0)<CR>
-xnoremap <silent> s5 :<c-u>call ScrollPercent(50, 1)<CR>
-nnoremap <silent> s6 :<c-u>call ScrollPercent(60, 0)<CR>
-xnoremap <silent> s6 :<c-u>call ScrollPercent(60, 1)<CR>
-nnoremap <silent> s7 :<c-u>call ScrollPercent(70, 0)<CR>
-xnoremap <silent> s7 :<c-u>call ScrollPercent(70, 1)<CR>
-nnoremap <silent> s8 :<c-u>call ScrollPercent(80, 0)<CR>
-xnoremap <silent> s8 :<c-u>call ScrollPercent(80, 1)<CR>
-nnoremap <silent> s9 :<c-u>call ScrollPercent(90, 0)<CR>
-xnoremap <silent> s9 :<c-u>call ScrollPercent(90, 1)<CR>
+nnoremap <silent> s1 :<c-u>call ScrollPercent(10,0)<CR>
+xnoremap <silent> s1 :<c-u>call ScrollPercent(10,1)<CR>
+nnoremap <silent> s2 :<c-u>call ScrollPercent(20,0)<CR>
+xnoremap <silent> s2 :<c-u>call ScrollPercent(20,1)<CR>
+nnoremap <silent> s3 :<c-u>call ScrollPercent(30,0)<CR>
+xnoremap <silent> s3 :<c-u>call ScrollPercent(30,1)<CR>
+nnoremap <silent> s4 :<c-u>call ScrollPercent(40,0)<CR>
+xnoremap <silent> s4 :<c-u>call ScrollPercent(40,1)<CR>
+nnoremap <silent> s5 :<c-u>call ScrollPercent(50,0)<CR>
+xnoremap <silent> s5 :<c-u>call ScrollPercent(50,1)<CR>
+nnoremap <silent> s6 :<c-u>call ScrollPercent(60,0)<CR>
+xnoremap <silent> s6 :<c-u>call ScrollPercent(60,1)<CR>
+nnoremap <silent> s7 :<c-u>call ScrollPercent(70,0)<CR>
+xnoremap <silent> s7 :<c-u>call ScrollPercent(70,1)<CR>
+nnoremap <silent> s8 :<c-u>call ScrollPercent(80,0)<CR>
+xnoremap <silent> s8 :<c-u>call ScrollPercent(80,1)<CR>
+nnoremap <silent> s9 :<c-u>call ScrollPercent(90,0)<CR>
+xnoremap <silent> s9 :<c-u>call ScrollPercent(90,1)<CR>
 nnoremap s0 G
 xnoremap s0 G
 	"}}}
@@ -820,13 +840,13 @@ function Terminal()
 		"{{{ normal mode mappings
 	" normal mode mappings can always be present as they don't need to be disabled for sc or paste (you'll be in insert and can't even get to normal in sc's case)
 	if $VIM_TERMINAL == ""
-		nnoremap r :<c-u>call Tapi_rename(0, [0])<CR>
+		nnoremap r :<c-u>call Tapi_rename(0,[0])<CR>
 	endif
 	" <BS> is for if it's not zsh
-	nnoremap <silent> dt :<c-u>call term_sendkeys(1, "\<lt>c-u>t\<lt>BS>")<CR>i
-	nnoremap <silent> dd :<c-u>call term_sendkeys(1, "\<lt>c-u>d\<lt>BS>")<CR>i
-	nnoremap <silent> xx :<c-u>call term_sendkeys(1, "\<lt>c-u>x\<lt>BS>")<CR>i
-	nnoremap <silent> p :<c-u>call setreg("", substitute(substitute(getreg(""), '\(\n\)\?[^\n]* ', '\1', "g"), '\n$', '', "g"))<CR>i<c-w>""
+	nnoremap <silent> dt :<c-u>call term_sendkeys(1,"\<lt>c-u>t\<lt>BS>")<CR>i
+	nnoremap <silent> dd :<c-u>call term_sendkeys(1,"\<lt>c-u>d\<lt>BS>")<CR>i
+	nnoremap <silent> xx :<c-u>call term_sendkeys(1,"\<lt>c-u>x\<lt>BS>")<CR>i
+	nnoremap <silent> p :<c-u>call setreg("",substitute(substitute(getreg(""),'\(\n\)\?[^\n]* ','\1',"g"),'\n$','',"g"))<CR>i<c-w>""
 		"}}}
 
 endfunction
