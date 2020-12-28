@@ -276,26 +276,28 @@ bindkey '^Ut' push-line
 	#{{{ prompt to expand currently typing path on enter
 _enter() {
 	checkpath=$LBUFFER
-	[[ "$RBUFFER" =~ ^([^[:space:]\\]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
-	if [[ "$checkpath" =~ ([^[:space:]\\\/]|\\\\[^\\])*\/([^[:space:]\\]|\\\\[^\\])*$ ]]; then
+	[[ "$RBUFFER" =~ ^([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
+	if [[ "$checkpath" =~ ([^[:space:]\/\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*\/([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]; then
+		[[ -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/^\\~/~/')) ]] && { zle accept-line; return; }
 		OLDBUF=$BUFFER
 		zle complete-word _files
-		# select first
-		while [[ "${LBUFFER%% }" =~ ([^[:space:]\\]|\\\\[^\\])*$ ]] && [[ ! -a "$MATCH" ]]; do
+		# select first if multiple matches
+		while [[ "${LBUFFER%% }" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]] && [[ ! -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/^\\~/~/')) ]]; do
 			zle complete-word _files
-			[ "$BUFFER" = "$OLDBUF" ] && { zle accept-line; return; }
+			[ "$BUFFER" = "$LASTBUF" ] && break || LASTBUF=$BUFFER
 		done
-		[[ "${LBUFFER%% }" =~ ([^[:space:]\\]|\\\\[^\\])*$ ]]
-		printf "\nzsh: do you wish to expand to $MATCH? "
-		while true; do
-			read -rs -k 1 key || { BUFFER=$OLDBUF; break; }
-			# remove garbage from arrows and such
-			read -rs -k 99 -t 0.05 key2
-			[[ "$key" == "y" || "$key" == $'\n' || "$key" == "" ]] && break
-			[ "$key" = "n" ] && { BUFFER=$OLDBUF; break; }
-			[ "$key$key1" = "" ] && { BUFFER=$OLDBUF; printf "\033[$(wc -l <<< \"$PROMPT\")A"; zle reset-prompt; return; }
-			printf "\r\033[Kzsh: do you wish to expand to $MATCH? "
-		done
+		if [ "$BUFFER" != "$OLDBUF" ]; then
+			[[ "${LBUFFER%% }" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]] && printf "\nzsh: do you wish to expand to $MATCH? "
+			while true; do
+				read -rs -k 1 key || { BUFFER=$OLDBUF; break; }
+				# remove garbage from arrows and such
+				read -rs -k 99 -t 0.05 key2
+				[[ "$key" == "y" || "$key" == $'\n' || "$key" == "" ]] && break
+				[ "$key" = "n" ] && { BUFFER=$OLDBUF; break; }
+				[ "$key$key1" = "" ] && { BUFFER=$OLDBUF; printf "\033[$(wc -l <<< \"$PROMPT\")A"; zle reset-prompt; return; }
+				printf "\r\033[Kzsh: do you wish to expand to $MATCH? "
+			done
+		fi
 	fi
 	zle accept-line
 }
