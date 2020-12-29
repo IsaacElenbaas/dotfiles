@@ -57,8 +57,6 @@ Nopaste() { printf -- ']51;["call", "Tapi_scEnd", []]\a' }
 	#{{{ printfPrepare
 _printfPrepare() {
 	1="${1//\\/\\\\\\\\}"
-	1="${1//\$/\\\\\\\\$}"
-	1="${1//\`/\\\\\\\\\`}"
 	1="${1//\%/%%%%}"
 	printf -- "$1"
 }
@@ -155,8 +153,12 @@ preexec() {
 		#{{{ PROMPT
 	printf "\033[2A\033[2K"
 	0="$(_printfPrepare $1)"
-	# middle bit is last line of final prompt with %(!.#.$) swapped for %1~
-	print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" $0"
+	(
+		0="${0//\$/\\$}"
+		0="${0//\`/\\\`}"
+		# middle bit is last line of final prompt with %(!.#.$) swapped for %1~
+		print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" ${0//\\/\\\\}"
+	)
 	# print moved us down a line
 	printf "\033[2K"
 		#}}}
@@ -183,7 +185,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ -z "$VIM_TERMINAL" ] && printf $'\ek%s\e\\' "$start" || printf ']51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\a'
+		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf ']51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\a' )
 	fi
 }
 	#}}}
@@ -287,15 +289,17 @@ _enter() {
 			[ "$BUFFER" = "$LASTBUF" ] && break || LASTBUF=$BUFFER
 		done
 		if [ "$BUFFER" != "$OLDBUF" ]; then
-			[[ "${LBUFFER%% }" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]] && printf "\nzsh: do you wish to expand to $MATCH? "
+			# save expansion
+			[[ "${LBUFFER%% }" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]
+			printf "\nzsh: expand to '$MATCH' [nye]? "
 			while true; do
 				read -rs -k 1 key || { BUFFER=$OLDBUF; break; }
 				# remove garbage from arrows and such
 				read -rs -k 99 -t 0.05 key2
 				[[ "$key" == "y" || "$key" == $'\n' || "$key" == "" ]] && break
 				[ "$key" = "n" ] && { BUFFER=$OLDBUF; break; }
-				[ "$key$key1" = "" ] && { BUFFER=$OLDBUF; printf "\033[$(wc -l <<< \"$PROMPT\")A"; zle reset-prompt; return; }
-				printf "\r\033[Kzsh: do you wish to expand to $MATCH? "
+				[ "$key" = "e" ] && { BUFFER=$OLDBUF; printf "\033[$(wc -l <<< \"$PROMPT\")A"; zle reset-prompt; return; }
+				printf "\r\033[Kzsh: expand to '$MATCH' [nye]? "
 			done
 		fi
 	fi
