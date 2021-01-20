@@ -17,9 +17,9 @@ export YSU_HARDCORE=1
 HISTFILE=${ZDOTDIR:-$HOME}/.zsh_history
 HISTSIZE=1000
 SAVEHIST=1000
-setopt sharehistory
-setopt appendhistory
-setopt hist_ignore_dups
+setopt share_history
+setopt inc_append_history
+setopt hist_ignore_all_dups
 setopt hist_ignore_space
 setopt hist_reduce_blanks
 	#}}}
@@ -316,4 +316,4 @@ bindkey '^[[B' down-line-or-search
 # auto save screen layouts
 # doesn't trigger in vim terminal, equivalent method in vimrc
 [ -z "$VIM_TERMINAL" ] && [ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" && VIM_TERMINAL=-1
-[ -n "$VIM_TERMINAL" ] && export SHELL="/usr/bin/zsh"
+export SHELL="/usr/bin/zsh"

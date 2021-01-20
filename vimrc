@@ -1,5 +1,5 @@
 "{{{ functions
-	"{{{ Word
+	"{{{ Word(forward, big, visual)
 " does w or b but stops at end/beginning of line
 function Word(forward, big, visual)
 	let l:position=winline()
@@ -31,7 +31,7 @@ function Word(forward, big, visual)
 endfunction
 	"}}}
 
-	"{{{ Home
+	"{{{ Home(visual)
 " makes home go left of whitespace only if already at 'beginning' of line
 function Home(visual)
 	let l:position=col(".")
@@ -49,7 +49,7 @@ function Home(visual)
 endfunction
 	"}}}
 
-	"{{{ End
+	"{{{ End(visual)
 " makes end go right of comment only if already at/past its start
 function End(visual)
 	if a:visual
@@ -92,7 +92,7 @@ function End(visual)
 endfunction
 	"}}}
 
-	"{{{ Search
+	"{{{ Search(visual)
 function Search(visual)
 	if a:visual
 		normal! gv
@@ -112,7 +112,7 @@ function Search(visual)
 endfunction
 	"}}}
 
-	"{{{ GUnmap
+	"{{{ GUnmap()
 function GUnmap()
 	let l:maps=execute("map g")
 	let l:nl=0
@@ -134,7 +134,7 @@ function GUnmap()
 endfunction
 	"}}}
 
-	"{{{ Find
+	"{{{ Find(forward)
 function Find(forward)
 	try
 		unlet g:search
@@ -149,7 +149,7 @@ function Find(forward)
 endfunction
 	"}}}
 
-	"{{{ In/Outdent
+	"{{{ In/Outdent(...)
 " makes 2>2j indent three lines two times
 function Indent(...)
 	if exists("a:1")
@@ -169,7 +169,7 @@ function Outdent(...)
 endfunction
 	"}}}
 
-	"{{{ VExpand
+	"{{{ VExpand(left, right)
 function VExpand(left, right)
 	normal! gv
 	let l:col=col(".")
@@ -184,7 +184,7 @@ function VExpand(left, right)
 endfunction
 	"}}}
 
-	"{{{ ScrollOnlyScreenPercent
+	"{{{ ScrollOnlyScreenPercent(percent, visual)
 function ScrollOnlyScreenPercent(percent, visual)
 	let l:position=line(".")
 	call feedkeys("H", "nx")
@@ -206,7 +206,7 @@ function ScrollOnlyScreenPercent(percent, visual)
 endfunction
 	"}}}
 
-	"{{{ ScrollScreenPercent
+	"{{{ ScrollScreenPercent(percent, visual)
 function ScrollScreenPercent(percent, visual)
 	call feedkeys("H" . a:percent*winheight("%")/100 . "j", "nx")
 	if a:visual
@@ -217,7 +217,7 @@ function ScrollScreenPercent(percent, visual)
 endfunction
 	"}}}
 
-	"{{{ ScrollPercent
+	"{{{ ScrollPercent(percent, visual)
 " scrolls to visible percentage even when there are folds
 function ScrollPercent(percent, visual)
 	call feedkeys("G", "nx")
@@ -237,7 +237,7 @@ function ScrollPercent(percent, visual)
 endfunction
 	"}}}
 
-	"{{{ ToggleFold
+	"{{{ ToggleFold()
 	" same as za but keeps cursor position on screen
 function ToggleFold()
 	let l:position=line(".")
@@ -254,7 +254,7 @@ function ToggleFold()
 endfunction
 	"}}}
 
-	"{{{ ToggleAllFolds
+	"{{{ ToggleAllFolds()
 function ToggleAllFolds()
 	let l:position=line(".")
 	call feedkeys("G", "n")
@@ -265,7 +265,7 @@ function ToggleAllFolds()
 endfunction
 	"}}}
 
-	"{{{ SelectFold
+	"{{{ SelectFold(around)
 function SelectFold(around)
 	let l:position=line(".")
 	if foldclosed(l:position) == -1
@@ -385,6 +385,8 @@ nnoremap <silent> mm 0vg_di\`<c-r>"\`<Esc>
 "}}}
 
 "{{{ settings
+" ensure consistent system calls
+set shell=/usr/bin/bash
 " screw the python styleguide
 let g:python_recommended_style=0
 " use 256 color
@@ -493,9 +495,9 @@ xnoremap <silent> <BS> :<c-u>if visualmode()==#"v"<bar>call VExpand("l","h")<bar
 
 	"{{{ basic movement
 map <c-Right> w
-map! <c-Right> w
+inoremap <silent> <c-Right> <Esc>:<c-u>call feedkeys("w", "mx")<bar>startinsert<CR>
 map <c-Left> b
-map! <c-Left> b
+inoremap <silent> <c-Left> <Esc>:<c-u>call feedkeys("b", "mx")<bar>startinsert<CR>
 nnoremap <silent> <Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getpos(".")[2]-1])<CR>/(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap <silent> <s-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap $ g$
@@ -503,17 +505,17 @@ noremap M zz
 nnoremap k <Nop>
 nnoremap l <Nop>
 nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
-inoremap <silent> <Home> <Esc>:<c-u>call Home(0) <bar> startinsert<CR>
+inoremap <silent> <Home> <Esc>:<c-u>call Home(0)<bar>startinsert<CR>
 xnoremap <silent> <Home> :<c-u>call Home(1)<CR>
 nnoremap <silent> <End> :<c-u>call End(0)<CR>
-inoremap <silent> <End> <Esc>:<c-u>call End(0) <bar> startinsert<CR>
+inoremap <silent> <End> <Esc>:<c-u>call End(0)<bar>startinsert<CR>
 xnoremap <silent> <End> :<c-u>call End(1)<CR>
 " soft lines
 nnoremap <Down> gj
-nnoremap <Up> gk
 xnoremap <Down> gj
-xnoremap <Up> gk
 inoremap <Down> <Esc>gji
+nnoremap <Up> gk
+xnoremap <Up> gk
 inoremap <Up> <Esc>gki
 " Search
 nnoremap <silent> f :<c-u>call Search(0)<CR>/
@@ -818,15 +820,19 @@ augroup END
 "}}}
 
 "{{{ terminal
-	"{{{ Terminal
+if $STY != ""
+	let $SHELL="/usr/bin/zsh"
+endif
+
+	"{{{ Terminal()
 function Terminal()
-	if $VIM_TERMINAL == "" && $STY != ""
+	" doesn't trigger outside of vim terminal due to VIM_TERMINAL=-1 in zshrc
+	" time check is for sessions started with "screen vim"
+	if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1
 		call lightline#disable()
 		set laststatus=0
 		set noshowcmd
 		set noruler
-		set shell=/usr/bin/bash
-		" doesn't trigger outside of vim terminal due to VIM_TERMAL=-1 in zshrc
 		if str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
 			" auto save screen layouts and fix size
 			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset" "source ~/.screenrc"')
@@ -852,7 +858,8 @@ function Terminal()
 endfunction
 "}}}
 
-	"{{{ TerminalEnd
+	"{{{ TerminalEnd()
+try
 function TerminalEnd()
 	try
 		nunmap r
@@ -865,7 +872,10 @@ function TerminalEnd()
 		nunmap p
 	catch /^.*E31:.*/
 	endtry
+	source $MYVIMRC
 endfunction
+catch /^.*E127:.*/
+endtry
 	"}}}
 
 augroup Terminal
@@ -873,10 +883,11 @@ augroup Terminal
 	autocmd TerminalWinOpen * call Terminal()
 	autocmd VimEnter * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
 	autocmd VimLeave * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
-	autocmd BufDelete * call TerminalEnd()
+	" :term is used for quick commands, otherwise there will never be more than one buffer
+	autocmd BufDelete * if len(getbufinfo({'buflisted':1})) != "0" | call TerminalEnd() | endif
 augroup END
 
-"{{{ Tapi_rename
+"{{{ Tapi_rename()
 " automatically or manually changes title in screen
 function Tapi_rename(bufnum, arglist)
 	if $STY
@@ -904,7 +915,7 @@ function Tapi_rename(bufnum, arglist)
 endfunction
 "}}}
 
-	"{{{ Tapi_mappings
+	"{{{ Tapi_mappings()
 function Tapi_mappings()
 		"{{{ misc.
 tnoremap <bar>& <bar><bar>
@@ -965,78 +976,42 @@ tmap {) {}
 endfunc
 	"}}}
 
-	"{{{ Tapi_sc
+	"{{{ Tapi_sc()
 " disable outer binds on sc or in vim
 function Tapi_sc(bufnum, arglist)
 	set termwinsize=
 	autocmd! TerminalResize
 	try
-		"{{{ mappings
-			"{{{ misc.
-		tunmap <bar>&
-			"}}}
-
-			"{{{ enclosing characters
-				"{{{ parentheses
-		tunmap ()
-		tunmap ().
-		tunmap (),
-		tunmap ()<Space>
-		tunmap ()<CR>
-				"}}}
-
-				"{{{ brackets
-		tunmap []
-		tunmap [],
-		tunmap []<Space>
-		tunmap []<CR>
-		tunmap [)
-				"}}}
-
-				"{{{ carats
-		tunmap <>
-		tunmap <><Space>
-		tunmap <><CR>
-				"}}}
-
-				"{{{ double quotes
-		tunmap ""
-		tunmap "".
-		tunmap "",
-		tunmap ""<Space>
-		tunmap ""<CR>
-		tunmap "'
-		tunmap '"
-				"}}}
-
-				"{{{ single quotes
-		tunmap ''
-		tunmap ''.
-		tunmap '',
-		tunmap ''<Space>
-		tunmap ''<CR>
-				"}}}
-
-				"{{{ backticks
-		tunmap ``
-		tunmap ``<Space>
-		tunmap ``<CR>
-				"}}}
-
-				"{{{ curly brackets
-		tunmap {}
-		tunmap {)
-				"}}}
-			"}}}
+		"{{{ removing all terminal mappings
+		let l:maps="\n" . substitute(substitute(execute("tmap"), '\nt\s*', '\n', "g"), '^\n*', '', "")
+		let l:nl=0
+		while 1
+			let l:sp=stridx(l:maps, " ", l:nl)
+			try
+				execute "tunmap " . substitute(strcharpart(l:maps, l:nl+1, l:sp-l:nl-1), '|', '<bar>', "g")
+			catch /^.*E31:.*/
+			endtry
+			let l:nl=stridx(l:maps, "\n", l:sp)
+			if l:nl == -1
+				break
+			endif
+		endwhile
 		"}}}
 	catch /^.*E31:.*/
 	endtry
+
+		"{{{ broken keys/key combos
+	" for some reason mapping to <Home> doesn't work but the escape sequence does
+	tnoremap <kHome> [1~
+	tnoremap <kEnd> [4~
+		"}}}
+
 	" setting termwinkey doesn't make c-w pass through
 	tnoremap <expr> <c-w> (term_sendkeys(1, "\<c-w>"))?"":""
 endfunc
 	"}}}
 
-	"{{{ Tapi_scEnd
+	"{{{ Tapi_scEnd()
 " restore binds if aborted sc or exited vim
 function Tapi_scEnd(bufnum, arglist)
 	execute "set termwinsize=0x" . (winwidth("%")-6)
@@ -1048,7 +1023,7 @@ function Tapi_scEnd(bufnum, arglist)
 endfunc
 	"}}}
 
-	"{{{ Tapi_yank
+	"{{{ Tapi_yank()
 function Tapi_yank(bufnum, arglist)
 	let @@=a:arglist[0]
 endfunc

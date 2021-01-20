@@ -35,17 +35,17 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 # sleep fixes incorrect position when herbstluft has to rearrange windows
 #hc keybind $Mod-Return spawn xterm -e "sleep 0.05; screen"
 #hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; zsh'"
-#hc keybind $Mod-Shift-v spawn xterm -e "screen vim"
-#hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; screen \\mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
 		#}}}
 
 		#{{{ vim terminal
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons). Whatever, only an extra ~5MB of RAM wasted per additional screen item.
 hc keybind $Mod-Return spawn xterm -e "screen vim '+terminal ++close ++curwin ++norestore zsh'"
-hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"export SHELL=\\\"/usr/bin/zsh\\\"; f; zsh\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
-hc keybind $Mod-Shift-v spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"export SHELL=\\\"/usr/bin/zsh\\\"; vim\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
-hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; screen vim '+terminal ++close ++curwin ++norestore mocp -T /home/isaacelenbaas/dotfiles/mocp-theme'"
+hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"f; exec zsh\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
 		#}}}
+
+# this won't save layout but prevents breaking due to resize
+hc keybind $Mod-Shift-v spawn xterm -e "screen vim"
+hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; exec mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
 	#}}}
 
 	#{{{ navigation
