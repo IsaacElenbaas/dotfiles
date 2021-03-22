@@ -104,9 +104,9 @@ function Search(visual)
 		" lastsearch is to prevent this from triggering if esc was pressed
 		" can't use n or x for feedkeys :noh
 		if a:visual
-			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | silent call feedkeys(":\<c-u>noh\<CR>") | silent call feedkeys("gv", "n") | endif | autocmd! Search
+			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | let @/=histget("/", -1) | silent call feedkeys(":\<c-u>noh\<bar>echo\<CR>") | silent call feedkeys("gv", "n") | endif | autocmd! Search
 		else
-			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | silent call feedkeys(":\<c-u>noh\<CR>", "") | endif | autocmd! Search
+			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | let @/=histget("/", -1) | silent call feedkeys(":\<c-u>noh\<bar>echo\<CR>", "") | endif | autocmd! Search
 		endif
 	augroup END
 endfunction
@@ -420,9 +420,11 @@ set ttyfast
 "nnoremap <ScrollWheelDown> u
 "nnoremap <ScrollWheelUp> <c-r>
 
-set undofile
-silent call mkdir($HOME . "/.vim/undo", "p")
-set undodir=$HOME/.vim/undo
+if !exists("g:resource")
+	set undofile
+	silent call mkdir($HOME . "/.vim/undo", "p")
+	set undodir=$HOME/.vim/undo
+endif
 
 	"{{{ searching
 " highlight all matches when searching
@@ -473,13 +475,18 @@ map! <kEnd> <End>
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
 nnoremap ; .
+inoremap <expr> <BS> (search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>Right>\<lt>BS>\<lt>BS>" : "\<lt>BS>"
 nnoremap dD g^D
 nnoremap cC g^C
 nnoremap x "_d
 xnoremap x "_d
 nnoremap xx "_dd
 nnoremap X "_D
+xnoremap X "_D
 nnoremap xX g^"_D
+xnoremap R <Nop>
+nnoremap S <Nop>
+xnoremap S <Nop>
 nnoremap Y y$
 nnoremap yY g^y$
 " may be iffy if there's weird characters, add any basic vim special ones to innermost substitute group
@@ -501,7 +508,10 @@ inoremap <silent> <c-Left> <Esc>:<c-u>call feedkeys("b", "mx")<bar>startinsert<C
 nnoremap <silent> <Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getpos(".")[2]-1])<CR>/(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap <silent> <s-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getpos(".")[2]-1])<CR>?(.\{-})\<bar><.\{-}>\<bar>\[.\{-}]\<bar>{.\{-}}\<bar>".\{-}"\<bar>'.\{-}'<CR><Right>:let @/=g:temp<CR>
 nnoremap $ g$
-noremap M zz
+nnoremap M zz
+xnoremap M zz
+nnoremap <silent> <expr> zz (v:count == 0) ? "" : ":<c-u>" . v:count . "\<lt>CR>"
+onoremap <silent> <expr> zz (v:count == 0) ? "" : ":<c-u>" . v:count . "\<lt>CR>"
 nnoremap k <Nop>
 nnoremap l <Nop>
 nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
@@ -562,21 +572,27 @@ onoremap <silent> af :<c-u>call SelectFold(1)<CR>
 	"}}}
 
 	"{{{ travelling
-nnoremap tm '
-xnoremap tm '
-" back/forward in jump history
-nnoremap tb <c-o>
-xnoremap tb <c-o>
-nnoremap tf <c-i>
-xnoremap tf <c-i>
-nnoremap tv gv
-xnoremap tv gv
-
-		"{{{ scrolling
 nnoremap tmm <Nop>
 xnoremap tmm <Nop>
 nmap tmmt t
 xmap tmmt t
+
+nnoremap tm '
+xnoremap tm '
+" back/forward in jump history
+nmap tb <c-o>tmm
+xmap tb <c-o>tmm
+nmap tmmb tb
+xmap tmmb tb
+nmap tf <c-i>tmm
+xmap tf <c-i>tmm
+nmap tmmf tf
+xmap tmmf tf
+nnoremap tv gv
+xnoremap tv gv
+xnoremap v gv
+
+		"{{{ scrolling
 nmap <silent> tn :<c-u>call signature#mark#Goto("next","spot","pos")<CR>tmm
 xmap <silent> tn :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("next","spot","pos")<CR>tmm
 nmap tmmn tn
@@ -719,7 +735,8 @@ nnoremap c0 zb
 	"}}}
 
 	"{{{ scrolling to document percentage (visible lines)
-nnoremap s<Esc> <Nop>
+nnoremap s <Nop>
+xnoremap s <Nop>
 nnoremap ss gg
 xnoremap ss gg
 nnoremap <silent> s1 :<c-u>call ScrollPercent(10,0)<CR>
@@ -799,7 +816,7 @@ call matchadd("BadWhitespace", '[^^\t]\zs\t\+')
 " whitespace at the end of lines
 call matchadd("BadWhitespace", '\s\+$')
 " if accidentally sent two spaces
-call matchadd("BadWhitespace", '\S\zs\s\{2\}\ze\S')
+call matchadd("BadWhitespace", '\%(\s\{2\}.*\n\=.*\)\@<!\S\zs\s\{2\}\ze\S\%(.*\n\=.*\s\{2\}\)\@!')
 	"}}}
 
 " soft wrapping
@@ -836,8 +853,6 @@ function Terminal()
 		if str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
 			" auto save screen layouts and fix size
 			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset" "source ~/.screenrc"')
-			" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
-			suspend
 		endif
 	endif
 	" sets up terminal mode mappings
@@ -873,6 +888,7 @@ function TerminalEnd()
 	catch /^.*E31:.*/
 	endtry
 	source $MYVIMRC
+	call lightline#highlight()
 endfunction
 catch /^.*E127:.*/
 endtry
@@ -881,9 +897,11 @@ endtry
 augroup Terminal
 	autocmd!
 	autocmd TerminalWinOpen * call Terminal()
+	" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
+	" I've no idea whether waiting for TermResponse actually fixes the weird printing problems or just fires late enough to allow herbstluft resize to finish, but it works
+	autocmd TermResponse * if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1 | suspend | endif
 	autocmd VimEnter * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
 	autocmd VimLeave * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
-	" :term is used for quick commands, otherwise there will never be more than one buffer
 	autocmd BufDelete * if len(getbufinfo({'buflisted':1})) != "0" | call TerminalEnd() | endif
 augroup END
 
@@ -918,6 +936,7 @@ endfunction
 	"{{{ Tapi_mappings()
 function Tapi_mappings()
 		"{{{ misc.
+tnoremap <silent> <BS> <c-w>N:<c-u>call feedkeys("i" . ((search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>Right>\<lt>BS>\<lt>BS>" : "\<lt>BS>"), "nx")<CR>
 tnoremap <bar>& <bar><bar>
 		"}}}
 
@@ -1031,9 +1050,11 @@ endfunc
 
 	"{{{ broken keys/key combos
 " for some reason mapping to <Home> doesn't work but the escape sequence does
-tnoremap <kHome> [1~
-tnoremap <kEnd> [4~
+tnoremap <kHome> OH
+tnoremap <kEnd> OF
 	"}}}
 
 tnoremap <c-w> <c-w>N
 "}}}
+
+let g:resource=1

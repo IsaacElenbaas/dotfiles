@@ -1,3 +1,4 @@
+autodetach off
 # some have issues for no reason (eg. ^[O) so find another thing to put it on
 # ^[^A will not work for any letters, so sadly can't double possible keys
 # some just don't work on certain keys, eg. ^[Q can be on screen but not resize -h -12

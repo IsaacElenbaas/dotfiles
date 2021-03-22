@@ -173,7 +173,7 @@ preexec() {
 
 		#{{{ undistract-me
 	case "$start" in
-		"bash" | "sc" | "v" | "vim" | "f" | "fff" | "mocp" | "mutt" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
+		"bash" | "sc" | "v" | "vim" | "f" | "fff" | "mocp" | "m" | "mutt" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;
@@ -193,7 +193,7 @@ preexec() {
 	#{{{ precmd
 precmd() {
 	# undistract-me
-	((starttime > 0 && SECONDS-starttime >= 10)) &&
+	((starttime > 0 && SECONDS-starttime > 10)) &&
 		(notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
 		printf "$((SECONDS-starttime))s\n"
 	tput cnorm # vim can't handle guis run in it run in a screen lol https://groups.google.com/forum/#!topic/vim_dev/HhczoxAdcWE
@@ -232,7 +232,9 @@ zshaddhistory() {
 KEYTIMEOUT=99999
 
 	#{{{ broken keys/key combos
+bindkey '^[OH' beginning-of-line
 bindkey '^[[1~' beginning-of-line
+bindkey '^[OF' end-of-line
 bindkey '^[[4~' end-of-line
 bindkey '^[[1;5D' backward-word
 bindkey '^[[1;5C' forward-word

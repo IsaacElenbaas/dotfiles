@@ -3,6 +3,8 @@
 #shell "/usr/bin/zsh"
 shell "/home/isaacelenbaas/dotfiles/bin/shell"
 shelltitle "-----"
+# undoes off in screenrcunbind, it's there to cause outer screen to exit and inner to then autodetach
+autodetach on
 # ew
 vbell off
 startup_message off
