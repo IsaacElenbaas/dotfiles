@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name				notes
+// @name        notes
 // @description Render markdown and math for viewing notes.
-// @match				file:///*.md
-// @require			https://cdn.jsdelivr.net/npm/showdown
-// @grant				none
+// @match       file:///*.md
+// @require     https://cdn.jsdelivr.net/npm/showdown
+// @grant       none
 // ==/UserScript==
 
 console.log("Notes Script Loaded");

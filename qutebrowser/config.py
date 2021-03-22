@@ -1,11 +1,12 @@
 #{{{ imports+functions
-#{{{ imports
+    #{{{ imports
 import re
 from qutebrowser.api import cmdutils
 from qutebrowser.api import interceptor
-#}}}
+from qutebrowser.utils import message
+    #}}}
 
-#{{{ back_or_close
+    #{{{ back_or_close
 try:
     @cmdutils.register(instance='command-dispatcher', scope='window')
     @cmdutils.argument('count', value=cmdutils.Value.count)
@@ -13,9 +14,9 @@ try:
         try:self.back(count=count)
         except cmdutils.CommandError:self.tab_close()
 except ValueError:pass
-#}}}
+    #}}}
 
-#{{{ filter_yt
+    #{{{ filter_yt
 def filter_yt(info: interceptor.Request):
     url = info.request_url
     if (url.host() == 'www.youtube.com' and
@@ -23,7 +24,24 @@ def filter_yt(info: interceptor.Request):
         '&adformat=' in url.query()):
         info.block()
 interceptor.register(filter_yt)
-#}}}
+    #}}}
+
+    #{{{ zoom_in/out_all
+try:
+    @cmdutils.register(instance='command-dispatcher', scope='window')
+    def zoom_in_all(self):
+        lastZoom = int(c.zoom.default[:-1])
+        c.zoom.default = c.zoom.levels[min(c.zoom.levels.index(c.zoom.default)+1, len(c.zoom.levels)-1)]
+        c.fonts.default_size = str(float(c.fonts.default_size[:-2])/lastZoom*int(c.zoom.default[:-1])) + c.fonts.default_size[-2:]
+        message.info(c.zoom.default, replace=True)
+    @cmdutils.register(instance='command-dispatcher', scope='window')
+    def zoom_out_all(self):
+        lastZoom = int(c.zoom.default[:-1])
+        c.zoom.default = c.zoom.levels[max(c.zoom.levels.index(c.zoom.default)-1, 0)]
+        c.fonts.default_size = str(float(c.fonts.default_size[:-2])/lastZoom*int(c.zoom.default[:-1])) + c.fonts.default_size[-2:]
+        message.info(c.zoom.default, replace=True)
+except ValueError:pass
+    #}}}
 #}}}
 
 #{{{ settings
@@ -39,11 +57,13 @@ c.hints.uppercase = True
 c.scrolling.smooth = True
 c.session.default_name = 'backup'
 c.tabs.new_position.unrelated = 'next'
+c.tabs.select_on_remove = 'last-used'
 c.url.default_page = 'data:text/html,%3Chtml%20contenteditable%3E%3Cstyle%3Ebody%7Bbackground-color:rgb(35,40,49);color:rgb(229,233,240);font-size:15px;%7D:empty%7Bcaret-color:transparent;%7D%3C/style%3E%3Cscript%3Ewindow.onload=function()%7Bdocument.body.focus();%7D%3C/script%3E'
 c.url.searchengines['r'] = 'https://www.reddit.com/r/{}'
 #}}}
 
 #{{{ permanent settings
+config.load_autoconfig(False)
 try:
     c.completion.open_categories.remove('searchengines')
 except ValueError:pass
@@ -51,7 +71,8 @@ c.completion.timestamp_format = '%Y-%m-%d'
 c.confirm_quit = ['downloads']
 c.content.autoplay = False
 c.content.fullscreen.window = True
-c.content.host_blocking.enabled = False
+c.content.blocking.enabled = True
+c.content.blocking.method = 'adblock'
 c.content.javascript.can_access_clipboard = True
 c.content.notifications = False
 c.content.pdfjs = True
@@ -70,8 +91,8 @@ config.set('content.javascript.enabled', True, 'qute://*/*')
 
 #{{{ aliases
 c.aliases['desmos']       = 'spawn --userscript smart-open file:///home/isaacelenbaas/Projects/Desmos/index.html'
-c.aliases['mpv']          = 'spawn --detach mpv {url}'
-c.aliases['passthrough']  = 'enter-mode passthrough'
+c.aliases['mpv']          = 'spawn --detach mpv {url} --title=noMin --force-window=immediate'
+c.aliases['passthrough']  = 'mode-enter passthrough'
 c.aliases['q']            = 'session-save --only last ;; close'
 c.aliases['q!']           = 'close'
 c.aliases['session-only'] = 'session-save --only'
@@ -84,14 +105,14 @@ c.bindings.default = {}
 
     #{{{ caret
 c.bindings.commands['caret'] = {
-    '<Escape>': 'leave-mode',
+    '<Escape>': 'mode-leave',
 }
     #}}}
 
     #{{{ command
 c.bindings.commands['command'] = {
     '<Return>'   : 'command-accept',
-    '<Escape>'   : 'leave-mode ;; search',
+    '<Escape>'   : 'mode-leave ;; search',
     '<Down>'     : 'completion-item-focus --history next',
     '<Up>'       : 'completion-item-focus --history prev',
     '<Tab>'      : 'search-next ;; completion-item-focus next-category',
@@ -102,12 +123,12 @@ c.bindings.commands['command'] = {
     #{{{ hint
 c.bindings.commands['hint'] = {
     '<Return>': 'follow-hint',
-    '<Escape>': 'leave-mode',
-    'f'       : 'set --temp hints.chars gcldhsv ;; leave-mode ;; hint noinputs',
+    '<Escape>': 'mode-leave',
+    'f'       : 'set --temp hints.chars gcldhsv ;; mode-leave ;; hint noinputs',
     'i'       : 'hint inputs',
-    'm'       : 'hint links spawn --detach mpv {hint-url} --pause',
-    'nm'      : 'hint links spawn --detach mpv {hint-url} --title=noMin',
-    'rm'      : 'hint --rapid links spawn --detach mpv {hint-url} --pause',
+    'm'       : 'hint links spawn --detach mpv {hint-url} --pause --force-window=immediate',
+    'nm'      : 'hint links spawn --detach mpv {hint-url} --title=noMin --force-window=immediate',
+    'rm'      : 'hint --rapid links spawn --detach mpv {hint-url} --pause --force-window=immediate',
     'rt'      : 'hint --rapid all tab-bg',
     't'       : 'hint noinputs tab-bg',
     'y'       : 'hint links yank',
@@ -116,28 +137,30 @@ c.bindings.commands['hint'] = {
 
     #{{{ insert
 c.bindings.commands['insert'] = {
-    '<Escape>': 'leave-mode',
+    '<Escape>': 'mode-leave',
 }
     #}}}
 
     #{{{ normal
 c.bindings.commands['normal'] = {
-    '<Return>'      : 'follow-selected',
+    '<Return>'      : 'selection-follow',
     '<Down>'        : 'scroll down',
     '<Up>'          : 'scroll up',
 
     '+'             : 'zoom-in',
     '-'             : 'zoom-out',
+    '<Ctrl-Shift-+>': 'zoom-in-all',
+    '<Ctrl-->'      : 'zoom-out-all',
     '/'             : 'set-cmd-text /',
     ':'             : 'set-cmd-text :',
-    'm'             : 'enter-mode set_mark',
-    'tm'            : 'enter-mode jump_mark',
+    'm'             : 'mode-enter set_mark',
+    'tm'            : 'mode-enter jump_mark',
     '<Shift-Q>'     : 'set-cmd-text :',
     '<Ctrl-n>'      : 'open -w',
     '<Ctrl-Shift-N>': 'open -p',
     '<Ctrl-c>'      : 'fake-key <Ctrl-c>',
 
-    'i'             : 'enter-mode insert',
+    'i'             : 'mode-enter insert',
     'I'             : 'hint inputs',
     'o'             : 'set-cmd-text -s :open',
     'O'             : 'set-cmd-text -s :open -t',
@@ -161,7 +184,7 @@ c.bindings.commands['normal'] = {
     'yt'            : 'yank title',
     'yy'            : 'yank',
 
-    #{{{ scroll to percentage
+        #{{{ scroll to percentage
     'ss'            : 'scroll-to-perc 0',
     's1'            : 'scroll-to-perc 10',
     's2'            : 'scroll-to-perc 20',
@@ -173,7 +196,7 @@ c.bindings.commands['normal'] = {
     's8'            : 'scroll-to-perc 80',
     's9'            : 'scroll-to-perc 90',
     's0'            : 'scroll-to-perc',
-    #}}}
+        #}}}
 
     'yn'            : 'click-element id ytp-next-button',
     'yp'            : 'click-element id ytp-prev-button',
@@ -183,14 +206,14 @@ c.bindings.commands['normal'] = {
 
     #{{{ passthrough
 c.bindings.commands['passthrough'] = {
-    '<Ctrl-Escape>': 'leave-mode',
+    '<Ctrl-Escape>': 'mode-leave',
 }
     #}}}
 
     #{{{ prompt
 c.bindings.commands['prompt'] = {
     '<Return>': 'prompt-accept',
-    '<Escape>': 'leave-mode',
+    '<Escape>': 'mode-leave',
     '<Down>'  : 'prompt-item-focus next',
     '<Up>'    : 'prompt-item-focus prev',
 }
@@ -198,14 +221,14 @@ c.bindings.commands['prompt'] = {
 
     #{{{ register
 c.bindings.commands['register'] = {
-    '<Escape>': 'leave-mode',
+    '<Escape>': 'mode-leave',
 }
     #}}}
 
     #{{{ yesno
 c.bindings.commands['yesno'] = {
     '<Return>': 'prompt-accept',
-    '<Escape>': 'leave-mode',
+    '<Escape>': 'mode-leave',
     'n'       : 'prompt-accept no',
     'y'       : 'prompt-accept yes',
 }
@@ -213,7 +236,7 @@ c.bindings.commands['yesno'] = {
 #}}}
 
 #{{{ theming
-c.colors.webpage.prefers_color_scheme_dark = True
+c.colors.webpage.preferred_color_scheme = "dark"
 c.keyhint.radius = 0
 c.prompt.radius = 0
 
