@@ -64,20 +64,19 @@ function End(visual)
 		let [cnum, ccol]=searchpos('\s*\V' . substitute(&commentstring, '%s', '\\m.*\\V', "") . '\m$', "n")
 	endif
 	call cursor(0, l:oldcol)
+	call feedkeys((a:visual) ? "$\<Left>" : "g$", "nx")
 	" no comment on line
 	if l:cnum != l:oldnum
-		call feedkeys("g$", "nx")
 		if col(".") == l:oldcol
-			call feedkeys("$g$", "n")
+			call feedkeys((a:visual) ? "$\<Left>" : "$g$", "n")
 		endif
 	" comment on line
 	else
-		call feedkeys("g$", "nx")
 		" at/past comment start
 		if l:ccol <= l:oldcol
 			" soft wrapped line
 			if col(".") == l:oldcol
-				call feedkeys("$g$", "nx")
+				call feedkeys((a:visual) ? "$\<Left>" : "$g$", "nx")
 			endif
 			if col(".") == l:oldcol
 				call cursor(0, l:ccol)
@@ -87,6 +86,10 @@ function End(visual)
 			" comment starts before end of soft wrapped line or already at end of soft wrapped
 			call cursor(0, l:ccol)
 		endif
+	endif
+	if a:visual
+		" fix for visual-block, $ is left one so never a problem
+		call feedkeys("\<Right>\<Left>", "n")
 	endif
 	call feedkeys("", "x")
 endfunction
@@ -282,6 +285,34 @@ function SelectFold(around)
 	call feedkeys("", "x")
 endfunction
 	"}}}
+
+	"{{{ SelectMath(around)
+function SelectMath(around)
+	let l:position=line(".")
+	" search forward
+	if search('^\%([^`]\|\%(\\\)\@<!\`\)\{-}\%(\\\`\%([^`]\|\%(\\\)\@<!\`\)\{-}\\\`\%([^`]\|\%(\\\)\@<!\`\)\{-}\)\{-}\%([^`]\|\%(\\\)\@<!\`\)\{-}\%#.\%(\\\`\)\@<!', "bcn", line(".")) != 0
+		echomsg "1"
+		if search('\\\`.\{-}\\\`', "c", line(".")) != 0
+			" <Right><Left> is a fix for visual-block
+			call feedkeys((a:around) ? "\<Right>\<Left>vo\<Right>" : "\<Right>\<Right>vo", "nx")
+			call search((a:around) ? '\\\`' : '\ze.\\\`', "e")
+		else
+			call feedkeys("gv", "n")
+		endif
+	" currently past odd number of \`s
+	else
+		echomsg "2"
+		if search('\\\`.\{-}\\\`', "bc", line(".")) != 0
+			" <Right><Left> is a fix for visual-block
+			call feedkeys((a:around) ? "\<Right>\<Left>vo\<Right>" : "\<Right>\<Right>vo", "nx")
+			call search((a:around) ? '\\\`' : '\ze.\\\`', "e")
+		else
+			call feedkeys("gv", "n")
+		endif
+	endif
+	call feedkeys("", "x")
+endfunction
+	"}}}
 "}}}
 
 "{{{ plugins
@@ -440,7 +471,7 @@ set nowrapscan
 set copyindent
 " hard/soft tab display widths
 set tabstop=2
-set softtabstop=2
+set softtabstop=-1
 " automatic indentation total width, doesn't affect characters
 set shiftwidth=2
 " stupid, vim-sensible enables it
@@ -475,14 +506,16 @@ map! <kEnd> <End>
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
 nnoremap ; .
-inoremap <expr> <BS> (search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>Right>\<lt>BS>\<lt>BS>" : "\<lt>BS>"
+inoremap <expr> <BS> (search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>c-o>d2\<lt>Left>" : "\<lt>BS>"
+nnoremap v <c-v>
+nnoremap <c-v> v
 nnoremap dD g^D
 nnoremap cC g^C
 nnoremap x "_d
 xnoremap x "_d
 nnoremap xx "_dd
 nnoremap X "_D
-xnoremap X "_D
+xnoremap X $"_d
 nnoremap xX g^"_D
 xnoremap R <Nop>
 nnoremap S <Nop>
@@ -490,7 +523,7 @@ xnoremap S <Nop>
 nnoremap Y y$
 nnoremap yY g^y$
 " may be iffy if there's weird characters, add any basic vim special ones to innermost substitute group
-vnoremap Y ""y:silent execute "!printf -- '".substitute(substitute(substitute(substitute(substitute(getreg('"'),'\(\\\\|#\)\@=','\\',"g"),'%','\\%\\%',"g"),'!','\\!',"g"),'\n','\\n',"g"),"'","'\\\\''","g")."'<bar>xsel -ib"<bar>redraw!<CR>
+xnoremap Y ""y:silent execute "!printf -- '".substitute(substitute(substitute(substitute(substitute(getreg('"'),'\%(\\\\|#\)\@=','\\',"g"),'%','\\%\\%',"g"),'!','\\!',"g"),'\n','\\n',"g"),"'","'\\\\''","g")."'<bar>xsel -ib"<bar>redraw!<CR>
 " better chance of working but leaves newlines as \n
 "vnoremap Y ""y:silent execute "!printf -- '\\%s' '".substitute(substitute(substitute(getreg('"'),"'","'\\\\''","g"),'\n','\\n',"g"),'%','\\%',"g")."'<bar>xsel -ib"<bar>redraw!<CR>
 nnoremap <silent> <Leader>/ :<c-u>noh<CR>
@@ -564,10 +597,18 @@ nnoremap <silent> << :<c-u>execute "let temp=" . v:count1<CR>:call Outdent()<CR>
 		"{{{ folds
 nnoremap <silent> <Space> :<c-u>call ToggleFold()<CR>
 nnoremap <silent> z<Space> :<c-u>call ToggleAllFolds()<CR>
+" selectors below
+		"}}}
+
+		"{{{ selectors
 xnoremap <silent> if :<c-u>call SelectFold(0)<CR>
 onoremap <silent> if :<c-u>call SelectFold(0)<CR>
 xnoremap <silent> af :<c-u>call SelectFold(1)<CR>
 onoremap <silent> af :<c-u>call SelectFold(1)<CR>
+xnoremap <silent> im :<c-u>call SelectMath(0)<CR>
+onoremap <silent> im :<c-u>call SelectMath(0)<CR>
+xnoremap <silent> am :<c-u>call SelectMath(1)<CR>
+onoremap <silent> am :<c-u>call SelectMath(1)<CR>
 		"}}}
 	"}}}
 
@@ -867,7 +908,7 @@ function Terminal()
 	nnoremap <silent> dt :<c-u>call term_sendkeys(1,"\<lt>c-u>t\<lt>BS>")<CR>i
 	nnoremap <silent> dd :<c-u>call term_sendkeys(1,"\<lt>c-u>d\<lt>BS>")<CR>i
 	nnoremap <silent> xx :<c-u>call term_sendkeys(1,"\<lt>c-u>x\<lt>BS>")<CR>i
-	nnoremap <silent> p :<c-u>call setreg("",substitute(substitute(getreg(""),'\(\n\)\?[^\n]* ','\1',"g"),'\n$','',"g"))<CR>i<c-w>""
+	nnoremap <silent> p :<c-u>call setreg("",substitute(substitute(getreg(""),'\%(\n\)\?[^\n]* ','\1',"g"),'\n$','',"g"))<CR>i<c-w>""
 		"}}}
 
 endfunction
