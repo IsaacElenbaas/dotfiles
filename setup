@@ -10,6 +10,9 @@ ln -s /home/isaacelenbaas/dotfiles/qutebrowser/greasemonkey /home/isaacelenbaas/
 ln -s /home/isaacelenbaas/dotfiles/qutebrowser/config.py /home/isaacelenbaas/.config/qutebrowser/
 mkdir -p /home/isaacelenbaas/.local/share/qutebrowser
 ln -s /home/isaacelenbaas/dotfiles/qutebrowser/userscripts /home/isaacelenbaas/.local/share/qutebrowser/
+mkdir -p /home/isaacelenbaas/.config/mpv
+ln -s /home/isaacelenbaas/dotfiles/mpv.conf /home/isaacelenbaas/.config/mpv/
+ln -s /home/isaacelenbaas/dotfiles/mpvbinds.conf /home/isaacelenbaas/.config/mpv/input.conf
 ln -s /home/isaacelenbaas/dotfiles/cleanup /home/isaacelenbaas/.config/
 ln -s /home/isaacelenbaas/dotfiles/dunst /home/isaacelenbaas/.config/
 ln -s /home/isaacelenbaas/dotfiles/herbstluftwm /home/isaacelenbaas/.config/

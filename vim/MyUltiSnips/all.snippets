@@ -39,7 +39,7 @@ endsnippet
 #{{{ enclosing characters
 	#{{{ parentheses
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+')'+snip.buffer[snip.line][snip.column]+snip.buffer[snip.line][snip.column+2:]; snip.cursor.set(snip.line, snip.column+1)"
-snippet ; "semicolon in parentheses at end of line" "not re.search('^\s*for', snip.buffer[snip.line]) and len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]==')'" ieA
+snippet ; "semicolon in parentheses at end of line" "not re.search('^\s*for', snip.buffer[snip.line]) and len(snip.buffer[snip.line])>=snip.column+2 and snip.buffer[snip.line][snip.column+1]==')' and (len(snip.buffer[snip.line])==snip.column+2 or (len(snip.buffer[snip.line])==snip.column+3 and snip.buffer[snip.line][snip.column+2]=='}'))" ieA
 endsnippet
 	#}}}
 
@@ -57,7 +57,7 @@ pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+'}'+snip
 snippet ) "close curly bracket with parentheses" "len(snip.buffer[snip.line])>0 and snip.buffer[snip.line][snip.column-1]=='{'" ieA
 endsnippet
 pre_expand "snip.buffer[snip.line]=snip.buffer[snip.line][:snip.column]+'}'+snip.buffer[snip.line][snip.column]; snip.cursor.set(snip.line, snip.column+1)"
-snippet ; "semicolon in curly brackets at end of line" "len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]=='}'" ieA
+snippet ; "semicolon in curly brackets at end of line" "len(snip.buffer[snip.line])==snip.column+2 and snip.buffer[snip.line][snip.column+1]=='}' and snip.buffer[snip.line][snip.column-1]!=')'" ieA
 endsnippet
 	#}}}
 #}}}

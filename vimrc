@@ -291,7 +291,6 @@ function SelectMath(around)
 	let l:position=line(".")
 	" search forward
 	if search('^\%([^`]\|\%(\\\)\@<!\`\)\{-}\%(\\\`\%([^`]\|\%(\\\)\@<!\`\)\{-}\\\`\%([^`]\|\%(\\\)\@<!\`\)\{-}\)\{-}\%([^`]\|\%(\\\)\@<!\`\)\{-}\%#.\%(\\\`\)\@<!', "bcn", line(".")) != 0
-		echomsg "1"
 		if search('\\\`.\{-}\\\`', "c", line(".")) != 0
 			" <Right><Left> is a fix for visual-block
 			call feedkeys((a:around) ? "\<Right>\<Left>vo\<Right>" : "\<Right>\<Right>vo", "nx")
@@ -301,7 +300,6 @@ function SelectMath(around)
 		endif
 	" currently past odd number of \`s
 	else
-		echomsg "2"
 		if search('\\\`.\{-}\\\`', "bc", line(".")) != 0
 			" <Right><Left> is a fix for visual-block
 			call feedkeys((a:around) ? "\<Right>\<Left>vo\<Right>" : "\<Right>\<Right>vo", "nx")
@@ -373,7 +371,7 @@ let g:undotree_SetFocusWhenToggle = 1
 		"}}}
 
 		"{{{ vim-expand-region
-call expand_region#custom_text_objects({"is" :0,"if" :0})
+call expand_region#custom_text_objects({"is" :0,"if" :0,"im" :0})
 nmap h <Plug>(expand_region_expand)
 xmap h <Plug>(expand_region_expand)
 xmap H <Plug>(expand_region_shrink)
