@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 sudo pacaur -Sc --noconfirm
 rm -rf ~/.cache/*

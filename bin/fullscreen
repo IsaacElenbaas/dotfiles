@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/env bash
 
 # Adaptation of maximize.sh from herbstluftwm examples, to save in a different
 # attr and allow not just toggling.

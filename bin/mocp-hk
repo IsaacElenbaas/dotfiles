@@ -4,5 +4,5 @@
 \mocp --exit
 while [ -f ~/.moc/pid ]; do sleep 0.5; done
 \mocp --server >/dev/null
-\mocp --on shuffle --append ~/Music/HTTYD
+\mocp --on shuffle --append ~/Music/Hollow\ Knight
 sleep 0.5; herbstclient emit_hook song

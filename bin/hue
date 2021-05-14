@@ -1,0 +1,7 @@
+#!/bin/bash
+
+curl -H "Content-Type: application/json" -X PUT -d '{
+	"on": '$([ $1 -gt 1 ] && printf "true" || printf "false")',
+	"bri": '$1',
+	"transitiontime": 2
+}' "http://192.168.1.6/api/$(gpg -dq ~/.config/huekey.gpg)/lights/1/state"

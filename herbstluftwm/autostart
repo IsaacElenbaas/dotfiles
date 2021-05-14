@@ -34,13 +34,13 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 # if reactivating this remember to change shell in screenrc
 # sleep fixes incorrect position when herbstluft has to rearrange windows
 #hc keybind $Mod-Return spawn xterm -e "sleep 0.05; screen"
-#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; zsh'"
+#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; zsh'"
 		#}}}
 
 		#{{{ vim terminal
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons). Whatever, only an extra ~5MB of RAM wasted per additional screen item.
 hc keybind $Mod-Return spawn xterm -e "screen vim '+terminal ++close ++curwin ++norestore zsh'"
-hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"f; exec zsh\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
+hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"f; [ -n \\\"\\\$STY\\\" ] && screen -X -S \\\"\\\${STY%%.*}\\\" chdir \\\"\\\$(pwd)\\\"; exec zsh\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
 		#}}}
 
 # this won't save layout but prevents breaking due to resize

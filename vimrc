@@ -623,10 +623,10 @@ nmap tb <c-o>tmm
 xmap tb <c-o>tmm
 nmap tmmb tb
 xmap tmmb tb
-nmap tf <c-i>tmm
-xmap tf <c-i>tmm
-nmap tmmf tf
-xmap tmmf tf
+nmap tB <c-i>tmm
+xmap tB <c-i>tmm
+nmap tmmB tB
+xmap tmmB tB
 nnoremap tv gv
 xnoremap tv gv
 xnoremap v gv
@@ -753,10 +753,8 @@ xmap } {
 nnoremap cmm <Nop>
 nmap <silent> c<Down> :<c-u>execute "normal! 2\<lt>c-e>"<CR>cmm
 nmap cmm<Down> c<Down>
-nmap cmmt c<Down>
 nmap <silent> c<Up> :<c-u>execute "normal! 2\<lt>c-y>"<CR>cmm
 nmap cmm<Up> c<Up>
-nmap cmmc c<Up>
 	"}}}
 
 	"{{{ centering to screen percentage

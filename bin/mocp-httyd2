@@ -1,8 +1,8 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 \mocp --clear
 \mocp --exit
-while [ -f /home/isaacelenbaas/.moc/pid ]; do sleep 0.5; done
+while [ -f ~/.moc/pid ]; do sleep 0.5; done
 \mocp --server >/dev/null
-\mocp --on shuffle --append /home/isaacelenbaas/Music/HTTYD/2
+\mocp --on shuffle --append ~/Music/HTTYD/2
 sleep 0.5; herbstclient emit_hook song

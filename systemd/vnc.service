@@ -1,0 +1,8 @@
+[Unit]
+Description=Starts VNC server
+
+[Service]
+ExecStart=/bin/bash -c "while true; do x11vnc -repeat -forever -display :0 -usepw &>/dev/null; done"
+
+[Install]
+WantedBy=default.target

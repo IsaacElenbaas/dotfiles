@@ -1,0 +1,8 @@
+#!/bin/bash
+
+seconds="$(\mocp --format '%tl')"
+[ "$seconds" = "" ] && exit
+seconds="$((10#${seconds%:*}*60+10#${seconds#*:}-1))"
+sleep "$seconds"
+while [ "$(\mocp --format '%cs')" -gt 1 ]; do sleep 0.05; done
+\mocp --toggle-pause

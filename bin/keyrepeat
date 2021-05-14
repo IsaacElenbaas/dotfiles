@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 xset r rate 150
 # xmodmap -pke

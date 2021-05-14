@@ -41,6 +41,34 @@
 	m:0x0 + c:171 + Release
 "previous"
 	m:0x0 + c:173 + Release
+
+#{{{ hue lights
+"hue 1"
+	m:0x0 + c:67 + Release
+"hue 15"
+	m:0x0 + c:68 + Release
+"hue 32"
+	m:0x0 + c:69 + Release
+"hue 55"
+	m:0x0 + c:70 + Release
+"hue 80"
+	m:0x0 + c:71 + Release
+"hue 111"
+	m:0x0 + c:72 + Release
+"hue 144"
+	m:0x0 + c:73 + Release
+"hue 174"
+	m:0x0 + c:74 + Release
+"hue 200"
+	m:0x0 + c:75 + Release
+"hue 222"
+	m:0x0 + c:76 + Release
+"hue 240"
+	m:0x0 + c:95 + Release
+"hue 255"
+	m:0x0 + c:96 + Release
+#}}}
+
 "[ \"$(xrandr --listactivemonitors | head -n 1)\" == \"Monitors: 2\" ] && monitorsoff || monitorson"
 	m:0x0 + c:202 + Release
 "monitorson"

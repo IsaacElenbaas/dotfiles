@@ -1,6 +1,6 @@
-#!/usr/bin/bash
+#!/bin/bash
 
-pup="$(comm -23 <(sort <(cat ~/.config/cleanup/essentials ~/.config/cleanup/ignore)) <(pacman -Qqe | sort))"
+pup="$(comm -23 <(sort <(cat ~/.config/cleanup/system ~/.config/cleanup/essentials ~/.config/cleanup/ignore ~/.config/cleanup/per-system)) <(pacman -Qqe | sort))"
 if [ -z "$pup" ]; then
 	echo "No unwanted entries!"
 else

@@ -2,6 +2,7 @@
 
 xrandr --setprovideroutputsource modesetting NVIDIA-0
 xrandr --auto
+xset s off -dpms
 
 userresources=$HOME/.Xresources
 usermodmap=$HOME/.Xmodmap
@@ -35,23 +36,8 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
 	unset f
 fi
 
-xset s off -dpms
-while
-	keyrepeat
-	inotifywait -q -e create -e delete /dev/input
-do sleep 1; done &
-xbindkeys &
+xbindkeys
+keyrepeat # X resets them
 tabletsetup
-\mocp --server >/dev/null
-\mocp --on shuffle --append /home/isaacelenbaas/Music/Default
 
-while true; do
-	x11vnc -repeat -forever -display :0 -usepw &>/dev/null
-done &
 exec herbstluftwm --locked
-
-#twm &
-#xclock -geometry 50x50-1+1 &
-#xterm -geometry 80x50+494+51 &
-#xterm -geometry 80x20+494-0 &
-#exec xterm -geometry 80x66+0+0 -name login

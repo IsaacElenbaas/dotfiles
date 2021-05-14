@@ -33,13 +33,13 @@ try:
         lastZoom = int(c.zoom.default[:-1])
         c.zoom.default = c.zoom.levels[min(c.zoom.levels.index(c.zoom.default)+1, len(c.zoom.levels)-1)]
         c.fonts.default_size = str(float(c.fonts.default_size[:-2])/lastZoom*int(c.zoom.default[:-1])) + c.fonts.default_size[-2:]
-        message.info(c.zoom.default, replace=True)
+        message.info(c.zoom.default, replace='zoom-level-all')
     @cmdutils.register(instance='command-dispatcher', scope='window')
     def zoom_out_all(self):
         lastZoom = int(c.zoom.default[:-1])
         c.zoom.default = c.zoom.levels[max(c.zoom.levels.index(c.zoom.default)-1, 0)]
         c.fonts.default_size = str(float(c.fonts.default_size[:-2])/lastZoom*int(c.zoom.default[:-1])) + c.fonts.default_size[-2:]
-        message.info(c.zoom.default, replace=True)
+        message.info(c.zoom.default, replace='zoom-level-all')
 except ValueError:pass
     #}}}
 #}}}
@@ -74,7 +74,7 @@ c.content.fullscreen.window = True
 c.content.blocking.enabled = True
 c.content.blocking.method = 'adblock'
 c.content.javascript.can_access_clipboard = True
-c.content.notifications = False
+c.content.notifications.enabled = False
 c.content.pdfjs = True
 c.content.plugins = True
 c.downloads.location.remember = False
@@ -119,6 +119,7 @@ c.bindings.commands['command'] = {
     '<Up>'       : 'completion-item-focus --history prev',
     '<Tab>'      : 'search-next ;; completion-item-focus next-category',
     '<Shift-Tab>': 'search-prev',
+    '<Ctrl-D>'   : 'completion-item-del',
 }
     #}}}
 

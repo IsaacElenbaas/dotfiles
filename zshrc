@@ -36,6 +36,7 @@ autoload -Uz compinit && compinit
 
 setopt autocd
 setopt correct
+CORRECT_IGNORE='[_|.]*'
 unsetopt beep
 bindkey -e
 #}}}
@@ -204,7 +205,7 @@ precmd() {
 chpwd() {
 	# open new screen windows in last dir
 	if [ -n "$STY" ]; then
-		[ -z "$cd" ] && cd=1 && screen -X -S "${STY%%.*}" chdir "$PWD" || unset cd
+		screen -X -S "${STY%%.*}" chdir "$PWD"
 	fi
 }
 	#}}}
