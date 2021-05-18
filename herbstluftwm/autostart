@@ -93,10 +93,9 @@ hc keybind $Mod-u      resize right +$resizestep
 #}}}
 
 #{{{ tag setup
-tag_names=({1..12})
-hc rename default "${tag_names[0]}" || true
-for i in ${!tag_names[@]} ; do
-	hc add "${tag_names[$i]}"
+hc rename default "1"
+for ((i=2; i<=6*m; i++)); do
+	hc add "$i"
 done
 #}}}
 
