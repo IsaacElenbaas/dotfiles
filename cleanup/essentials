@@ -20,7 +20,6 @@ dmenu-height
 dotnet-runtime-3.1
 dunst
 dzen2
-expac
 fail2ban
 feh
 ffcast
@@ -33,11 +32,9 @@ herbstluftwm
 hsetroot
 inotify-tools
 jdk11-openjdk
-jq
 lib32-gnutls
 lib32-libpulse
 lib32-mpg123
-lib32-vulkan-icd-loader
 libusb-compat
 man-db
 man-pages
