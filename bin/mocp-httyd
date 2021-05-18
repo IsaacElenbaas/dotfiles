@@ -3,6 +3,6 @@
 \mocp --clear
 \mocp --exit
 while [ -f ~/.moc/pid ]; do sleep 0.5; done
-\mocp --server >/dev/null
+\mocp --server &>/dev/null
 \mocp --on shuffle --append ~/Music/HTTYD
 sleep 0.5; herbstclient emit_hook song

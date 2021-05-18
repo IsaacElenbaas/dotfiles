@@ -51,8 +51,8 @@ f() {
 	#}}}
 
 	#{{{ Paste
-Paste() { printf -- ']51;["call", "Tapi_sc", []]\a' }
-Nopaste() { printf -- ']51;["call", "Tapi_scEnd", []]\a' }
+Paste() { printf -- '\033]51;["call", "Tapi_sc", []]\a' }
+Nopaste() { printf -- '\033]51;["call", "Tapi_scEnd", []]\a' }
 	#}}}
 
 	#{{{ printfPrepare
@@ -126,7 +126,7 @@ prompt-git() {
 	git rev-parse --is-inside-work-tree &>/dev/null && {
 		c2="${c//\%c2/$1}"
 		c2="${c2//\%c3/$2}"
-		printf "  $(git rev-parse --abbrev-ref HEAD) ${c2//\%/%%}"
+		printf "  $(git rev-parse --abbrev-ref HEAD 2>/dev/null) ${c2//\%/%%}"
 	}
 }
 #}}}
@@ -186,7 +186,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf ']51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\a' )
+		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\a' )
 	fi
 }
 	#}}}
@@ -267,7 +267,7 @@ _delete() {
 	copy="$(_printfPrepare "$BUFFER")"
 	copy="${copy//\\/\\\\}"
 	copy="${copy//\"/\\\\\"}"
-	printf ']51;["call", "Tapi_yank", ["'"$copy"'"]]\a'
+	printf '\033]51;["call", "Tapi_yank", ["'"$copy"'"]]\a'
 	_trash
 }
 zle -N _trash
