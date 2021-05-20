@@ -1,4 +1,86 @@
 #!/bin/bash
 
-sudo chown -R isaacelenbaas: .
-chmod -R -x,u+rwX,go+rX,go-w .
+shopt -s extglob
+owner="$(id -u)"
+group=""
+changes=""
+verbose=""
+preserve=""
+target=""
+declare -a paths
+usage="Usage: $(basename $0) [OPTIONS]
+  -o, --owner USER NAME/ID      user owner to set
+  -g, --group GROUP NAME/ID     group owner to set
+  -c, --changes                 like verbose but report only when a change is made
+  -v, --verbose                 output a diagnostic for every file processed
+  --no-preserve-root            do not treat '/' specially
+  --reference RFILE             use RFILE's owner and group
+  -h, --help                    display this help
+"
+for (( i=1; i <= $#; i++ )); do
+	if [ "${!i:0:1}" != "-" ]; then
+		paths+=("${!i}")
+		continue
+	fi
+	if [ "${!i:1:1}" = "-" ]; then
+		case "${!i}" in
+			--)
+				params=("$@")
+				paths+=("${params[@]:$i}")
+				break
+			;;
+			--owner)
+				i=$((i+1))
+				owner="${!i}"
+			;;
+			--group)
+				i=$((i+1))
+				group="${!i}"
+			;;
+			--changes)
+				changes="c"
+			;;
+			--verbose)
+				verbose="v"
+			;;
+			--no-preserve-root)
+				preserve="no-"
+			;;
+			--reference)
+				i=$((i+1))
+				[ ! -e "${!i}" ] && printf "RFILE does not exist!\n" && exit 2
+				target="--reference=${!i}"
+			;;
+			*)
+				printf "$usage"
+				exit 2
+			;;
+		esac
+	else
+		bumped=false
+		case "${!i}" in
+			*o*)
+				[ "$bumped" = false ] && i=$((i+1)) && bumped=true
+				owner="${!i}"
+			;;&
+			*g*)
+				[ "$bumped" = false ] && i=$((i+1)) && bumped=true
+				group="${!i}"
+			;;&
+			*c*)
+				changes="c"
+			;;&
+			*v*)
+				verbose="v"
+			;;&
+			!(-+([ogcv])))
+				printf "$usage"
+				exit 2
+			;;
+		esac
+	fi
+done
+target="${target:-"$owner":"${group:-$owner}"}"
+[ -z "$paths" ] && paths=(".")
+sudo chown -R"$changes$verbose" --"$preserve"preserve-root "$target" "${paths[@]}"
+sudo chmod -R"$changes$verbose" --"$preserve"preserve-root u+rwX,go+rX,go-w "${paths[@]}"
