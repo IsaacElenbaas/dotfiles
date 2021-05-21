@@ -14,12 +14,9 @@ Mod=Mod4 # Use the super key as the main modifier
 #}}}
 
 #{{{ autostart
-hc set auto_detect_monitors 0 # Required to turn off monitors with xrandr
+hc set auto_detect_monitors 0
 #pacwall.sh -b "#232831" -d "#e5e9f080" -e "#88c0d0" -s "#c5c8c626"
 xsetroot
-unclutter -idle 2 -root &
-dunst &
-echo -e 'power on\nexit' | bluetoothctl
 xrdb ~/.Xresources
 #}}}
 
@@ -94,7 +91,7 @@ hc keybind $Mod-u      resize right +$resizestep
 
 #{{{ tag setup
 hc rename default "1"
-for ((i=2; i<=6*m; i++)); do
+for (( i=2; i <= 6*m; i++ )); do
 	hc add "$i"
 done
 #}}}
