@@ -51,8 +51,8 @@ f() {
 	#}}}
 
 	#{{{ Paste
-Paste() { printf -- '\033]51;["call", "Tapi_sc", []]\a' }
-Nopaste() { printf -- '\033]51;["call", "Tapi_scEnd", []]\a' }
+Paste() { printf '\033]51;["call", "Tapi_sc", []]\a' }
+Nopaste() { printf '\033]51;["call", "Tapi_scEnd", []]\a' }
 	#}}}
 
 	#{{{ printfPrepare
