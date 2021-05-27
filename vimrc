@@ -366,8 +366,8 @@ autocmd ColorScheme * hi SignatureMarkText cterm=bold ctermfg=255 ctermbg=0
 
 		"{{{ vim-undotree
 nnoremap <silent> U :<c-u>UndotreeToggle<CR>
-let g:undotree_DiffAutoOpen = 0
-let g:undotree_SetFocusWhenToggle = 1
+let g:undotree_DiffAutoOpen=0
+let g:undotree_SetFocusWhenToggle=1
 		"}}}
 
 		"{{{ vim-expand-region
@@ -763,7 +763,7 @@ nnoremap <silent> c1 :<c-u>call ScrollOnlyScreenPercent(10,0)<CR>
 nnoremap <silent> c2 :<c-u>call ScrollOnlyScreenPercent(20,0)<CR>
 nnoremap <silent> c3 :<c-u>call ScrollOnlyScreenPercent(30,0)<CR>
 nnoremap <silent> c4 :<c-u>call ScrollOnlyScreenPercent(40,0)<CR>
-nnoremap <silent> c5 :<c-u>call ScrollOnlyScreenPercent(50,0)<CR>
+nnoremap <silent> c5 zz
 nnoremap <silent> c6 :<c-u>call ScrollOnlyScreenPercent(60,0)<CR>
 nnoremap <silent> c7 :<c-u>call ScrollOnlyScreenPercent(70,0)<CR>
 nnoremap <silent> c8 :<c-u>call ScrollOnlyScreenPercent(80,0)<CR>
@@ -937,8 +937,8 @@ augroup Terminal
 	" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
 	" I've no idea whether waiting for TermResponse actually fixes the weird printing problems or just fires late enough to allow herbstluft resize to finish, but it works
 	autocmd TermResponse * if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1 | suspend | endif
-	autocmd VimEnter * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
-	autocmd VimLeave * exe "set t_ts=\<Esc>]51; t_fs=\x07" | let &titlestring = '["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
+	autocmd VimEnter * exe "set t_ts=\033]51; t_fs=\007" | let &titlestring='["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
+	autocmd VimLeave * exe "set t_ts=\033]51; t_fs=\007" | let &titlestring='["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
 	autocmd BufDelete * if len(getbufinfo({'buflisted':1})) != "0" | call TerminalEnd() | endif
 augroup END
 
@@ -960,7 +960,7 @@ function Tapi_rename(bufnum, arglist)
 		endif
 		if !a:bufnum || (a:bufnum && !exists("g:screenTitle"))
 			exe "set t_ts=\<Esc>k t_fs=\<Esc>\\"
-			let &titlestring = l:name
+			let &titlestring=l:name
 			set title
 			redraw
 			set notitle

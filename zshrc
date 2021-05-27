@@ -51,8 +51,8 @@ f() {
 	#}}}
 
 	#{{{ Paste
-Paste() { printf '\033]51;["call", "Tapi_sc", []]\a' }
-Nopaste() { printf '\033]51;["call", "Tapi_scEnd", []]\a' }
+Paste() { printf '\033]51;["call", "Tapi_sc", []]\007' }
+Nopaste() { printf '\033]51;["call", "Tapi_scEnd", []]\007' }
 	#}}}
 
 	#{{{ printfPrepare
@@ -186,7 +186,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\a' )
+		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\007' )
 	fi
 }
 	#}}}
@@ -267,7 +267,7 @@ _delete() {
 	copy="$(_printfPrepare "$BUFFER")"
 	copy="${copy//\\/\\\\}"
 	copy="${copy//\"/\\\\\"}"
-	printf '\033]51;["call", "Tapi_yank", ["'"$copy"'"]]\a'
+	printf '\033]51;["call", "Tapi_yank", ["'"$copy"'"]]\007'
 	_trash
 }
 zle -N _trash
