@@ -1,3 +1,39 @@
+"{{{ fix terminal colors 7 and 8
+if $VIM_TERMINAL == ""
+	if $STY == ""
+		let t_tf="set t_ts=\033] t_fs=\007"
+	else
+		let t_tf="set t_ts=\033P\033] t_fs=\007\033\\"
+	endif
+	function FixColors()
+		call histdel(":", -1)
+		if slice(g:color, 0, 2) != "4;"
+			return
+		endif
+		if slice(g:color, 2, 4) == "7;"
+			if !g:did7
+				let g:did7=1
+				exe g:t_tf | let &titlestring="4;248;" . slice(g:color, matchend(g:color, ".*;")) | set title | redraw | set notitle
+				exe g:t_tf | let &titlestring="4;8;?" | set title | redraw | set notitle
+			endif
+		elseif slice(g:color, 2, 4) == "8;"
+			exe g:t_tf | let &titlestring="4;242;" . slice(g:color, matchend(g:color, ".*;")) | set title | redraw | set notitle
+			echo
+		endif
+	endfunction
+	let did7=0
+	nnoremap <Esc>] :let color="
+	tnoremap <Esc>] <c-\><c-n>:let color="
+	cnoremap <c-G> "<bar>let wasterm=1<bar>call FixColors()<CR>
+	let wasterm=0
+	exe g:t_tf | let &titlestring="4;7;?" | set title | redraw | set notitle
+	set updatetime=15
+	augroup FixColorsAG
+		autocmd CursorHold * unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasterm | call feedkeys("i", "nx") | endif | unlet g:wasterm | set updatetime=4000 | autocmd! FixColorsAG
+	augroup END
+endif
+"}}}
+
 "{{{ functions
 	"{{{ Word(forward, big, visual)
 " does w or b but stops at end/beginning of line
