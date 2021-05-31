@@ -1,6 +1,6 @@
 #{{{ plugins
-source ${ZDOTDIR:-${HOME}/.zsh}/plugins/sudo.plugin.zsh
-source ${ZDOTDIR:-${HOME}/.zsh}/plugins/manydots.plugin.zsh
+source ${ZDOTDIR:-$HOME/.zsh}/plugins/sudo.plugin.zsh
+source ${ZDOTDIR:-$HOME/.zsh}/plugins/manydots.plugin.zsh
 
 	#{{{ You Should Use
 source /usr/share/zsh/plugins/zsh-you-should-use/you-should-use.plugin.zsh
@@ -45,22 +45,14 @@ bindkey -e
 	#{{{ f
 f() {
 	\fff "$@"
-	cd "$(cat "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null)"
-	rm "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null
+	cd "$(cat "${XDG_CACHE_HOME:=$HOME/.cache}/fff/.fff_d" 2>/dev/null)"
+	rm "${XDG_CACHE_HOME:=$HOME/.cache}/fff/.fff_d" 2>/dev/null
 }
 	#}}}
 
 	#{{{ Paste
 Paste() { printf '\033]51;["call", "Tapi_sc", []]\007' }
 Nopaste() { printf '\033]51;["call", "Tapi_scEnd", []]\007' }
-	#}}}
-
-	#{{{ printfPrepare
-_printfPrepare() {
-	1="${1//\\/\\\\\\\\}"
-	1="${1//\%/%%%%}"
-	printf -- "$1"
-}
 	#}}}
 #}}}
 
@@ -102,49 +94,51 @@ alias -s ogg="mpv"
 # allows functions in PROMPT
 setopt prompt_subst
 # there's PROMPT stuff in preexec too
-# http://www.nparikh.org/unix/prompt.php#zsh
-NEWLINE=$'\n'
-readonly c="%b%F{%c2}%K{%c3}%B"
+# https://zsh.sourceforge.io/Doc/Release/Prompt-Expansion.html
+c="%F{%cb}%K{%cnb}%F{%cnf}"
+nl=$'\n'"%K{%cnb}%F{%cnf}"
+nlb="}%k%{%"
 fgs=(
 	"black"
 	"255"
 	"255"
 	""
 	"255"
+	""
 )
-bgs=( # needs extra 0 at end for final carat bg
+bgs=(
 	"15"
 	"32"
-	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf '34' || printf '0')"
-	"0"
+	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf '34' || printf '%s' '$nlb')"
+	"$nlb"
 	"32"
-	"0"
+	"$nlb"
 )
-# c1 is fg c2 is bg c3 is next bg for carats
 #{{{ functions
 prompt-git() {
 	git rev-parse --is-inside-work-tree &>/dev/null && {
-		c2="${c//\%c2/$1}"
-		c2="${c2//\%c3/$2}"
-		printf "  $(git rev-parse --abbrev-ref HEAD 2>/dev/null) ${c2//\%/%%}"
+		c2="${c//\%cb/$1}"
+		c2="${c2//\%cnb/$2}"
+		c2="${c2//\%cnf/$3}"
+		printf "  %s %s" "$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" "$c2"
 	}
 }
 #}}}
 sections=(
-	" %n ${c}"
-	" %~ ${c}"
-	"\$(prompt-git %c2 %c3)"
-	"${NEWLINE}"
-	" %(!.#.$) ${c}"
+	" %n $c"
+	" %~ $c"
+	"\$(prompt-git %cb %cnb %cnf)"
+	"$nl"
+	" %(!.#.$) $c"
 )
-PROMPT=""
-for ((i = 1; i <= $#sections; i++)); do
-	PROMPT+="%F{%c1}%K{%c2}$sections[i]"
-	PROMPT="${PROMPT//\%c1/$fgs[i]}"
-	PROMPT="${PROMPT//\%c2/$bgs[i]}"
-	PROMPT="${PROMPT//\%c3/$bgs[$((i+1))]}"
+PROMPT="%K{$bgs[1]}%F{$fgs[1]}"
+for (( i = 1; i <= $#sections; i++ )); do
+	PROMPT+="$sections[i]"
+	PROMPT="${PROMPT//\%cb/$bgs[i]}"
+	PROMPT="${PROMPT//\%cnb/$bgs[$((i+1))]}"
+	PROMPT="${PROMPT//\%cnf/$fgs[$((i+1))]}"
 done
-PROMPT="%B${PROMPT}%f%k%b "
+PROMPT="%B${PROMPT}%b%u%s%f%k "
 #}}}
 
 #{{{ zsh hooks
@@ -152,24 +146,16 @@ PROMPT="%B${PROMPT}%f%k%b "
 	#{{{ preexec
 preexec() {
 		#{{{ PROMPT
-	printf "\033[2A\033[2K"
-	0="$(_printfPrepare $1)"
-	(
-		0="${0//\$/\\$}"
-		0="${0//\`/\\\`}"
-		# middle bit is last line of final prompt with %(!.#.$) swapped for %1~
-		print -P -- "%B""%F{255}%K{32} %1~ %b%F{32}%K{0}%B%f%k%b"" ${0//\\/\\\\}"
-	)
-	# print moved us down a line
-	printf "\033[2K"
+	plines=$(printf "%b" "$PROMPT\n" | wc -l)
+	printf "\033[${plines}A\033[K"
+	print -nP -- "$(printf "%s" "$PROMPT" | tail -n1)"
+	printf "%s\n\033[K" "$1"
 		#}}}
 
-	# 0 is safe for printf by now
-	start="$(printf -- "$0" | sed 's/^\s*//')"
+	start="$(printf "%s" "$1" | sed 's/^\s*//')"
 	start="${start%% *}"
-	start="${start#\\}"
-	end="${0##*|}"
-	end="$(printf -- "$end" | sed 's/^\s*//')"
+	end="${1##*|}"
+	end="$(printf "%s" "$end" | sed 's/^\s*//')"
 	end="${end%% *}"
 
 		#{{{ undistract-me
@@ -212,15 +198,7 @@ chpwd() {
 
 	#{{{ zshaddhistory
 zshaddhistory() {
-	0="${1//\\/\\\\\\\\}"
-	0="${0//\\n/\\\\n}"
-	0="${0//\$/\\\\$}"
-	0="${0//\`/\\\\\`}"
-	0="${0//\%/%%}"
-	start="$(printf -- "$0" | sed 's/^\s*//')"
-	start="${start%% *}"
-	start="${start#\\}"
-	case "$start" in
+	case "$(printf "%s" "$1" | sed 's/^\s*//')" in
 		"q" | "exit" | "detach") return 1 ;;
 	esac
 	return 0;
@@ -247,11 +225,11 @@ snip_space() {
 	   ([ "${LBUFFER: -1}" = "[" ] && [ "${RBUFFER:0:1}" = "]" ]) ||
 	   ([ "${LBUFFER: -1}" = "{" ] && [ "${RBUFFER:0:1}" = "}" ]) ||
 	then
-		LBUFFER="${LBUFFER} " && RBUFFER=" ${RBUFFER}"
+		LBUFFER="$LBUFFER " && RBUFFER=" $RBUFFER"
 	elif [ "${LBUFFER: -2}" = " +" ] && ([ "${RBUFFER:0:1}" = '"' ] || [ "${RBUFFER:0:1}" = "'" ]); then
 		LBUFFER="${LBUFFER:0:-2}${RBUFFER:0:1} + " && RBUFFER="${RBUFFER:1}"
 	else
-		LBUFFER="${LBUFFER} "
+		LBUFFER="$LBUFFER "
 	fi
 }
 zle -N snip_space
@@ -264,10 +242,10 @@ _trash() {
 	BUFFER=
 }
 _delete() {
-	copy="$(_printfPrepare "$BUFFER")"
-	copy="${copy//\\/\\\\}"
-	copy="${copy//\"/\\\\\"}"
-	printf '\033]51;["call", "Tapi_yank", ["'"$copy"'"]]\007'
+	BUFFER="${BUFFER//\\/\\\\\\\\}"
+	BUFFER="${BUFFER//\%/%%}"
+	BUFFER="${BUFFER//\"/\\\\\"}"
+	printf '\033]51;["call", "Tapi_yank", ["'"$BUFFER"'"]]\007'
 	_trash
 }
 zle -N _trash

@@ -13,20 +13,20 @@ if $VIM_TERMINAL == ""
 		if slice(g:color, 2, 4) == "7;"
 			if !g:did7
 				let g:did7=1
-				exe g:t_tf | let &titlestring="4;248;" . slice(g:color, matchend(g:color, ".*;")) | set title | redraw | set notitle
-				exe g:t_tf | let &titlestring="4;8;?" | set title | redraw | set notitle
+				execute g:t_tf | let &titlestring="4;248;" . slice(g:color, 4) | set title | redraw | set notitle
+				execute g:t_tf | let &titlestring="4;8;?" | set title | redraw | set notitle
 			endif
 		elseif slice(g:color, 2, 4) == "8;"
-			exe g:t_tf | let &titlestring="4;242;" . slice(g:color, matchend(g:color, ".*;")) | set title | redraw | set notitle
+			execute g:t_tf | let &titlestring="4;242;" . slice(g:color, 4) | set title | redraw | set notitle
 			echo
 		endif
 	endfunction
 	let did7=0
 	nnoremap <Esc>] :let color="
-	tnoremap <Esc>] <c-\><c-n>:let color="
+	tnoremap <Esc>] <c-w>N:let color="
 	cnoremap <c-G> "<bar>let wasterm=1<bar>call FixColors()<CR>
 	let wasterm=0
-	exe g:t_tf | let &titlestring="4;7;?" | set title | redraw | set notitle
+	execute g:t_tf | let &titlestring="4;7;?" | set title | redraw | set notitle
 	set updatetime=15
 	augroup FixColorsAG
 		autocmd CursorHold * unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasterm | call feedkeys("i", "nx") | endif | unlet g:wasterm | set updatetime=4000 | autocmd! FixColorsAG
@@ -132,6 +132,7 @@ endfunction
 	"}}}
 
 	"{{{ Search(visual)
+" searches in order to move cursor; clears history and hlsearch if possible
 function Search(visual)
 	if a:visual
 		normal! gv
@@ -152,6 +153,7 @@ endfunction
 	"}}}
 
 	"{{{ GUnmap()
+" unmaps g* default bindings
 function GUnmap()
 	let l:maps=execute("map g")
 	let l:nl=0
@@ -174,17 +176,14 @@ endfunction
 	"}}}
 
 	"{{{ Find(forward)
+" does f or F and records last direction so that , and ; are always left and right respectively
 function Find(forward)
 	try
 		unlet g:search
 	catch
 	endtry
-	let l:char=nr2char(getchar())
-	if l:char == ""
-		return
-	endif
 	let g:findforward=a:forward
-	return ((a:forward) ? "f" : "F") . l:char
+	return ((a:forward) ? "f" : "F") . nr2char(getchar())
 endfunction
 	"}}}
 
@@ -209,6 +208,7 @@ endfunction
 	"}}}
 
 	"{{{ VExpand(left, right)
+" expands or contracts the visual selection with provided motions on the left and right sides
 function VExpand(left, right)
 	normal! gv
 	let l:col=col(".")
@@ -224,6 +224,7 @@ endfunction
 	"}}}
 
 	"{{{ ScrollOnlyScreenPercent(percent, visual)
+" scrolls the screen to make the cursor at a given percentage from the top of it
 function ScrollOnlyScreenPercent(percent, visual)
 	let l:position=line(".")
 	call feedkeys("H", "nx")
@@ -246,6 +247,7 @@ endfunction
 	"}}}
 
 	"{{{ ScrollScreenPercent(percent, visual)
+" moves the cursor to a given percentage from the top of the screen
 function ScrollScreenPercent(percent, visual)
 	call feedkeys("H" . a:percent*winheight("%")/100 . "j", "nx")
 	if a:visual
@@ -973,10 +975,27 @@ augroup Terminal
 	" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
 	" I've no idea whether waiting for TermResponse actually fixes the weird printing problems or just fires late enough to allow herbstluft resize to finish, but it works
 	autocmd TermResponse * if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1 | suspend | endif
-	autocmd VimEnter * exe "set t_ts=\033]51; t_fs=\007" | let &titlestring='["call","Tapi_sc",[]]'    | set title | redraw | set notitle | set t_ts& t_fs&
-	autocmd VimLeave * exe "set t_ts=\033]51; t_fs=\007" | let &titlestring='["call","Tapi_scEnd",[]]' | set title | redraw | set notitle | set t_ts& t_fs&
+	autocmd VimEnter * call Tapi_send(0, [0, "\033]51;", '["call","Tapi_sc",[]]',    "\007"])
+	autocmd VimLeave * call Tapi_send(0, [0, "\033]51;", '["call","Tapi_scEnd",[]]', "\007"])
 	autocmd BufDelete * if len(getbufinfo({'buflisted':1})) != "0" | call TerminalEnd() | endif
 augroup END
+
+	"{{{ Tapi_send()
+" sends a string to the parent
+function Tapi_send(bufnum, arglist)
+	if a:arglist[0]
+		if match(a:arglist, '|\|"') == -1
+			execute 'let a:arglist[1]="' . a:arglist[1] . '"'
+			execute 'let a:arglist[2]="' . a:arglist[2] . '"'
+			execute 'let a:arglist[3]="' . a:arglist[3] . '"'
+		else
+			echo "Illegal characters! Improve Tapi_send if this sequence should work."
+			return
+		endif
+	endif
+	execute "set t_ts=" . a:arglist[1] . " t_fs=" . a:arglist[3] | let &titlestring=a:arglist[2] | set title | redraw | set notitle | set t_ts& t_fs&
+endfunc
+	"}}}
 
 "{{{ Tapi_rename()
 " automatically or manually changes title in screen
@@ -995,12 +1014,7 @@ function Tapi_rename(bufnum, arglist)
 			endif
 		endif
 		if !a:bufnum || (a:bufnum && !exists("g:screenTitle"))
-			exe "set t_ts=\<Esc>k t_fs=\<Esc>\\"
-			let &titlestring=l:name
-			set title
-			redraw
-			set notitle
-			set t_ts& t_fs&
+			call Tapi_send(0, [0, "\033k", l:name, "\033\\"])
 		endif
 	endif
 endfunction

@@ -1,0 +1,39 @@
+#define cFG #1e2634
+#define cBG #e7eaee
+#define cCU #1e2634
+#define c00 #282e38
+#define c08 #2e3440
+#define c01 #932f39
+#define c09 #a64426
+#define c02 #4c7628
+#define c10 #4c7628
+#define c03 #cd9932
+#define c11 #c49c4a
+#define c04 #486e93
+#define c12 #4495ab
+#define c05 #935888
+#define c13 #935888
+#define c06 #54a09f
+#define c14 #54a09f
+#define c07 #707880
+#define c15 #c5c8c6
+
+*.background:  cBG
+*.foreground:  cFG
+*.cursorColor: cCU
+*.color0:      c00
+*.color1:      c01
+*.color2:      c02
+*.color3:      c03
+*.color4:      c04
+*.color5:      c05
+*.color6:      c06
+*.color7:      c07
+*.color8:      c08
+*.color9:      c09
+*.color10:     c10
+*.color11:     c11
+*.color12:     c12
+*.color13:     c13
+*.color14:     c14
+*.color15:     c15

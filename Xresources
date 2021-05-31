@@ -42,8 +42,9 @@ xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift
     Shift <Key>Right: ignore() \n\
     Shift <Key>Left: ignore()
 
-#define cBG #232831
 #define cFG #e5e9f0
+#define cBG #232831
+#define cCU #e5e9f0
 #define c00 #282e38
 #define c08 #2e3440
 #define c01 #bf616a
@@ -61,21 +62,22 @@ xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift
 #define c07 #707880
 #define c15 #c5c8c6
 
-*.background: cBG
-*.foreground: cFG
-*.color0:     c00
-*.color1:     c01
-*.color2:     c02
-*.color3:     c03
-*.color4:     c04
-*.color5:     c05
-*.color6:     c06
-*.color7:     c07
-*.color8:     c08
-*.color9:     c09
-*.color10:    c10
-*.color11:    c11
-*.color12:    c12
-*.color13:    c13
-*.color14:    c14
-*.color15:    c15
+*.background:  cBG
+*.foreground:  cFG
+*.cursorColor: cCU
+*.color0:      c00
+*.color1:      c01
+*.color2:      c02
+*.color3:      c03
+*.color4:      c04
+*.color5:      c05
+*.color6:      c06
+*.color7:      c07
+*.color8:      c08
+*.color9:      c09
+*.color10:     c10
+*.color11:     c11
+*.color12:     c12
+*.color13:     c13
+*.color14:     c14
+*.color15:     c15
