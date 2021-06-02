@@ -82,11 +82,11 @@ alias rm='rm -d'
 alias v='vim'
 
 	#{{{ files
-alias -s mkv="mpv"
-alias -s mp3="mpv"
-alias -s mp4="mpv"
-alias -s mpeg="mpv"
-alias -s ogg="mpv"
+alias -s mkv='mpv'
+alias -s mp3='mpv'
+alias -s mp4='mpv'
+alias -s mpeg='mpv'
+alias -s ogg='mpv'
 	#}}}
 #}}}
 
@@ -148,7 +148,7 @@ preexec() {
 		#{{{ PROMPT
 	plines=$(printf "%b" "$PROMPT\n" | wc -l)
 	printf "\033[${plines}A\033[K"
-	print -nP -- "$(printf "%s" "$PROMPT" | tail -n1)"
+	print -nP -- "%B$(printf "%s" "${PROMPT//\%\(\!\.#\.\$\)/%~}" | tail -n1)"
 	printf "%s\n\033[K" "$1"
 		#}}}
 
@@ -211,12 +211,14 @@ zshaddhistory() {
 KEYTIMEOUT=99999
 
 	#{{{ broken keys/key combos
-bindkey '^[OH' beginning-of-line
-bindkey '^[[1~' beginning-of-line
-bindkey '^[OF' end-of-line
-bindkey '^[[4~' end-of-line
-bindkey '^[[1;5D' backward-word
-bindkey '^[[1;5C' forward-word
+bindkey "^[OH"    beginning-of-line
+bindkey "^[[1~"   beginning-of-line
+bindkey "^[[7~"   beginning-of-line
+bindkey "^[OF"    end-of-line
+bindkey "^[[4~"   end-of-line
+bindkey "^[[8~"   end-of-line
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
 	#}}}
 
 	#{{{ spaces in enclosing characters
@@ -233,7 +235,7 @@ snip_space() {
 	fi
 }
 zle -N snip_space
-bindkey ' ' snip_space
+bindkey " " snip_space
 	#}}}
 
 	#{{{ vim terminal
@@ -249,10 +251,10 @@ _delete() {
 	_trash
 }
 zle -N _trash
-bindkey '^Ux' _trash
+bindkey "^Ux" _trash
 zle -N _delete
-bindkey '^Ud' _delete
-bindkey '^Ut' push-line
+bindkey "^Ud" _delete
+bindkey "^Ut" push-line
 		#}}}
 	#}}}
 
@@ -287,11 +289,11 @@ _enter() {
 	zle accept-line
 }
 zle -N _enter
-bindkey '^M' _enter
+bindkey "^M" _enter
 	#}}}
 
-bindkey '^[[A' up-line-or-search
-bindkey '^[[B' down-line-or-search
+bindkey "^[[A" up-line-or-search
+bindkey "^[[B" down-line-or-search
 #}}}
 
 # auto save screen layouts

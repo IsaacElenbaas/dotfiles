@@ -1108,8 +1108,8 @@ function Tapi_sc(bufnum, arglist)
 
 		"{{{ broken keys/key combos
 	" for some reason mapping to <Home> doesn't work but the escape sequence does
-	tnoremap <kHome> [1~
-	tnoremap <kEnd> [4~
+	tnoremap <kHome> <Esc>[1~
+	tnoremap <kEnd> <Esc>[4~
 		"}}}
 
 	" setting termwinkey doesn't make c-w pass through
@@ -1137,8 +1137,8 @@ endfunc
 
 	"{{{ broken keys/key combos
 " for some reason mapping to <Home> doesn't work but the escape sequence does
-tnoremap <kHome> OH
-tnoremap <kEnd> OF
+tnoremap <kHome> <Esc>OH
+tnoremap <kEnd> <Esc>OF
 	"}}}
 
 tnoremap <c-w> <c-w>N

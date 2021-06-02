@@ -1,1 +1,13 @@
 set completion-ignore-case on
+# ew
+set bell-style none
+"\033OH":    beginning-of-line
+"\033[1~":   beginning-of-line
+"\033[7~":   beginning-of-line
+"\033OF":    end-of-line
+"\033[4~":   end-of-line
+"\033[8~":   end-of-line
+"\033[1;5C": forward-word
+"\033OC":    forward-word
+"\033[1;5D": backward-word
+"\033OD":    backward-word

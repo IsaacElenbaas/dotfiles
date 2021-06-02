@@ -10,22 +10,15 @@ vbell off
 startup_message off
 # makes fullscreen applications clear
 altscreen on
-# don't remember why I had this as screen-256color but xterm fixes ctrl+arrows in vim and nothing seems to be broken
 term xterm-256color
 maptimeout 5
 
 #{{{ keybinds
 # showkey -a
 escape "^Aa"
-
-	#{{{ broken keybinds
 markkeys "\^=\201"
 markkeys "$=\205"
-# unfortunately c-left and c-right aren't possible without lots of Xresources shenanigans and something to feed them normally here
-	#}}}
-
 bindkey "^[G" windowlist
-#bindkey "^[R" title
 bindkey "^[D" remove
 # ctrl return
 bindkey "^[Q" screen
