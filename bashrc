@@ -9,8 +9,8 @@ PROMPT_COMMAND="$([ -n "$PROMPT_COMMAND" ] && printf "%s" "$PROMPT_COMMAND;")tpu
 
 f() {
 	\fff "$@"
-	cd "$(cat "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null)"
-	rm "${XDG_CACHE_HOME:=${HOME}/.cache}/fff/.fff_d" 2>/dev/null
+	cd "$(cat "${XDG_CACHE_HOME:=$HOME/.cache}/fff/.fff_d" 2>/dev/null)"
+	rm "${XDG_CACHE_HOME:=$HOME/.cache}/fff/.fff_d" 2>/dev/null
 }
 export -f f
 
@@ -24,7 +24,7 @@ alias ln='ln -s'
 alias ls='ls -hlA --color=auto'
 alias m='neomutt'
 alias mkdir='mkdir -p'
-alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
+alias mocp='mocp -T ~/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
 alias mv='mv -i'
 alias pa='pacaur'

@@ -42,7 +42,7 @@ hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"b
 
 # this won't save layout but prevents breaking due to resize
 hc keybind $Mod-Shift-v spawn xterm -e "screen vim"
-hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; exec mocp -T /home/isaacelenbaas/dotfiles/mocp-theme"
+hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; exec mocp -T ~/dotfiles/mocp-theme"
 	#}}}
 
 	#{{{ navigation
@@ -62,8 +62,8 @@ hc keybind $Mod-BackSpace use_index +$m
 	#}}}
 
 	#{{{ layouts
-hc keybind $Mod-f spawn /home/isaacelenbaas/dotfiles/bin/fullscreen
-hc keybind $Mod-Shift-f chain , or . and : compare clients.focus.fullscreen = false : spawn /home/isaacelenbaas/dotfiles/bin/fullscreen full . spawn /home/isaacelenbaas/dotfiles/bin/fullscreen , fullscreen toggle
+hc keybind $Mod-f spawn fullscreen
+hc keybind $Mod-Shift-f chain , or . and : compare clients.focus.fullscreen = false : spawn fullscreen full . spawn fullscreen , fullscreen toggle
 hc keybind $Mod-space cycle_layout 1 horizontal vertical max
 	#}}}
 

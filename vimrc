@@ -1,5 +1,5 @@
 "{{{ fix terminal colors 7 and 8
-if $VIM_TERMINAL == ""
+if $VIM_TERMINAL == "" && $SSH_TTY == ""
 	if $STY == ""
 		let t_tf="set t_ts=\033] t_fs=\007"
 	else

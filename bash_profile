@@ -1,5 +1,5 @@
-[[ -f /home/isaacelenbaas/.bashrc ]] && . /home/isaacelenbaas/.bashrc
-[[ -d /home/isaacelenbaas/dotfiles/bin ]] && PATH="${PATH}:/home/isaacelenbaas/dotfiles/bin"
-[[ -d /home/isaacelenbaas/fff ]] && PATH="${PATH}:/home/isaacelenbaas/fff"
-[[ -d /home/isaacelenbaas/pacwall ]] && PATH="${PATH}:/home/isaacelenbaas/pacwall"
-[[ -d /home/isaacelenbaas/.local/bin ]] && PATH="${PATH}:/home/isaacelenbaas/.local/bin"
+[[ -f ~/.bashrc ]] && . ~/.bashrc
+[[ -d ~/.local/bin ]] && PATH="$HOME/.local/bin:${PATH}"
+[[ -d ~/dotfiles/bin ]] && PATH="$HOME/dotfiles/bin:${PATH}"
+[[ -d ~/fff ]] && PATH="${PATH}:$HOME/fff"
+[[ -d ~/pacwall ]] && PATH="${PATH}:$HOME/pacwall"

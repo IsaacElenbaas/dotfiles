@@ -3,7 +3,7 @@ source ${ZDOTDIR:-$HOME/.zsh}/plugins/sudo.plugin.zsh
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/manydots.plugin.zsh
 
 	#{{{ You Should Use
-source /usr/share/zsh/plugins/zsh-you-should-use/you-should-use.plugin.zsh
+source ${ZDOTDIR:-$HOME/.zsh}/plugins/you-should-use.plugin.zsh
 export YSU_MESSAGE_POSITION="after"
 # display all aliases
 export YSU_MODE=ALL
@@ -51,8 +51,8 @@ f() {
 	#}}}
 
 	#{{{ Paste
-Paste() { printf '\033]51;["call", "Tapi_sc", []]\007' }
-Nopaste() { printf '\033]51;["call", "Tapi_scEnd", []]\007' }
+Paste() { printf '\033]51;["call","Tapi_sc",[]]\007' }
+Nopaste() { printf '\033]51;["call","Tapi_scEnd",[]]\007' }
 	#}}}
 #}}}
 
@@ -69,7 +69,7 @@ alias ln='ln -s'
 alias ls='ls -hl --color=auto'
 alias m='neomutt'
 alias mkdir='mkdir -p'
-alias mocp='mocp -T /home/isaacelenbaas/dotfiles/mocp-theme 2>/dev/null'
+alias mocp='mocp -T ~/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
 alias mv='mv -i'
 alias pa='pacaur'
@@ -172,7 +172,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call", "Tapi_rename", ["'"${start//\"/\\\"}"'"]]\007' )
+		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call","Tapi_rename",["'"${start//\"/\\\"}"'"]]\007' )
 	fi
 }
 	#}}}
@@ -247,7 +247,7 @@ _delete() {
 	BUFFER="${BUFFER//\\/\\\\\\\\}"
 	BUFFER="${BUFFER//\%/%%}"
 	BUFFER="${BUFFER//\"/\\\\\"}"
-	printf '\033]51;["call", "Tapi_yank", ["'"$BUFFER"'"]]\007'
+	printf '\033]51;["call","Tapi_yank",["'"$BUFFER"'"]]\007'
 	_trash
 }
 zle -N _trash

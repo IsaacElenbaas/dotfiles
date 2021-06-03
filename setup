@@ -1,40 +1,41 @@
 #!/usr/bin/bash
 
-ln -sf /home/isaacelenbaas/dotfiles/zsh                      /home/isaacelenbaas/.zsh
-ln -sf /home/isaacelenbaas/dotfiles/vim                      /home/isaacelenbaas/.vim
-ln -sf /home/isaacelenbaas/dotfiles/bash_profile             /home/isaacelenbaas/.bash_profile
-ln -sf /home/isaacelenbaas/dotfiles/bashrc                   /home/isaacelenbaas/.bashrc
-ln -sf /home/isaacelenbaas/dotfiles/zshrc                    /home/isaacelenbaas/.zshrc
-ln -sf /home/isaacelenbaas/dotfiles/inputrc                  /home/isaacelenbaas/.inputrc
-ln -sf /home/isaacelenbaas/dotfiles/vimrc                    /home/isaacelenbaas/.vimrc
-ln -sf /home/isaacelenbaas/dotfiles/screenrc                 /home/isaacelenbaas/.screenrc
-ln -sf /home/isaacelenbaas/dotfiles/screenrcunbind           /home/isaacelenbaas/.screenrcunbind
-ln -sf /home/isaacelenbaas/dotfiles/xbindkeysrc              /home/isaacelenbaas/.xbindkeysrc
-ln -sf /home/isaacelenbaas/dotfiles/xinitrc                  /home/isaacelenbaas/.xinitrc
-ln -sf /home/isaacelenbaas/dotfiles/Xresources               /home/isaacelenbaas/.Xresources
-ln -sf /home/isaacelenbaas/dotfiles/fff                      /home/isaacelenbaas/.fff
-ln -sf /home/isaacelenbaas/dotfiles/muttrc                   /home/isaacelenbaas/.muttrc
+ln -sf ~/dotfiles/zsh                      ~/.zsh
+ln -sf ~/dotfiles/vim                      ~/.vim
+ln -sf ~/dotfiles/bash_profile             ~/.bash_profile
+ln -sf ~/dotfiles/bashrc                   ~/.bashrc
+ln -sf ~/dotfiles/zshrc                    ~/.zshrc
+ln -sf ~/dotfiles/inputrc                  ~/.inputrc
+ln -sf ~/dotfiles/vimrc                    ~/.vimrc
+ln -sf ~/dotfiles/screenrc                 ~/.screenrc
+ln -sf ~/dotfiles/screenrcunbind           ~/.screenrcunbind
+ln -sf ~/dotfiles/tmux.conf                ~/.tmux.conf
+ln -sf ~/dotfiles/xbindkeysrc              ~/.xbindkeysrc
+ln -sf ~/dotfiles/xinitrc                  ~/.xinitrc
+ln -sf ~/dotfiles/Xresources               ~/.Xresources
+ln -sf ~/dotfiles/fff                      ~/.fff
+ln -sf ~/dotfiles/muttrc                   ~/.muttrc
 
-mkdir -p /home/isaacelenbaas/.config
-ln -sf /home/isaacelenbaas/dotfiles/cleanup                  /home/isaacelenbaas/.config/
-ln -sf /home/isaacelenbaas/dotfiles/dunst                    /home/isaacelenbaas/.config/
-ln -sf /home/isaacelenbaas/dotfiles/herbstluftwm             /home/isaacelenbaas/.config/
-ln -sf /home/isaacelenbaas/dotfiles/neofetch                 /home/isaacelenbaas/.config/
-mkdir -p /home/isaacelenbaas/.config/mpv
-ln -sf /home/isaacelenbaas/dotfiles/mpv.conf                 /home/isaacelenbaas/.config/mpv/
-ln -sf /home/isaacelenbaas/dotfiles/mpvbinds.conf            /home/isaacelenbaas/.config/mpv/input.conf
-mkdir -p /home/isaacelenbaas/.config/qutebrowser
-ln -sf /home/isaacelenbaas/dotfiles/qutebrowser/greasemonkey /home/isaacelenbaas/.config/qutebrowser/
-ln -sf /home/isaacelenbaas/dotfiles/qutebrowser/config.py    /home/isaacelenbaas/.config/qutebrowser/
-mkdir -p /home/isaacelenbaas/.config/systemd
-ln -sf /home/isaacelenbaas/dotfiles/systemd                  /home/isaacelenbaas/.config/systemd/user
+mkdir -p ~/.config
+ln -sf ~/dotfiles/cleanup                  ~/.config/
+ln -sf ~/dotfiles/dunst                    ~/.config/
+ln -sf ~/dotfiles/herbstluftwm             ~/.config/
+ln -sf ~/dotfiles/neofetch                 ~/.config/
+mkdir -p ~/.config/mpv
+ln -sf ~/dotfiles/mpv.conf                 ~/.config/mpv/
+ln -sf ~/dotfiles/mpvbinds.conf            ~/.config/mpv/input.conf
+mkdir -p ~/.config/qutebrowser
+ln -sf ~/dotfiles/qutebrowser/greasemonkey ~/.config/qutebrowser/
+ln -sf ~/dotfiles/qutebrowser/config.py    ~/.config/qutebrowser/
+mkdir -p ~/.config/systemd
+ln -sf ~/dotfiles/systemd                  ~/.config/systemd/user
 
-mkdir -p /home/isaacelenbaas/.local/share
-ln -sf /home/isaacelenbaas/dotfiles/icons                    /home/isaacelenbaas/.local/share/
-ln -sf /home/isaacelenbaas/dotfiles/fonts                    /home/isaacelenbaas/.local/share/
-mkdir -p /home/isaacelenbaas/.local/share/qutebrowser
-ln -sf /home/isaacelenbaas/dotfiles/qutebrowser/greasemonkey /home/isaacelenbaas/.local/share/qutebrowser/
-ln -sf /home/isaacelenbaas/dotfiles/qutebrowser/userscripts  /home/isaacelenbaas/.local/share/qutebrowser/
+mkdir -p ~/.local/share
+ln -sf ~/dotfiles/icons                    ~/.local/share/
+ln -sf ~/dotfiles/fonts                    ~/.local/share/
+mkdir -p ~/.local/share/qutebrowser
+ln -sf ~/dotfiles/qutebrowser/greasemonkey ~/.local/share/qutebrowser/
+ln -sf ~/dotfiles/qutebrowser/userscripts  ~/.local/share/qutebrowser/
 
 # git config here so I don't have to worry about accidentally pushing .gitconfig sensitive info
 git config --global core.editor "vim"
