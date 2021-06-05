@@ -1,7 +1,7 @@
 # the mouse option breaks things - click to select works, but scrolling just sends escape codes and enabling vim mouse support at the same time makes escape wait forever regardless of maptimeout
 
 #shell "/usr/bin/zsh"
-shell "~/dotfiles/bin/shell"
+shell "$HOME/dotfiles/bin/shell"
 shelltitle "-----"
 # undoes off in screenrcunbind, it's there to cause outer screen to exit and inner to then autodetach
 autodetach on
