@@ -1,3 +1,5 @@
+source ~/.profile
+
 #{{{ plugins
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/sudo.plugin.zsh
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/manydots.plugin.zsh
@@ -125,7 +127,7 @@ prompt-git() {
 }
 #}}}
 sections=(
-	" %n $c"
+	" %n$([ "$USER" != "isaacelenbaas" ] && printf "%s" "@%M") $c"
 	" %~ $c"
 	"\$(prompt-git %cb %cnb %cnf)"
 	"$nl"
@@ -218,7 +220,9 @@ bindkey "^[OF"    end-of-line
 bindkey "^[[4~"   end-of-line
 bindkey "^[[8~"   end-of-line
 bindkey "^[[1;5C" forward-word
+bindkey "^[OC"    forward-word
 bindkey "^[[1;5D" backward-word
+bindkey "^[OD"    forward-word
 	#}}}
 
 	#{{{ spaces in enclosing characters

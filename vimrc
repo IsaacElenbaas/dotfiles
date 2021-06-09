@@ -949,29 +949,23 @@ endfunction
 "}}}
 
 	"{{{ TerminalEnd()
-try
 function TerminalEnd()
 	try
 		nunmap r
-	catch /^.*E31:.*/
-	endtry
-	try
 		nunmap dt
 		nunmap dd
 		nunmap xx
 		nunmap p
-	catch /^.*E31:.*/
+		source $MYVIMRC
+	catch /.*/
 	endtry
-	source $MYVIMRC
 	call lightline#highlight()
 endfunction
-catch /^.*E127:.*/
-endtry
 	"}}}
 
 augroup Terminal
 	autocmd!
-	autocmd TerminalWinOpen * call Terminal()
+	autocmd TerminalOpen * call Terminal()
 	" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
 	" I've no idea whether waiting for TermResponse actually fixes the weird printing problems or just fires late enough to allow herbstluft resize to finish, but it works
 	autocmd TermResponse * if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1 | suspend | endif

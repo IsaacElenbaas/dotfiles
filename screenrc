@@ -10,6 +10,8 @@ vbell off
 startup_message off
 # makes fullscreen applications clear
 altscreen on
+# vim is used for scrollback
+defscrollback 0
 term xterm-256color
 maptimeout 5
 

@@ -2,6 +2,7 @@
 
 ln -sf ~/dotfiles/zsh                      ~/.zsh
 ln -sf ~/dotfiles/vim                      ~/.vim
+ln -sf ~/dotfiles/profile                  ~/.profile
 ln -sf ~/dotfiles/bash_profile             ~/.bash_profile
 ln -sf ~/dotfiles/bashrc                   ~/.bashrc
 ln -sf ~/dotfiles/zshrc                    ~/.zshrc
