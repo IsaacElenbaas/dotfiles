@@ -54,7 +54,7 @@ herbstclient -i | while read line; do
 	update=0
 	case "$line" in
 		"song")
-			mocp="$(\mocp --format '%tl %song')"
+			mocp="$(mocp --format '%tl %song')"
 			# pause play will for sure have this run again before song ends, that sets again to right time (so pause/play doesn't call this)
 			# skip/prev will call this as old could come in after new song ends
 			songTrigger="${mocp%% *}"
