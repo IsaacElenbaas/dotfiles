@@ -545,6 +545,9 @@ nnoremap ; .
 inoremap <expr> <BS> (search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>c-o>d2\<lt>Left>" : "\<lt>BS>"
 nnoremap v <c-v>
 nnoremap <c-v> v
+xnoremap <expr> v (feedkeys("<Esc>", "nx") \|\| getpos(".") == getpos("'>")) ? "`<<c-v>`>" : "`><c-v>`<"
+xnoremap <expr> <c-v> (feedkeys("<Esc>", "nx") \|\| getpos(".") == getpos("'>")) ? "`<v`>" : "`>v`<"
+xnoremap <expr> V (feedkeys("<Esc>", "nx") \|\| getpos(".") == getpos("'>")) ? "`<V`>" : "`>V`<"
 nnoremap dD g^D
 nnoremap cC g^C
 nnoremap x "_d
@@ -667,7 +670,6 @@ nmap tmmB tB
 xmap tmmB tB
 nnoremap tv gv
 xnoremap tv gv
-xnoremap v gv
 
 		"{{{ scrolling
 nmap <silent> tn :<c-u>call signature#mark#Goto("next","spot","pos")<CR>tmm

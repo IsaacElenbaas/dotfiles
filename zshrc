@@ -95,28 +95,13 @@ alias -s ogg='mpv'
 #{{{ PROMPT
 # allows functions in PROMPT
 setopt prompt_subst
-# there's PROMPT stuff in preexec too
+# OLDPROMPT stuff is in preexec
 # https://zsh.sourceforge.io/Doc/Release/Prompt-Expansion.html
 c="%F{%cb}%K{%cnb}%F{%cnf}"
 nl=$'\n'"%K{%cnb}%F{%cnf}"
 nlb="}%k%{%"
-fgs=(
-	"black"
-	"255"
-	"255"
-	""
-	"255"
-	""
-)
-bgs=(
-	"15"
-	"32"
-	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf '34' || printf '%s' '$nlb')"
-	"$nlb"
-	"32"
-	"$nlb"
-)
-#{{{ functions
+
+	#{{{ prompt functions
 prompt-git() {
 	git rev-parse --is-inside-work-tree &>/dev/null && {
 		c2="${c//\%cb/$1}"
@@ -125,33 +110,84 @@ prompt-git() {
 		printf "  %s %s" "$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" "$c2"
 	}
 }
-#}}}
-sections=(
+	#}}}
+
+	#{{{ PROMPT definition
+promptfgs=(
+	"black"
+	"255"
+	"255"
+	""
+	"255"
+	""
+)
+promptbgs=(
+	"15"
+	"32"
+	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf '34' || printf '%s' '$nlb')"
+	"$nlb"
+	"32"
+	"$nlb"
+)
+promptsections=(
 	" %n$([ "$USER" != "isaacelenbaas" ] && printf "%s" "@%M") $c"
 	" %~ $c"
 	"\$(prompt-git %cb %cnb %cnf)"
 	"$nl"
 	" %(!.#.$) $c"
 )
-PROMPT="%K{$bgs[1]}%F{$fgs[1]}"
-for (( i = 1; i <= $#sections; i++ )); do
-	PROMPT+="$sections[i]"
-	PROMPT="${PROMPT//\%cb/$bgs[i]}"
-	PROMPT="${PROMPT//\%cnb/$bgs[$((i+1))]}"
-	PROMPT="${PROMPT//\%cnf/$fgs[$((i+1))]}"
+	#}}}
+
+nl=$'\n'"\033[K${nl:1}"
+
+	#{{{ OLDPROMPT definition
+oldpromptfgs=(
+	"black"
+	"255"
+	""
+)
+oldpromptbgs=(
+	"15"
+	"32"
+	"$nlb"
+)
+oldpromptsections=(
+	" \$(date +'%I:%M') $c"
+	" %~ $c"
+)
+	#}}}
+
+	#{{{ PROMPT and OLDPROMPT generation
+PROMPT="%K{$promptbgs[1]}%F{$promptfgs[1]}"
+for (( i = 1; i <= $#promptsections; i++ )); do
+	PROMPT+="$promptsections[i]"
+	PROMPT="${PROMPT//\%cb/$promptbgs[i]}"
+	PROMPT="${PROMPT//\%cnb/$promptbgs[$((i+1))]}"
+	PROMPT="${PROMPT//\%cnf/$promptfgs[$((i+1))]}"
 done
 PROMPT="%B${PROMPT}%b%u%s%f%k "
+OLDPROMPT="%K{$oldpromptbgs[1]}%F{$oldpromptfgs[1]}"
+for (( i = 1; i <= $#oldpromptsections; i++ )); do
+	OLDPROMPT+="$oldpromptsections[i]"
+	OLDPROMPT="${OLDPROMPT//\%cb/$oldpromptbgs[i]}"
+	OLDPROMPT="${OLDPROMPT//\%cnb/$oldpromptbgs[$((i+1))]}"
+	OLDPROMPT="${OLDPROMPT//\%cnf/$oldpromptfgs[$((i+1))]}"
+done
+OLDPROMPT="%B${OLDPROMPT}%b%u%s%f%k "
+	#}}}
 #}}}
 
 #{{{ zsh hooks
 # http://zsh.sourceforge.net/Doc/Release/Functions.html#Hook-Functions
 	#{{{ preexec
 preexec() {
-		#{{{ PROMPT
+		#{{{ OLDPROMPT
 	plines=$(printf "%b" "$PROMPT\n" | wc -l)
-	printf "\033[${plines}A\033[K"
-	print -nP -- "%B$(printf "%s" "${PROMPT//\%\(\!\.#\.\$\)/%~}" | tail -n1)"
-	printf "%s\n\033[K" "$1"
+	for (( i = 1; i <= $plines; i++ )); do
+		printf "\033[A\033[K"
+	done
+	print -nP -- "$OLDPROMPT"
+	printf "%s\n" "$1"
 		#}}}
 
 	start="$(printf "%s" "$1" | sed 's/^\s*//')"
