@@ -909,7 +909,7 @@ augroup MySh
 	autocmd InsertLeave * call cursor([getpos(".")[1], getpos(".")[2]+1])
 	autocmd BufNewFile,BufRead * set textwidth=0
 	" per filetype
-	autocmd BufNewFile,BufRead *.pde let &makeprg="processing-java --sketch=" . expand("%:p:h") . " --run >/dev/null &"
+	autocmd BufNewFile,BufRead *.pde let &makeprg="processing-java --sketch=" . expand("%:p:h") . " --run > /dev/null &"
 augroup END
 "}}}
 

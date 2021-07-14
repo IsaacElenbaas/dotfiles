@@ -83,6 +83,26 @@ alias qq='exit'
 alias rm='rm -d'
 alias v='vim'
 
+	#{{{ mocp
+alias mocp-add='mocp --append'
+alias mocp-celeste='mocp-only "~/Music/Celeste"'
+alias mocp-crashlands='mocp-only "~/Music/Crashlands"'
+alias mocp-default='mocp-only "~/Music/Default"'
+alias mocp-hk='mocp-only "~/Music/Hollow Knight"'
+alias mocp-httyd='mocp-only "~/Music/HTTYD"'
+alias mocp-httyd1='mocp-only "~/Music/HTTYD/1"'
+alias mocp-httyd2='mocp-only "~/Music/HTTYD/2"'
+alias mocp-httyd3='mocp-only "~/Music/HTTYD/3"'
+alias mocp-maquia='mocp-only "~/Music/Maquia"'
+alias mocp-opus='mocp-only "~/Music/Opus Magnum"'
+alias mocp-ori='mocp-only "~/Music/Ori"'
+alias mocp-ori-bf='mocp-only "~/Music/Ori/BF Original" "~/Music/Ori/BF Additional"'
+alias mocp-ori-wotw='mocp-only "~/Music/Ori/WotW"'
+alias mocp-poly='mocp-only "~/Music/Poly Bridge"'
+alias mocp-poly1='mocp-only "~/Music/Poly Bridge/1"'
+alias mocp-poly2='mocp-only "~/Music/Poly Bridge/2"'
+	#}}}
+
 	#{{{ files
 alias -s mkv='mpv'
 alias -s mp3='mpv'
@@ -158,22 +178,22 @@ oldpromptsections=(
 	#}}}
 
 	#{{{ PROMPT and OLDPROMPT generation
-PROMPT="%K{$promptbgs[1]}%F{$promptfgs[1]}"
+PROMPT="%{"$'\033[?7l'"%}%K{$promptbgs[1]}%F{$promptfgs[1]}"
 for (( i = 1; i <= $#promptsections; i++ )); do
 	PROMPT+="$promptsections[i]"
 	PROMPT="${PROMPT//\%cb/$promptbgs[i]}"
 	PROMPT="${PROMPT//\%cnb/$promptbgs[$((i+1))]}"
 	PROMPT="${PROMPT//\%cnf/$promptfgs[$((i+1))]}"
 done
-PROMPT="%B${PROMPT}%b%u%s%f%k "
-OLDPROMPT="%K{$oldpromptbgs[1]}%F{$oldpromptfgs[1]}"
+PROMPT="%B${PROMPT}%b%u%s%f%k %{"$'\033[?7h'"%}"
+OLDPROMPT="%{"$'\033[?7l'"%}%K{$oldpromptbgs[1]}%F{$oldpromptfgs[1]}"
 for (( i = 1; i <= $#oldpromptsections; i++ )); do
 	OLDPROMPT+="$oldpromptsections[i]"
 	OLDPROMPT="${OLDPROMPT//\%cb/$oldpromptbgs[i]}"
 	OLDPROMPT="${OLDPROMPT//\%cnb/$oldpromptbgs[$((i+1))]}"
 	OLDPROMPT="${OLDPROMPT//\%cnf/$oldpromptfgs[$((i+1))]}"
 done
-OLDPROMPT="%B${OLDPROMPT}%b%u%s%f%k "
+OLDPROMPT="%B${OLDPROMPT}%b%u%s%f%k %{"$'\033[?7h'"%}"
 	#}}}
 #}}}
 
@@ -198,7 +218,7 @@ preexec() {
 
 		#{{{ undistract-me
 	case "$start" in
-		"bash" | "sc" | "v" | "vim" | "f" | "fff" | "mocp" | "m" | "mutt" | "man" | "colorpicker" | "bluetoothctl") starttime=0 ;;
+		"bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mutt" | "sc" | "ssh" | "v" | "vim") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;

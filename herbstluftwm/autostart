@@ -133,7 +133,7 @@ hc rule class='mpv' not title='noMin' focus=off index='/'
 hc set tree_style '╾│ ├└╼─┐' # For printing window list
 hc unlock
 hc detect_monitors
-ps -o pgid,cmd -U "$USER" | grep dzenbar | while read line; do [[ "$line" != *"grep"* ]] && line="${line# }" && pkill -9 -g "${line%% *}"; done
+ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while read line; do line="${line# }" && pkill -9 -g "${line%% *}"; done
 killall dzenbar
 killall dzen2
 dzenbar $h &

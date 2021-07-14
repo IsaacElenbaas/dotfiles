@@ -26,7 +26,6 @@ mkdir -p ~/.config/mpv
 ln -sf ~/dotfiles/mpv.conf                 ~/.config/mpv/
 ln -sf ~/dotfiles/mpvbinds.conf            ~/.config/mpv/input.conf
 mkdir -p ~/.config/qutebrowser
-ln -sf ~/dotfiles/qutebrowser/greasemonkey ~/.config/qutebrowser/
 ln -sf ~/dotfiles/qutebrowser/config.py    ~/.config/qutebrowser/
 mkdir -p ~/.config/systemd
 ln -sf ~/dotfiles/systemd                  ~/.config/systemd/user

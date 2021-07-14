@@ -26,7 +26,7 @@ tagText() {
 #}}}
 
 #{{{ setup
-pgid="$(ps -o pgid,cmd -U "$USER" | grep dzenbar | head -n1)"
+pgid="$(ps -o pgid,cmd -U "$USER" | grep dzenbar | head -n 1)"
 pgid="${pgid# }"
 pgid="${pgid%% *}"
 m=$(herbstclient get_attr monitors.count)

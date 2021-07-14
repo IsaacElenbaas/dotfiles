@@ -2,7 +2,7 @@
 
 mocp --clear
 mocp --exit
-youtube-dl --download-archive ~/Music/Default/archive.txt "https://www.youtube.com/playlist?list=PL9aQR0qi3yRad5s3ABdKaC06M9g1O0Iem" -f 'bestaudio/best' --extract-audio --audio-format mp3 --metadata-from-title "%(id)s" --add-metadata -o "$HOME/Music/Default/%(title)s.%(ext)s" --no-overwrites | grep -e "\[download\] Destination:" -e "\[download\] Finished"
+youtube-dl --download-archive ~/Music/Default/archive.txt "https://www.youtube.com/playlist?list=PL9aQR0qi3yRad5s3ABdKaC06M9g1O0Iem" -f "bestaudio/best" --extract-audio --audio-format mp3 --metadata-from-title "%(id)s" --add-metadata -o "$HOME/Music/Default/%(title)s.%(ext)s" --no-overwrites | grep -e "\[download\] Destination:" -e "\[download\] Finished"
 find ~/Music/Default/ -name "*\\.mp3" -exec mp3gain -r -k -c {} \; | grep Applying
 while [ -f ~/.moc/pid ]; do sleep 0.5; done
 mocp --server &>/dev/null

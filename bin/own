@@ -8,7 +8,7 @@ verbose=""
 preserve=""
 target=""
 declare -a paths
-usage="Usage: $(basename $0) [OPTIONS] [file ...]
+usage="Usage: $(basename "$0") [OPTIONS] [file ...]
   -o, --owner USER NAME/ID      user owner to set
   -g, --group GROUP NAME/ID     group owner to set
   -c, --changes                 like verbose but report only when a change is made
