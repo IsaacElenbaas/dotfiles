@@ -1,0 +1,9 @@
+[Unit]
+Description=Gives osu's typing sound effects system-wide
+
+[Service]
+WorkingDirectory=%h/Projects/osu-keysounds
+ExecStart=%h/Projects/osu-keysounds/keysounds
+
+[Install]
+WantedBy=multi-user.target

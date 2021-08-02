@@ -16,29 +16,30 @@ export YSU_HARDCORE=1
 
 #{{{ settings
 	#{{{ history
-HISTFILE=${ZDOTDIR:-$HOME}/.zsh_history
+HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"
 HISTSIZE=1000
 SAVEHIST=1000
 setopt share_history
 setopt inc_append_history
 setopt hist_ignore_all_dups
-setopt hist_ignore_space
 setopt hist_reduce_blanks
 	#}}}
 
 	#{{{ completion
-zstyle ':completion:*' completer _files _complete _ignored _correct
+zstyle ":completion:*" completer _files _complete _ignored _correct
 # case-insensitive matching
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+zstyle ":completion:*" matcher-list 'm:{a-z}={A-Z}'
 # /h/i/dot<Tab> -> /home/isaacelenbaas/dotfiles
-zstyle ':completion:*' list-suffixes zstyle ':completion:*' expand prefix suffix
+zstyle ":completion:*" list-suffixes zstyle ':completion:*' expand prefix suffix
+setopt correct
+CORRECT_IGNORE='[_|.]*'
 
 autoload -Uz compinit && compinit
 	#}}}
 
 setopt autocd
-setopt correct
-CORRECT_IGNORE='[_|.]*'
+setopt cdsilent
+CDPATH=".:$HOME"
 unsetopt beep
 bindkey -e
 #}}}
@@ -59,9 +60,9 @@ Nopaste() { printf '\033]51;["call","Tapi_scEnd",[]]\007' }
 #}}}
 
 #{{{ aliases
-alias sudo='sudo '
 alias c='clear'
 alias cp='cp -ri'
+alias ctl='systemctl'
 alias CAPSLOCK='xdotool key Caps_Lock'
 alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
 alias dirsize='du -sh -- .'
@@ -74,7 +75,7 @@ alias mkdir='mkdir -p'
 alias mocp='mocp -T ~/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
 alias mv='mv -i'
-alias pa='pacaur'
+alias pa='yay'
 alias ping='ping -c 5'
 alias pm='pacman'
 alias sc='sc || exit'
@@ -85,22 +86,26 @@ alias v='vim'
 
 	#{{{ mocp
 alias mocp-add='mocp --append'
-alias mocp-celeste='mocp-only "~/Music/Celeste"'
-alias mocp-crashlands='mocp-only "~/Music/Crashlands"'
-alias mocp-default='mocp-only "~/Music/Default"'
-alias mocp-hk='mocp-only "~/Music/Hollow Knight"'
-alias mocp-httyd='mocp-only "~/Music/HTTYD"'
-alias mocp-httyd1='mocp-only "~/Music/HTTYD/1"'
-alias mocp-httyd2='mocp-only "~/Music/HTTYD/2"'
-alias mocp-httyd3='mocp-only "~/Music/HTTYD/3"'
-alias mocp-maquia='mocp-only "~/Music/Maquia"'
-alias mocp-opus='mocp-only "~/Music/Opus Magnum"'
-alias mocp-ori='mocp-only "~/Music/Ori"'
-alias mocp-ori-bf='mocp-only "~/Music/Ori/BF Original" "~/Music/Ori/BF Additional"'
-alias mocp-ori-wotw='mocp-only "~/Music/Ori/WotW"'
-alias mocp-poly='mocp-only "~/Music/Poly Bridge"'
-alias mocp-poly1='mocp-only "~/Music/Poly Bridge/1"'
-alias mocp-poly2='mocp-only "~/Music/Poly Bridge/2"'
+alias mocp-ash='mocp-only "$HOME/Music/A Short Hike"'
+alias mocp-celeste='mocp-only "$HOME/Music/Celeste"'
+alias mocp-crashlands='mocp-only "$HOME/Music/Crashlands"'
+alias mocp-default='mocp-only "$HOME/Music/Default"'
+alias mocp-hk='mocp-only "$HOME/Music/Hollow Knight"'
+alias mocp-httyd1='mocp-only "$HOME/Music/HTTYD/1"'
+alias mocp-httyd2='mocp-only "$HOME/Music/HTTYD/2"'
+alias mocp-httyd3='mocp-only "$HOME/Music/HTTYD/3"'
+alias mocp-httyd='mocp-only "$HOME/Music/HTTYD"'
+alias mocp-maquia='mocp-only "$HOME/Music/Maquia"'
+alias mocp-opus='mocp-only "$HOME/Music/Opus Magnum"'
+alias mocp-ori-bf='mocp-only "$HOME/Music/Ori/BF Original" "$HOME/Music/Ori/BF Additional"'
+alias mocp-ori-wotw='mocp-only "$HOME/Music/Ori/WotW"'
+alias mocp-ori='mocp-only "$HOME/Music/Ori"'
+alias mocp-poly1='mocp-only "$HOME/Music/Poly Bridge/1"'
+alias mocp-poly2='mocp-only "$HOME/Music/Poly Bridge/2"'
+alias mocp-poly='mocp-only "$HOME/Music/Poly Bridge"'
+alias mocp-ror1='mocp-only "$HOME/Music/Risk of Rain/1"'
+alias mocp-ror2='mocp-only "$HOME/Music/Risk of Rain/2"'
+alias mocp-ror='mocp-only "$HOME/Music/Risk of Rain"'
 	#}}}
 
 	#{{{ files
@@ -210,15 +215,15 @@ preexec() {
 	printf "%s\n" "$1"
 		#}}}
 
-	start="$(printf "%s" "$1" | sed 's/^\s*//')"
-	start="${start%% *}"
+	start="${1#${1%%[![:space:]]*}}"
+	start="${start%${start##*[![:space:]]}}"
 	end="${1##*|}"
-	end="$(printf "%s" "$end" | sed 's/^\s*//')"
-	end="${end%% *}"
+	end="${end#${end%%[![:space:]]*}}"
+	end="${end%${end##*[![:space:]]}}"
 
 		#{{{ undistract-me
 	case "$start" in
-		"bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mutt" | "sc" | "ssh" | "v" | "vim") starttime=0 ;;
+		"" | "bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mutt" | "sc" | "ssh" | "v" | "vim") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;
@@ -239,7 +244,7 @@ preexec() {
 precmd() {
 	# undistract-me
 	((starttime > 0 && SECONDS-starttime > 10)) &&
-		(notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga &) &>/dev/null &&
+		(notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga --volume=65536 &) &>/dev/null &&
 		printf "$((SECONDS-starttime))s\n"
 	tput cnorm # vim can't handle guis run in it run in a screen lol https://groups.google.com/forum/#!topic/vim_dev/HhczoxAdcWE
 }
@@ -256,9 +261,18 @@ chpwd() {
 
 	#{{{ zshaddhistory
 zshaddhistory() {
-	case "$(printf "%s" "$1" | sed 's/^\s*//')" in
-		"q" | "exit" | "detach") return 1 ;;
+	[ -n "${1%%[![:space:]]*}" ] && return 1
+	start="${1%$'\n'}"
+	start="${start#${start%%[![:space:]]*}}"
+	start="${start%%[[:space:]]*}"
+	case "$start" in
+		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
+		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ping" | "rm" | "scp" | "ssh" | "tar" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
+		"cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
+	for alias in "${(@k)aliases}"; do
+		[ "$start" = "$alias" ] && return 2
+	done
 	return 0;
 }
 	#}}}
@@ -318,8 +332,23 @@ bindkey "^Ut" push-line
 		#}}}
 	#}}}
 
-	#{{{ prompt to expand currently typing path on enter
 _enter() {
+	#{{{ navi
+	start="${BUFFER%%[![:space:]]*}"
+	BUFFER="${BUFFER#${BUFFER%%[![:space:]]*}} "
+	if [ "${BUFFER%%[[:space:]]*}" = "n" ] || [ "${BUFFER%%[[:space:]]*}" = "navi" ]; then
+		navi="$(navi --print)"
+		[ -z "${BUFFER#*[[:space:]]}" ] && start=" "
+		BUFFER="$start${navi%$'\n'}${BUFFER#*[[:space:]]}"
+		[ -z "${BUFFER#${BUFFER%%[![:space:]]*}}" ] && BUFFER="" && return
+		starttime=$SECONDS
+		zle accept-line
+		return
+	fi
+	BUFFER="$start${BUFFER:0:-1}"
+	#}}}
+
+	#{{{ prompt to expand currently typing path on enter
 	checkpath=$LBUFFER
 	[[ "$RBUFFER" =~ ^([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
 	if [[ "$checkpath" =~ ([^[:space:]\/\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*\/([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]; then
@@ -327,13 +356,13 @@ _enter() {
 		OLDBUF=$BUFFER
 		zle complete-word _files
 		# select first if multiple matches
-		while [[ "${LBUFFER%% }" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]] && [[ ! -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/^\\~/~/')) ]]; do
+		while [[ "${LBUFFER%${LBUFFER##*[![:space:]]}}" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]] && [[ ! -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/^\\~/~/')) ]]; do
 			zle complete-word _files
 			[ "$BUFFER" = "$LASTBUF" ] && break || LASTBUF=$BUFFER
 		done
 		if [ "$BUFFER" != "$OLDBUF" ]; then
 			# save expansion
-			[[ "${LBUFFER%% }" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]
+			[[ "${LBUFFER%${LBUFFER##*[![:space:]]}}" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]
 			printf "\nzsh: expand to '$MATCH' [nye]? "
 			while true; do
 				read -rs -k 1 key || { BUFFER=$OLDBUF; break; }
@@ -346,17 +375,18 @@ _enter() {
 			done
 		fi
 	fi
+	#}}}
+
 	zle accept-line
 }
 zle -N _enter
 bindkey "^M" _enter
-	#}}}
 
 bindkey "^[[A" up-line-or-search
 bindkey "^[[B" down-line-or-search
 #}}}
 
 # auto save screen layouts
-# doesn't trigger in vim terminal, equivalent method in vimrc
+# doesn't trigger in vim terminal, equivalent function in vimrc
 [ -z "$VIM_TERMINAL" ] && [ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" && VIM_TERMINAL=-1
 export SHELL="/usr/bin/zsh"

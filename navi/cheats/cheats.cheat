@@ -1,0 +1,163 @@
+;#{{{ git
+% git
+
+# Check out a branch from a fork
+git fetch origin pull/<pr_number>/head:pr/<pr_number> && git checkout pr/<pr_number>
+
+# Rebase from a branch
+git rebase -i <branch>
+
+# Add a new module
+git submodule add <repository> <path>
+
+# Pull all submodules
+git submodule foreach git pull origin master
+
+# Update all submodules
+git submodule update --init --recursive
+
+$ branch: git branch | while IFS= read -r line; do printf "${line##* }\n"; done
+;#}}}
+
+;#{{{ misc.
+% misc
+
+# Enable keysounds :: keysounds
+systemctl --user restart osu-keysounds
+
+# Disable keysounds :: nokeysounds
+systemctl --user stop osu-keysounds
+
+# Turn off GPU lights
+nvidia-led no-animation 0
+
+;	#{{{ media
+% media, ffmpeg
+
+# Normalize file
+bash -c 'i="<file>"; ffmpeg -i "$i" -vf "scale=1280:-1" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:a aac -c:s copy -y "$i.new" && mv -f "$i.new" "$i" || rm "$i.new"'
+
+# Normalize in directory (recursively)
+bash -c 'for i in *.<extension>; do ffmpeg -i "$i" -vf "scale=1280:-1" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:a aac -c:s copy -y "$i.new" &>/dev/null && mv -f "$i.new" "$i" || printf "Failed on %s\n" "$i"; done'
+
+# Normalize file audio
+ffmpeg-normalize "<file>" -c:a aac -ar 48000
+
+# Normalize audio in directory
+ffmpeg-normalize "*.<extension>" -c:a aac -ar 48000
+
+# Run mp3gain on file
+mp3gain -r -k -c "<name>" | grep Applying
+
+# Run mp3gain on all mp3s in directory (recursively)
+find <directory> -name "*\\.mp3" -exec mp3gain -r -k -c {} \; | grep Applying
+
+# Renumber
+renumber "<glob>" "<prefix>" <digits>
+
+# Bandicamp cleanup
+bash -c 'for i in *" - "*"-"[0-9]*; do n="${i#* - }"; ffmpeg -i "$i" -vn -metadata title="${n%-*}" -maxrate 128k -y "${n%-*}.mp3" &>/dev/null && rm "$i" || printf "Failed on %s\n" "$i"; done'
+;	#}}}
+;#}}}
+
+;#{{{ school, work
+% school, work
+
+# Start f5fpc vpn
+f5fpc --start --host https://vpn.mtu.edu --user itelenba -x
+
+# Stop f5fpc vpn
+f5fpc --stop
+
+# ssh to dynaguy
+ssh itelenba@dynaguy.it.mtu.edu
+
+# ssh to dynaguy-vm-rhel8
+ssh itelenba@dynaguy-vm-rhel8.it.mtu.edu
+
+# ssh to dynaguy-vm-rhel8 as root
+ssh root@dynaguy-vm-rhel8.it.mtu.edu -i ~/.ssh/id_rsa_mtu
+
+# scp to dynaguy home
+scp <file> itelenba@dynaguy.it.mtu.edu:/home/campus24/itelenba/
+
+# scp to dynaguy 30_day_tmp
+scp <file> itelenba@dynaguy.it.mtu.edu:/scratch_30_day_tmp/itelenba/
+
+# scp to dynaguy scratch
+scp <file> itelenba@dynaguy.it.mtu.edu:/scratch/
+
+# scp from dynaguy
+scp itelenba@dynaguy.it.mtu.edu:<file> ./
+;#}}}
+
+;#{{{ system
+% system
+
+# Display the status of all fail2ban jails
+sudo bash -c 'fail2ban-client status | tail -n 1 | { IFS= read -r line; printf "${line#*:},"; } | while IFS= read -r -d "," jail; do fail2ban-client status "${jail#${jail%%[![:space:]]*}}"; done'
+
+;	#{{{ pacman
+% pacman, pm, system
+
+# Mark package as explicitly required
+sudo pacman -D --asexplicit <pkg_name>
+
+# Install package as dependency
+sudo pacman -S --asdeps <pkg_name>
+
+# Show pacman log
+$VISUAL /var/log/pacman.log
+
+# Display local package's information
+pacman -Qi <pkg_name>
+
+# Display remote package's information
+pacman -Si <pkg_name>
+
+# List files provided by local package
+pacman -Ql <pkg_name>
+
+# Display the local package which provides file
+pacman -Qo <file_name>
+
+# List files that local package owns
+pacman -Ql <pkg_name>
+
+# List packages which require local package to be installed
+pacman -Sii <pkg_name>
+
+# Install package from file
+sudo pacman -U <pkg_file>
+;	#}}}
+
+;	#{{{ herbstluftwm
+% herbstluftwm, system
+
+# Display tree
+herbstclient stack
+
+# Fix monitor
+herbstclient use_index +1
+;	#}}}
+;#}}}
+
+;#{{{ systemctl
+% systemctl, services
+
+# List running services
+systemctl list-units --type=service --state=running
+
+# List enabled services
+systemctl list-unit-files --type=service --state=enabled
+
+# List disabled services
+systemctl list-unit-files --type=service --state=disabled
+;#}}}
+
+;#{{{ qr code
+% qr code
+
+# Create a QR code with some content
+printf <content> | curl -F-=\<- qrenco.de
+;#}}}

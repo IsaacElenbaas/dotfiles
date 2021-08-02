@@ -69,7 +69,7 @@ herbstclient -i | while read line; do
 		;;
 		"updates")
 			# unfortunately this has to be blocking
-			dzupdates="$( ( checkupdates; pacaur -Qu ) | wc -l)"
+			dzupdates="$( ( checkupdates; yay -Qu ) | wc -l)"
 			updateplural=$([ "$dzupdates" = "1" ] && printf "" || printf "s")
 			update=1
 		;;
@@ -92,6 +92,9 @@ herbstclient -i | while read line; do
 				tagTexts[$monitor]="$(tagText $monitor $tag)"
 			fi
 			tags[$monitor]=$tag
+		;;
+		"focus_changed"*"0x0")
+			herbstclient set_layout horizontal
 		;;
 	esac
 	case $update in

@@ -21,6 +21,7 @@ mkdir -p ~/.config
 ln -sf ~/dotfiles/cleanup                  ~/.config/
 ln -sf ~/dotfiles/dunst                    ~/.config/
 ln -sf ~/dotfiles/herbstluftwm             ~/.config/
+ln -sf ~/dotfiles/navi                     ~/.config/
 ln -sf ~/dotfiles/neofetch                 ~/.config/
 mkdir -p ~/.config/mpv
 ln -sf ~/dotfiles/mpv.conf                 ~/.config/mpv/
@@ -33,6 +34,7 @@ ln -sf ~/dotfiles/systemd                  ~/.config/systemd/user
 mkdir -p ~/.local/share
 ln -sf ~/dotfiles/icons                    ~/.local/share/
 ln -sf ~/dotfiles/fonts                    ~/.local/share/
+ln -sf ~/dotfiles/navi                     ~/.local/share/
 mkdir -p ~/.local/share/qutebrowser
 ln -sf ~/dotfiles/qutebrowser/greasemonkey ~/.local/share/qutebrowser/
 ln -sf ~/dotfiles/qutebrowser/userscripts  ~/.local/share/qutebrowser/

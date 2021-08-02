@@ -8,7 +8,7 @@ hc emit_hook reload
 hc keyunbind --all
 hc unrule -F
 hc attr theme.tiling.reset 1
-m=$(xrandr --query | awk '/ connected/{print}' | wc -l)
+m=$(xrandr --query | awk "/ connected/{print}" | wc -l)
 h=20
 Mod=Mod4 # Use the super key as the main modifier
 #}}}
@@ -31,13 +31,13 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 # if reactivating this remember to change shell in screenrc
 # sleep fixes incorrect position when herbstluft has to rearrange windows
 #hc keybind $Mod-Return spawn xterm -e "sleep 0.05; screen"
-#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; zsh'"
+#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; zsh -l'"
 		#}}}
 
 		#{{{ vim terminal
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons). Whatever, only an extra ~5MB of RAM wasted per additional screen item.
-hc keybind $Mod-Return spawn xterm -e "screen vim '+terminal ++close ++curwin ++norestore zsh'"
-hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"f; [ -n \\\"\\\$STY\\\" ] && screen -X -S \\\"\\\${STY%%.*}\\\" chdir \\\"\\\$(pwd)\\\"; exec zsh\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
+hc keybind $Mod-Return spawn xterm -e "screen vim '+terminal ++close ++curwin ++norestore zsh -l'"
+hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"f; [ -n \\\"\\\$STY\\\" ] && screen -X -S \\\"\\\${STY%%.*}\\\" chdir \\\"\\\$(pwd)\\\"; exec zsh -l\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
 		#}}}
 
 # this won't save layout but prevents breaking due to resize
@@ -74,8 +74,8 @@ hc keybind $Mod-Shift-t shift down
 hc keybind $Mod-Shift-c shift up
 hc keybind $Mod-Shift-n or / shift right / \
 	chain , lock , shift_to_monitor -r , focus_monitor -r , unlock
-hc keybind $Mod-y spawn bash -c 'herbstclient setenv clip $(herbstclient get_attr clients.focus.winid)'
-hc keybind $Mod-i spawn bash -c 'herbstclient bring $(herbstclient getenv clip)'
+hc keybind $Mod-y spawn bash -c "herbstclient setenv clip \$(herbstclient get_attr clients.focus.winid)"
+hc keybind $Mod-i spawn bash -c "herbstclient bring \$(herbstclient getenv clip)"
 	#}}}
 
 	#{{{ frames
@@ -90,6 +90,7 @@ hc keybind $Mod-u      resize right +$resizestep
 #}}}
 
 #{{{ tag setup
+default_frame_layout horizontal
 hc rename default "1"
 for (( i=2; i <= 6*m; i++ )); do
 	hc add "$i"
@@ -98,12 +99,12 @@ done
 
 #{{{ theme
 	#{{{ colors
-hc set frame_border_normal_color '#2C2C2C'
-hc set frame_border_active_color '#383838'
+hc set frame_border_normal_color "#2C2C2C"
+hc set frame_border_active_color "#383838"
 hc attr theme.inner_color black # between border and window
-hc attr theme.active.color '#009fbc'
-hc attr theme.normal.color '#454545'
-hc attr theme.urgent.color '#EF9C00'
+hc attr theme.active.color "#009fbc"
+hc attr theme.normal.color "#454545"
+hc attr theme.urgent.color "#EF9C00"
 	#}}}
 
 	#{{{ sizes
@@ -121,16 +122,17 @@ hc set mouse_recenter_gap 99999
 #}}}
 
 #{{{ rules
-hc rule focus=on ewmhrequests=off fullscreen=off # normally focus new clients and don't allow them to control their fullscreen or 'needs attention' state
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
-hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
-hc rule class='discord' tag=2
-hc rule class='Steam' tag=3 focus=off
-hc rule class='mpv' not title='noMin' focus=off index='/'
+hc rule focus=on ewmhrequests=off ewmhnotify=off fullscreen=off # normally focus new clients, don"t allow them to control their fullscreen or "needs attention" state, and don't tell them what's going on
+hc rule windowtype~"_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)" pseudotile=on
+hc rule windowtype~"_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)" manage=off
+hc rule class="discord" tag=2
+hc rule class="Steam" tag=3
+hc rule class="Steam" not title="Steam" focus=off
+hc rule class="mpv" not title="noMin" focus=off index="/"
 #}}}
 
 #{{{ misc/bar startup
-hc set tree_style '╾│ ├└╼─┐' # For printing window list
+hc set tree_style "╾│ ├└╼─┐" # For printing window list
 hc unlock
 hc detect_monitors
 ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while read line; do line="${line# }" && pkill -9 -g "${line%% *}"; done

@@ -2,9 +2,9 @@
 Description=Starts Music on Console Player
 
 [Service]
-ExecStart=/bin/bash -c "mocp --server &>/dev/null; mocp --on shuffle --append $HOME/Music/Default"
+ExecStart=/bin/bash -c "mocp --server &>/dev/null; %h/dotfiles/bin/mocp-only %h/Music/Default"
 Type=oneshot
 RemainAfterExit=yes
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

@@ -1,10 +1,5 @@
 "{{{ fix terminal colors 7 and 8
 if $VIM_TERMINAL == "" && $SSH_TTY == ""
-	if $STY == ""
-		let t_tf="set t_ts=\033] t_fs=\007"
-	else
-		let t_tf="set t_ts=\033P\033] t_fs=\007\033\\"
-	endif
 	function FixColors()
 		call histdel(":", -1)
 		if slice(g:color, 0, 2) != "4;"
@@ -21,14 +16,20 @@ if $VIM_TERMINAL == "" && $SSH_TTY == ""
 			echo
 		endif
 	endfunction
-	let did7=0
-	nnoremap <Esc>] :let color="
-	tnoremap <Esc>] <c-w>N:let color="
-	cnoremap <c-G> "<bar>let wasterm=1<bar>call FixColors()<CR>
-	let wasterm=0
-	execute g:t_tf | let &titlestring="4;7;?" | set title | redraw | set notitle
-	set updatetime=15
 	augroup FixColorsAG
+		autocmd VimEnter *
+			\ if $STY == ""
+				\|let t_tf="set t_ts=\033] t_fs=\007"
+			\|else
+				\|let t_tf="set t_ts=\033P\033] t_fs=\007\033\\"
+			\|endif
+			\|let did7=0
+			\|nnoremap <Esc>] :let color="
+			\|tnoremap <Esc>] <c-w>N:let color="
+			\|cnoremap <c-G> "<bar>let wasterm=1<bar>call FixColors()<CR>
+			\|let wasterm=0
+			\|execute g:t_tf | let &titlestring="4;7;?" | set title | redraw | set notitle
+			\|set updatetime=50
 		autocmd CursorHold * unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasterm | call feedkeys("i", "nx") | endif | unlet g:wasterm | set updatetime=4000 | autocmd! FixColorsAG
 	augroup END
 endif

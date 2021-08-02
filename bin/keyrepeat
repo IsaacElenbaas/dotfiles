@@ -19,3 +19,16 @@ xset -r 49 # `
 xset -r 59 # ,
 xset -r 60 # .
 xset -r 65 # space
+
+xinput list | {
+	while IFS= read -r line; do
+		[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
+	done
+	while IFS= read -r line; do printf "$line\n"; done
+} | while IFS= read -r line; do
+	[[ "$line" =~ .?\s*Virtual\ core\ keyboard.* ]] && break
+	line="${line##*id=}"
+	printf "${line%%[[:space:]]*}\n"
+done | while IFS= read -r pointer; do
+	[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 0 1
+done

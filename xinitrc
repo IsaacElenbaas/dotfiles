@@ -35,6 +35,9 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
 	unset f
 fi
 
+[ -f ~/.config/systemd/user/osu-keysounds.service ] && systemctl --user start osu-keysounds
+[ -f ~/.config/systemd/user/vnc.service ] && systemctl --user start vnc
+
 keyrepeat # X resets them
 { [ -e /sys/class/power_supply/BAT0 ] && printf "power off\nexit" || printf "power on\nexit"; } | bluetoothctl
 tabletsetup
