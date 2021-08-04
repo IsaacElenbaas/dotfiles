@@ -5,7 +5,6 @@ arm-none-eabi-binutils
 arm-none-eabi-gcc
 arm-none-eabi-newlib
 aspell-en
-auracle-git
 avrdude
 avr-gcc
 avr-libc
@@ -23,6 +22,7 @@ dzen2
 fail2ban
 feh
 ffcast
+fzf
 gdb
 gendesk
 geoip
@@ -41,12 +41,12 @@ man-pages
 mdf2iso
 mkvtoolnix-cli
 mono
+navi
 noto-fonts-emoji
 ntfs-3g
 ocl-icd
 os-prober
 p7zip
-pacaur
 pacman-contrib
 pavucontrol
 pulseaudio
@@ -86,6 +86,7 @@ xorg-xset
 xorg-xsetroot
 xterm
 xsel
+yay
 youtube-dl
 zip
 zsh

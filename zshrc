@@ -1,7 +1,6 @@
 source ~/.profile
 
 #{{{ plugins
-source ${ZDOTDIR:-$HOME/.zsh}/plugins/sudo.plugin.zsh
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/manydots.plugin.zsh
 
 	#{{{ You Should Use
@@ -267,7 +266,7 @@ zshaddhistory() {
 	start="${start%%[[:space:]]*}"
 	case "$start" in
 		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
-		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ping" | "rm" | "scp" | "ssh" | "tar" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
+		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
 		"cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
 	for alias in "${(@k)aliases}"; do
@@ -280,7 +279,8 @@ zshaddhistory() {
 
 #{{{ keybinds
 # showkey -a
-KEYTIMEOUT=99999
+# hundreths of a second
+KEYTIMEOUT=1
 
 	#{{{ broken keys/key combos
 bindkey "^[OH"    beginning-of-line
@@ -332,23 +332,30 @@ bindkey "^Ut" push-line
 		#}}}
 	#}}}
 
+#{{{ enter
 _enter() {
-	#{{{ navi
+	BUFFER="${BUFFER%${BUFFER##*[![:space:]]}}"
+
+		#{{{ navi
 	start="${BUFFER%%[![:space:]]*}"
 	BUFFER="${BUFFER#${BUFFER%%[![:space:]]*}} "
 	if [ "${BUFFER%%[[:space:]]*}" = "n" ] || [ "${BUFFER%%[[:space:]]*}" = "navi" ]; then
 		navi="$(navi --print)"
+		if [ -z "${navi%$'\n'}" ]; then
+			[ -z "${BUFFER#*[[:space:]]}" ] && BUFFER="" || BUFFER="$start${BUFFER:0:-1}"
+			return
+		fi
 		[ -z "${BUFFER#*[[:space:]]}" ] && start=" "
-		BUFFER="$start${navi%$'\n'}${BUFFER#*[[:space:]]}"
-		[ -z "${BUFFER#${BUFFER%%[![:space:]]*}}" ] && BUFFER="" && return
+		BUFFER="$start${navi%$'\n'} ${BUFFER#*[[:space:]]}"
+		BUFFER="${BUFFER%[[:space:]]}"
 		starttime=$SECONDS
 		zle accept-line
 		return
 	fi
 	BUFFER="$start${BUFFER:0:-1}"
-	#}}}
+		#}}}
 
-	#{{{ prompt to expand currently typing path on enter
+		#{{{ prompt to expand currently typing path on enter
 	checkpath=$LBUFFER
 	[[ "$RBUFFER" =~ ^([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
 	if [[ "$checkpath" =~ ([^[:space:]\/\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*\/([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]; then
@@ -375,13 +382,58 @@ _enter() {
 			done
 		fi
 	fi
-	#}}}
+		#}}}
 
 	zle accept-line
 }
 zle -N _enter
 bindkey "^M" _enter
+#}}}
 
+	#{{{ autocommands
+		#{{{ f
+_autocommand-f() {
+	if [ "$LBUFFER" = "f" ] && [ -z "$RBUFFER" ]; then
+		BUFFER=" fff"
+		zle accept-line
+	else
+		LBUFFER="${LBUFFER}f"
+	fi
+}
+zle -N _autocommand-f
+bindkey "f" _autocommand-f
+		#}}}
+
+		#{{{ l
+_autocommand-l() {
+	if [ "$LBUFFER" = "l" ] && [ -z "$RBUFFER" ]; then
+		BUFFER=" ls"
+		zle accept-line
+	else
+		LBUFFER="${LBUFFER}l"
+	fi
+}
+zle -N _autocommand-l
+bindkey "l" _autocommand-l
+		#}}}
+
+		#{{{ n
+_autocommand-n() {
+	if [ "$LBUFFER" = "n" ] && [ -z "$RBUFFER" ]; then
+		navi="$(navi --print)"
+		[ -z "${navi%$'\n'}" ] && { BUFFER=""; return; }
+		BUFFER=" $navi"
+		zle accept-line
+	else
+		LBUFFER="${LBUFFER}n"
+	fi
+}
+zle -N _autocommand-n
+bindkey "n" _autocommand-n
+		#}}}
+	#}}}
+
+bindkey -s "^[" ""
 bindkey "^[[A" up-line-or-search
 bindkey "^[[B" down-line-or-search
 #}}}

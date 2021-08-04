@@ -473,7 +473,7 @@ set virtualedit+=onemore
 set gdefault
 " don't timeout multi-stroke mappings
 set notimeout
-" control sequence delay
+" control sequence delay in ms
 set ttimeoutlen=10
 " enable fold markers
 set foldmethod=marker
@@ -543,7 +543,7 @@ map! <kEnd> <End>
 nnoremap Q :
 nnoremap q :<c-u>q<CR>
 nnoremap ; .
-inoremap <expr> <BS> (search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>c-o>d2\<lt>Left>" : "\<lt>BS>"
+inoremap <expr> <BS> ((search('( \%# )', "bcn", line(".")) != search('\[ \%# \]', "bcn", line("."))) != search('{ \%# }', "bcn", line("."))) ? "\<lt>c-o>d2\<lt>Left>" : "\<lt>BS>"
 nnoremap v <c-v>
 nnoremap <c-v> v
 xnoremap <expr> v (feedkeys("<Esc>", "nx") \|\| getpos(".") == getpos("'>")) ? "`<<c-v>`>" : "`><c-v>`<"
@@ -1020,7 +1020,7 @@ endfunction
 	"{{{ Tapi_mappings()
 function Tapi_mappings()
 		"{{{ misc.
-tnoremap <silent> <BS> <c-w>N:<c-u>call feedkeys("i" . ((search('( \%# )', "bcn", line(".")) != 0) ? "\<lt>Right>\<lt>BS>\<lt>BS>" : "\<lt>BS>"), "nx")<CR>
+tnoremap <silent> <BS> <c-w>N:<c-u>call feedkeys("i" . (((search('( \%# )', "bcn", line(".")) != search('\[ \%# \]', "bcn", line("."))) != search('{ \%# }', "bcn", line("."))) ? "\<lt>Right>\<lt>BS>\<lt>BS>" : "\<lt>BS>"), "nx")<CR>
 tnoremap <bar>& <bar><bar>
 		"}}}
 

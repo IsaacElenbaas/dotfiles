@@ -17,7 +17,6 @@ gimp
 godot
 gsmartcontrol
 gthumb
-haguichi
 inkscape
 intellij-idea-ultimate-edition
 kcachegrind
@@ -35,7 +34,6 @@ openscad
 osu-lazer
 pdfjs
 processing
-protontricks
 python-adblock
 qcad
 qmk
@@ -43,9 +41,11 @@ quodlibet
 qutebrowser
 remmina
 samrewritten-git
+shellcheck
 slack-desktop
 squashfuse
 steam
+steamcmd
 termdown
 valgrind
 virtualbox

@@ -1,7 +1,7 @@
 ;#{{{ git
 % git
 
-# Check out a branch from a fork
+# Check out a PR branch
 git fetch origin pull/<pr_number>/head:pr/<pr_number> && git checkout pr/<pr_number>
 
 # Rebase from a branch
