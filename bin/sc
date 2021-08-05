@@ -20,9 +20,9 @@ while true; do
 		done | tac
 	)"
 	if [ "$sockets" == "" ]; then
-		[ $index -ne 99 ] && clear
 		printf "No detached Sockets found.\n"
 		[ -n "$STY" ] && screen -X -S "${STY%%.*}" source ~/.screenrc
+		[ -n "$VIM_TERMINAL" ] && printf '\033]51;["call", "Tapi_scEnd", []]\a' # for terminal in vim, see vimrc
 		exit 0
 	fi
 	maxIndex=$(printf "%s" "$sockets" | wc -l)
@@ -73,8 +73,9 @@ while true; do
 			;;
 			" "|"p")
 				screen -X -S $pid bindkey "q" detach
-				screen -d -r $pid
+				screen -d -r $pid &>/dev/null
 				screen -X -S $pid bindkey "q"
+				printf "\033[A\033[K"
 			;;
 			"q" | $'\033')
 				printf "\033[?25h" # restore cursor
@@ -88,13 +89,19 @@ while true; do
 				printf "\033[?25h"
 				while [ "$REPLY" != "yes" ] && [ "$REPLY" != "no" ]; do printf "\033[A\033[K"; read -p "Are you sure you want to kill '$name'? [yes/no]: "; done
 				printf "\033[?25l"
-				[ "$REPLY" = "yes" ] && screen -X -S $pid quit
+				[ "$REPLY" = "yes" ] && { screen -X -S $pid quit; scrollFrom=$((scrollFrom <= 0 ? 0 : scrollFrom-1)); scrollTo=$((scrollTo-1)); printf "\033[A\033[K"; }
 			;;
 			"r")
 				printf "\033[?25h"
 				read -r -p "New name: "
-				printf "\033[?25l"
+				printf "\033[A\033[K\033[?25l"
 				screen -X -S $pid sessionname "$REPLY"
+			;;
+			"g")
+				index=0
+			;;
+			"G")
+				index=$maxIndex
 			;;
 		esac
 	done
