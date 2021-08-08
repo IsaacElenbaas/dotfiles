@@ -94,7 +94,7 @@ herbstclient -i | while read line; do
 			tags[$monitor]=$tag
 		;;
 		"focus_changed"*"0x0")
-			herbstclient set_layout horizontal
+			[ "$(herbstclient get_attr tags.focus.curframe_wcount)" -eq 0 ] && herbstclient set_layout horizontal
 		;;
 	esac
 	case $update in
