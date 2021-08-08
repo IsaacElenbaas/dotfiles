@@ -39,8 +39,8 @@ autoload -Uz compinit && compinit
 setopt autocd
 setopt cdsilent
 CDPATH=".:$HOME"
+WORDCHARS=
 unsetopt beep
-bindkey -e
 #}}}
 
 #{{{ functions
@@ -66,6 +66,8 @@ alias CAPSLOCK='xdotool key Caps_Lock'
 alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
 alias dirsize='du -sh -- .'
 alias fff='f'
+alias fpg='ffmpeg'
+alias fpr='ffprobe'
 alias less='less -x2'
 alias ln='ln -s'
 alias ls='ls -hl --color=auto'
@@ -215,14 +217,14 @@ preexec() {
 		#}}}
 
 	start="${1#${1%%[![:space:]]*}}"
-	start="${start%${start##*[![:space:]]}}"
+	start="${start%%[[:space:]]*}"
 	end="${1##*|}"
 	end="${end#${end%%[![:space:]]*}}"
-	end="${end%${end##*[![:space:]]}}"
+	end="${end%%[[:space:]]*}"
 
 		#{{{ undistract-me
 	case "$start" in
-		"" | "bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mutt" | "sc" | "ssh" | "v" | "vim") starttime=0 ;;
+		"" | "bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mpv" | "mutt" | "sc" | "ssh" | "termdown" | "v" | "vim") starttime=0 ;;
 		*)
 			case "${end%% *}" in
 				"less") starttime=0 ;;
@@ -266,7 +268,7 @@ zshaddhistory() {
 	start="${start%%[[:space:]]*}"
 	case "$start" in
 		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
-		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
+		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
 		"cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
 	for alias in "${(@k)aliases}"; do
@@ -279,6 +281,7 @@ zshaddhistory() {
 
 #{{{ keybinds
 # showkey -a
+bindkey -e
 # hundreths of a second
 KEYTIMEOUT=1
 
@@ -397,11 +400,12 @@ _autocommand-f() {
 		BUFFER=" fff"
 		zle accept-line
 	else
-		LBUFFER="${LBUFFER}f"
+		zle self-insert
 	fi
 }
 zle -N _autocommand-f
 bindkey "f" _autocommand-f
+bindkey -sM isearch "f" "\026f"
 		#}}}
 
 		#{{{ l
@@ -410,11 +414,12 @@ _autocommand-l() {
 		BUFFER=" ls"
 		zle accept-line
 	else
-		LBUFFER="${LBUFFER}l"
+		zle self-insert
 	fi
 }
 zle -N _autocommand-l
 bindkey "l" _autocommand-l
+bindkey -sM isearch "l" "\026l"
 		#}}}
 
 		#{{{ n
@@ -425,11 +430,12 @@ _autocommand-n() {
 		BUFFER=" $navi"
 		zle accept-line
 	else
-		LBUFFER="${LBUFFER}n"
+		zle self-insert
 	fi
 }
 zle -N _autocommand-n
 bindkey "n" _autocommand-n
+bindkey -sM isearch "n" "\026n"
 		#}}}
 	#}}}
 
