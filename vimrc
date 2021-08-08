@@ -607,10 +607,11 @@ nnoremap <silent> F :<c-u>call Search(0)<CR>?
 xnoremap <silent> F :<c-u>call Search(1)<CR>?
 augroup Search
 	autocmd!
-	autocmd VimEnter * call GUnmap() | nnoremap <expr> g Find(1) | xnoremap <expr> g Find(1)
+	autocmd VimEnter * call GUnmap() | nnoremap <expr> g Find(1) | xnoremap <expr> g Find(1) | onoremap <expr> g Find(1)
 augroup END
 nnoremap <expr> G Find(0)
 xnoremap <expr> G Find(0)
+onoremap <expr> G Find(0)
 nnoremap / :<c-u>autocmd! Search<CR>/
 xnoremap / :<c-u>autocmd! Search<CR>gv/
 nnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call search(g:search, 'sW')\<lt>CR>"
@@ -653,47 +654,55 @@ onoremap <silent> am :<c-u>call SelectMath(1)<CR>
 	"}}}
 
 	"{{{ travelling
-nnoremap tmm <Nop>
-xnoremap tmm <Nop>
+nnoremap t <Nop>
+xnoremap t <Nop>
+nmap tmm t
+xmap tmm t
 nmap tmmt t
 xmap tmmt t
+nmap tmmm t
+xmap tmmm t
+nmap tmmmt t
+xmap tmmmt t
+nmap ttt tmmmm
+xmap ttt tmmmm
+nmap tmmmm t
+xmap tmmmm t
+nmap tmmmmt t
+xmap tmmmmt t
 
 nnoremap tm '
 xnoremap tm '
 " back/forward in jump history
 nmap tb <c-o>tmm
 xmap tb <c-o>tmm
-nmap tmmb tb
-xmap tmmb tb
 nmap tB <c-i>tmm
 xmap tB <c-i>tmm
-nmap tmmB tB
-xmap tmmB tB
 nnoremap tv gv
 xnoremap tv gv
 
 		"{{{ scrolling
 nmap <silent> tn :<c-u>call signature#mark#Goto("next","spot","pos")<CR>tmm
 xmap <silent> tn :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("next","spot","pos")<CR>tmm
-nmap tmmn tn
-xmap tmmn tn
 nmap <silent> tN :<c-u>call signature#mark#Goto("prev","spot","pos")<CR>tmm
 xmap <silent> tN :<c-u>execute "normal! gv"<bar>call signature#mark#Goto("prev","spot","pos")<CR>tmm
-nmap tmmN tN
-xmap tmmN tN
 nmap <silent> t<Down> :<c-u>execute "normal! 2\<lt>c-e>M"<CR>tmm
 xmap <silent> t<Down> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>2\<lt>c-e>M'"<CR>tmm
-nmap tmm<Down> t<Down>
-xmap tmm<Down> t<Down>
+nmap <silent> tmmm<Down> :<c-u>execute "normal! 4\<lt>c-e>M"<CR>tmmm
+xmap <silent> tmmm<Down> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>4\<lt>c-e>M'"<CR>tmmm
+nmap <silent> tmmmm<Down> :<c-u>execute "normal! 8\<lt>c-e>M"<CR>tmmmm
+xmap <silent> tmmmm<Down> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>8\<lt>c-e>M'"<CR>tmmmm
 nmap <silent> t<Up> :<c-u>execute "normal! 2\<lt>c-y>M"<CR>tmm
 xmap <silent> t<Up> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>2\<lt>c-y>M'"<CR>tmm
-nmap tmm<Up> t<Up>
-xmap tmm<Up> t<Up>
+nmap <silent> tmmm<Up> :<c-u>execute "normal! 4\<lt>c-y>M"<CR>tmmm
+xmap <silent> tmmm<Up> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>4\<lt>c-y>M'"<CR>tmmm
+nmap <silent> tmmmm<Up> :<c-u>execute "normal! 8\<lt>c-y>M"<CR>tmmmm
+xmap <silent> tmmmm<Up> <Esc>:<c-u>execute "execute 'normal! H'<bar>let temp=line('.')<bar>execute 'normal! gv'.temp.'z\<lt>CR>8\<lt>c-y>M'"<CR>tmmmm
 		"}}}
 
 		"{{{ scrolling to screen percentage
-nnoremap tt H
-xnoremap tt H
+nmap <silent> tt :<c-u>normal! H<CR>tmmm
+xmap <silent> tt :<c-u>normal! gvH<CR>tmmm
 nnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10,0)<CR>
 xnoremap <silent> t1 :<c-u>call ScrollScreenPercent(10,1)<CR>
 nnoremap <silent> t2 :<c-u>call ScrollScreenPercent(20,0)<CR>
