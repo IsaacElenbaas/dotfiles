@@ -59,15 +59,16 @@ Nopaste() { printf '\033]51;["call","Tapi_scEnd",[]]\007' }
 #}}}
 
 #{{{ aliases
+alias CAPSLOCK='xdotool key Caps_Lock'
 alias c='clear'
 alias cp='cp -ri'
 alias ctl='systemctl'
-alias CAPSLOCK='xdotool key Caps_Lock'
 alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
 alias dirsize='du -sh -- .'
 alias fff='f'
 alias fpg='ffmpeg'
 alias fpr='ffprobe'
+alias keysounds='systemctl --user restart osu-keysounds'
 alias less='less -x2'
 alias ln='ln -s'
 alias ls='ls -hl --color=auto'
@@ -76,13 +77,14 @@ alias mkdir='mkdir -p'
 alias mocp='mocp -T ~/dotfiles/mocp-theme 2>/dev/null'
 alias mutt='neomutt'
 alias mv='mv -i'
+alias nokeysounds='systemctl --user stop osu-keysounds'
 alias pa='yay'
 alias ping='ping -c 5'
 alias pm='pacman'
-alias sc='sc || exit'
 alias q='exit'
 alias qq='exit'
 alias rm='rm -d'
+alias sc='sc || exit'
 alias v='vim'
 
 	#{{{ mocp

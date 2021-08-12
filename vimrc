@@ -1,5 +1,6 @@
 "{{{ fix terminal colors 7 and 8
 if $VIM_TERMINAL == "" && $SSH_TTY == ""
+	let g:wasTerm=0
 	function FixColors()
 		call histdel(":", -1)
 		if slice(g:color, 0, 2) != "4;"
@@ -10,6 +11,10 @@ if $VIM_TERMINAL == "" && $SSH_TTY == ""
 				let g:did7=1
 				execute g:t_tf | let &titlestring="4;248;" . slice(g:color, 4) | set title | redraw | set notitle
 				execute g:t_tf | let &titlestring="4;8;?" | set title | redraw | set notitle
+				set updatetime=50
+				augroup FixColorsAG
+					autocmd CursorHold * unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasTerm | call feedkeys("i", "nx") | endif | unlet g:wasTerm | set updatetime=4000 | autocmd! FixColorsAG
+				augroup END
 			endif
 		elseif slice(g:color, 2, 4) == "8;"
 			execute g:t_tf | let &titlestring="4;242;" . slice(g:color, 4) | set title | redraw | set notitle
@@ -19,18 +24,15 @@ if $VIM_TERMINAL == "" && $SSH_TTY == ""
 	augroup FixColorsAG
 		autocmd VimEnter *
 			\ if $STY == ""
-				\|let t_tf="set t_ts=\033] t_fs=\007"
+				\|let g:t_tf="set t_ts=\033] t_fs=\007"
 			\|else
-				\|let t_tf="set t_ts=\033P\033] t_fs=\007\033\\"
+				\|let g:t_tf="set t_ts=\033P\033] t_fs=\007\033\\"
 			\|endif
-			\|let did7=0
-			\|nnoremap <Esc>] :let color="
-			\|tnoremap <Esc>] <c-w>N:let color="
-			\|cnoremap <c-G> "<bar>let wasterm=1<bar>call FixColors()<CR>
-			\|let wasterm=0
+			\|let g:did7=0
+			\|exec "nnoremap <Esc>] :let g:color=\""
+			\|exec "tnoremap <Esc>] <c-w>N:let g:color=\""
+			\|cnoremap <c-G> "<bar>let g:wasTerm=1<bar>call FixColors()<CR>
 			\|execute g:t_tf | let &titlestring="4;7;?" | set title | redraw | set notitle
-			\|set updatetime=50
-		autocmd CursorHold * unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasterm | call feedkeys("i", "nx") | endif | unlet g:wasterm | set updatetime=4000 | autocmd! FixColorsAG
 	augroup END
 endif
 "}}}
@@ -455,7 +457,9 @@ nnoremap <silent> mm 0vg_di\`<c-r>"\`<Esc>
 "{{{ settings
 " ensure consistent system calls
 set shell=/usr/bin/bash
-" screw the python styleguide
+" doesn't affect anything and I handle screen titles myself
+set notitle
+" screw PEP8
 let g:python_recommended_style=0
 " use 256 color
 set t_Co=256
@@ -885,7 +889,7 @@ augroup FoldMarkerHighlight
 	" will match the fold comment once, get one space group, and move on
 	" matching the space and lookbehind/ahead is horribly inefficient as it is
 	" on every space in the file
-augroup end
+augroup END
 		"}}}
 	"}}}
 
@@ -930,6 +934,9 @@ endif
 
 	"{{{ Terminal()
 function Terminal()
+	" for fixing terminal colors, can be removed when #7227 is closed
+	let g:wasTerm=1
+
 	" doesn't trigger outside of vim terminal due to VIM_TERMINAL=-1 in zshrc
 	" time check is for sessions started with "screen vim"
 	if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1
@@ -978,11 +985,9 @@ endfunction
 augroup Terminal
 	autocmd!
 	autocmd TerminalOpen * call Terminal()
-	" because vim is run directly from screen, it will reactivate immediately, sending t_ti, t_TI, and t_ks again (and this is much better than hacky title stuff)
-	" I've no idea whether waiting for TermResponse actually fixes the weird printing problems or just fires late enough to allow herbstluft resize to finish, but it works
-	autocmd TermResponse * if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1 | suspend | endif
 	autocmd VimEnter * call Tapi_send(0, [0, "\033]51;", '["call","Tapi_sc",[]]',    "\007"])
 	autocmd VimLeave * call Tapi_send(0, [0, "\033]51;", '["call","Tapi_scEnd",[]]', "\007"])
+	" :term is used for quick commands, otherwise there will never be more than one buffer
 	autocmd BufDelete * if len(getbufinfo({'buflisted':1})) != "0" | call TerminalEnd() | endif
 augroup END
 
@@ -1100,7 +1105,10 @@ function Tapi_sc(bufnum, arglist)
 		while 1
 			let l:sp=stridx(l:maps, " ", l:nl)
 			try
-				execute "tunmap " . substitute(strcharpart(l:maps, l:nl+1, l:sp-l:nl-1), '|', '<bar>', "g")
+				" entire check is for fixing terminal colors, can be removed when #7227 is closed
+				if strcharpart(l:maps, l:nl+1, l:sp-l:nl-1) != "<Esc>]" || str2nr(system('ps -o etimes= -C "screen" | tail -n1')) > 1
+					execute "tunmap " . substitute(strcharpart(l:maps, l:nl+1, l:sp-l:nl-1), '|', '<bar>', "g")
+				endif
 			catch /^.*E31:.*/
 			endtry
 			let l:nl=stridx(l:maps, "\n", l:sp)

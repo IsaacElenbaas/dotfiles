@@ -29,19 +29,23 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 	#{{{ launching commonly used
 		#{{{ no vim terminal
 # if reactivating this remember to change shell in screenrc
-# sleep fixes incorrect position when herbstluft has to rearrange windows
-#hc keybind $Mod-Return spawn xterm -e "sleep 0.05; screen"
-#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; zsh -l'"
+#hc keybind $Mod-Return spawn xterm -e "screen"
+#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
+#hc keybind $Mod-Shift-v spawn xterm -e "screen bash -c 'vim; exec zsh -l'"
 		#}}}
 
 		#{{{ vim terminal
+vimTerm() {
+	# autocommands aren't triggered for some reason
+	printf "%s" "screen vim -c 'execute '\\''augroup TermStart'\\''.\"\\n\".'\\''autocmd VimEnter * call Terminal() | call term_start($1, {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1}) | execute \"autocmd! TermStart\"'\\''.\"\\n\".'\\''augroup END'\\'''"
+}
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons). Whatever, only an extra ~5MB of RAM wasted per additional screen item.
-hc keybind $Mod-Return spawn xterm -e "screen vim '+terminal ++close ++curwin ++norestore zsh -l'"
-hc keybind $Mod-Shift-Return spawn xterm -e "screen vim -c 'call term_start([\"bash\", \"-c\", \"f; [ -n \\\"\\\$STY\\\" ] && screen -X -S \\\"\\\${STY%%.*}\\\" chdir \\\"\\\$(pwd)\\\"; exec zsh -l\"], {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1})'"
+hc keybind $Mod-Return spawn xterm -e "$(vimTerm "[\"zsh\", \"-l\"]")"
+hc keybind $Mod-Shift-Return spawn xterm -e "$(vimTerm "[\"bash\", \"-c\", \"f; [ -n \\\"\\\$STY\\\" ] && screen -X -S \\\"\\\${STY%%.*}\\\" chdir \\\"\\\$(pwd)\\\"; exec zsh -l\"]")"
+hc keybind $Mod-Shift-v spawn xterm -e "$(vimTerm "[\"bash\", \"-c\", \"vim; exec zsh -l\"]")"
 		#}}}
 
 # this won't save layout but prevents breaking due to resize
-hc keybind $Mod-Shift-v spawn xterm -e "screen vim"
 hc keybind $Mod-Shift-m spawn xterm -e "herbstclient fullscreen on; exec mocp -T ~/dotfiles/mocp-theme"
 	#}}}
 
