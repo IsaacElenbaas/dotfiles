@@ -8,7 +8,11 @@ hc emit_hook reload
 hc keyunbind --all
 hc unrule -F
 hc attr theme.tiling.reset 1
-m=$(xrandr --query | awk "/ connected/{print}" | wc -l)
+for (( i=0; i<$(hc get_attr monitors.count); i++ )); do
+	hc remove_monitor $i
+done
+hc detect_monitors
+m=$(hc get_attr monitors.count)
 h=20
 Mod=Mod4 # Use the super key as the main modifier
 #}}}
@@ -95,9 +99,15 @@ hc keybind $Mod-u      resize right +$resizestep
 
 #{{{ tag setup
 default_frame_layout horizontal
-hc rename default "1"
-for (( i=2; i <= 6*m; i++ )); do
+hc rename default "0"
+for (( i=1; i<6*$m; i++ )); do
 	hc add "$i"
+done
+for (( i=6*$m; i<$(herbstclient get_attr tags.count); i++ )); do
+	hc merge_tag $i 0
+done
+for (( i=0; i<$m; i++ )); do
+	hc chain , focus_monitor $i , use_index $i
 done
 #}}}
 
@@ -137,8 +147,18 @@ hc rule class="mpv" not title="noMin" focus=off index="/"
 
 #{{{ misc/bar startup
 hc set tree_style "╾│ ├└╼─┐" # For printing window list
+# copied from dzenbar
+primary="$(xrandr --query | grep "connected[[:space:]]*primary")"
+# just in case
+primary="${primary#*[[:space:]]}"
+primary="${primary%%(*}"
+primary="${primary%${primary##*[![:space:]]}}"
+primary="${primary##*[[:space:]]}"
+for (( i=0; i<$m; i++ )); do
+	[ "$(herbstclient get_attr monitors.$i.geometry)" = "$primary" ] && primary=$i && break
+done
+hc focus_monitor $primary
 hc unlock
-hc detect_monitors
 ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while read line; do line="${line# }" && pkill -9 -g "${line%% *}"; done
 killall dzenbar
 killall dzen2

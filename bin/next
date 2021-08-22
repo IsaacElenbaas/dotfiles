@@ -4,7 +4,7 @@ w=$(xdotool search --name ' - YouTube')
 if [ "$w" ]; then
 	layout () { herbstclient dump $1; }
 	current=$(xdotool getactivewindow)
-	numTags=$(herbstclient attr tags.count)
+	numTags=$(herbstclient get_attr tags.count)
 	declare -a layouts
 
 	for i in $(eval echo "{1..$numTags}")

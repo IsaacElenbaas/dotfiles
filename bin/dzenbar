@@ -1,6 +1,6 @@
 #!/bin/bash
 
-h="$1"
+export h="$1"
 div=" ‖ "
 
 #{{{ functions
@@ -8,51 +8,72 @@ div=" ‖ "
 		#{{{ tag indicator box sizes
 ts1=$(($h/4))
 ts2=$(($h/2))
-ts3=$(($ts2-$h/10))
+ts3_t=$(($h/10))
+ts3=$(($ts2-2*$ts3_t))
 		#}}}
 
 tagText() {
-	final="^p(_LOCK_X)^p($ts1;$ts1)"
-	for ((i=($1+1); i<=$t; i=($i+$m))); do
-		if [ "$i" == "$2" ]; then
-			final="$final^p(-$ts1;-$ts1)^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^p($h)^fg()"
+	local text="^p(_LOCK_X)^p($ts1;$ts1)^ib(1)"
+	for (( i=$1; i<$t; i=($i+$m) )); do
+		if [ "$i" = "$2" ]; then
+			text="$text^p(-$ts1;-$ts1)^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^p($h)^fg()"
 		else
-			final="$final^ro(${ts2}x$ts2)^p(1;1)^ro(${ts3}x$ts3)^p($(($h-1));-1)"
+			text="$text^r(${ts2}x$ts2)^p($ts3_t;$ts3_t)^fg(black)^r(${ts3}x$ts3)^p(-$ts3_t;-$ts3_t)^p($h)^fg()"
 		fi
 	done
-	printf "$final^p(_UNLOCK_X)"
+	printf "$text^p(_UNLOCK_X)"
 }
 	#}}}
 #}}}
 
 #{{{ setup
-pgid="$(ps -o pgid,cmd -U "$USER" | grep dzenbar | head -n 1)"
-pgid="${pgid# }"
-pgid="${pgid%% *}"
-m=$(herbstclient get_attr monitors.count)
+export m=$(herbstclient get_attr monitors.count)
 t=$(herbstclient get_attr tags.count)
-primary="$(xrandr --query | grep " connected" | sed -n '/primary/q;p' | wc -l)"
-primaryW=$(xrandr --query | awk -F 'primary |x' '/primary/{print $2}')
+primary="$(xrandr --query | grep "connected[[:space:]]*primary")"
+# just in case
+primary="${primary#*[[:space:]]}"
+primary="${primary%%(*}"
+primary="${primary%${primary##*[![:space:]]}}"
+primary="${primary##*[[:space:]]}"
+primaryW="${primary%%x*}"
+for (( i=0; i<$m; i++ )); do
+	[ "$(herbstclient get_attr monitors.$i.geometry)" = "$primary" ] && primary=$i && break
+done
 
 	#{{{ tag setup
-declare -a mOffsets
+declare -a mProcs
 declare -a tags
-declare -a tagTexts
-dztags=""
-for (( i=0; i<m; i++ )) {
+for (( i=0; i<$m; i++ )); do
 	herbstclient pad $i $h
-	mOffsets+=($(xrandr --query | grep " connected" | sed "$((i+1))q;d" | awk -F 'connected primary |connected |x|+' '{print $4}'))
-	tags+=($(herbstclient get_attr monitors.$i.tag))
-	tagTexts+=("$(tagText $i ${tags[i]})")
-	dztags="$dztags^pa(${mOffsets[$i]};0)${tagTexts[$i]}"
-}
+	coproc dzen2 {
+		read -d "x" w
+		read -d "+" x
+		read -d "+" x
+		read y
+		cat -u | dzen2 -fn "DejaVu" -ta l -e '' -p -x $x -y $y -h $h
+	}
+	herbstclient get_attr monitors.$i.geometry >&"${dzen2[1]}"
+	# this is illegal but works at the moment so. . .
+	mProcs+=(${dzen2[1]}); unset dzen2
+	tags+=(-1)
+done
 	#}}}
 #}}}
 
+#{{{ timers
+{
+	watch -n 1 -pt "herbstclient emit_hook time" &
+	watch -n 10 -t "herbstclient emit_hook ram" &
+	watch -n $((60*60*60)) -t "herbstclient emit_hook updates" &
+# was giving me garbage characters and lots of newlines
+} &>/dev/null
+#}}}
+
 #{{{ updating variables
-herbstclient -i | while read line; do
+while IFS= read -r line; do
 	update=0
-	case "$line" in
+	monitor=
+	case "${line%${line##*[![:space:]]}}" in
 		"song")
 			mocp="$(mocp --format '%tl %song')"
 			# pause play will for sure have this run again before song ends, that sets again to right time (so pause/play doesn't call this)
@@ -68,8 +89,7 @@ herbstclient -i | while read line; do
 			[ "$title" != "$dzsong" ] && dzsong="$title" && update=1
 		;;
 		"updates")
-			# unfortunately this has to be blocking
-			dzupdates="$( ( checkupdates; yay -Qu ) | wc -l)"
+			dzupdates="$({ checkupdates; yay -Qu; } | wc -l)"
 			updateplural=$([ "$dzupdates" = "1" ] && printf "" || printf "s")
 			update=1
 		;;
@@ -81,12 +101,14 @@ herbstclient -i | while read line; do
 		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit }' <(amixer sget Master))"; update=1 ;;
 		"time")
 			dzdate="$(date +'%a %d %b %r')"
-			[ "$songTrigger" -gt 0 ] && [ "$SECONDS" -ge "$songTrigger" ] && herbstclient emit_hook song
+			[ "${songTrigger:-0}" -ne 0 ] && [ "$SECONDS" -ge "$songTrigger" ] && herbstclient emit_hook song || update=1
 		;;
 		"tag_changed"*)
-			tag="${line#*${line:11:1}}"
-			tag="${tag%%${line:11:1}*}"
-			monitor="${line##*${line:11:1}}"
+			tag="${line#*[[:space:]]}"
+			tag="${tag#${tag%%[![:space:]]*}}"
+			tag="${tag%[[:space:]]*}"
+			monitor="${line##*[[:space:]]}"
+			monitor="${monitor#${monitor%%[![:space:]]*}}"
 			if [ "${tags[$monitor]}" != "$tag" ]; then
 				update=2
 				tagTexts[$monitor]="$(tagText $monitor $tag)"
@@ -94,35 +116,27 @@ herbstclient -i | while read line; do
 			tags[$monitor]=$tag
 		;;
 		"focus_changed"*"0x0")
-			[ "$(herbstclient get_attr tags.focus.curframe_wcount)" -eq 0 ] && herbstclient set_layout horizontal
+			herbstclient chain , lock , and : compare tags.focus.curframe_wcount = 0 : set_layout horizontal , unlock
 		;;
 	esac
 	case $update in
 		0) ;;
-		2)
-			dztags=""
-			for ((i=0; i<$m; i++)); do
-				dztags="$dztags^pa(${mOffsets[$i]};0)${tagTexts[$i]}"
-			done
-		;&
 		*)
-			dzenbar="^ib(1)$dztags^pa(${mOffsets[$primary]};0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzram$div$dzvol$div"
-			dzenbar="${dzenbar//\\/\\\\\\\\}"
-			dzenbar="${dzenbar//\$/\\\\$}"
-			dzenbar="${dzenbar//\`/\\\\\`}"
-			dzenbar="${dzenbar//\%/%%}"
+			monitor="${monitor:-$primary}"
+			printf "%s" "${tagTexts[$monitor]}" >&"${mProcs[$monitor]}"
+			if [ $monitor = $primary ]; then
+				printf "%s" "^pa(0;0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzram$div$dzvol$div$dzdate$div" >&"${mProcs[$primary]}"
+			fi
+			printf "\n" >&"${mProcs[$monitor]}"
 		;;
 	esac
-	printf "$dzenbar$dzdate$div\n"
-#done &
-done | dzen2 -ta l -e '' -h $h -fn "DejaVu" -p &
-#}}}
-
-#{{{ timers
-herbstclient emit_hook song
-herbstclient emit_hook updates
-herbstclient emit_hook volume
-watch -n 1 -pt "herbstclient emit_hook time" &>/dev/null &
-watch -n 10 -t "herbstclient emit_hook ram" &>/dev/null &
-watch -n 216000 -t "herbstclient emit_hook updates" &>/dev/null &
+done < <(
+	for (( i=0; i<$m; i++ )); do
+		tag="$(herbstclient get_attr monitors.$i.tag)"
+		printf "tag_changed ${tag%$'\n'} $i\n"
+		printf "tag_changed ${tag%$'\n'} $i\n" >&2
+	done
+	printf "volume\nsong\nram\nupdates\n"
+	herbstclient -i
+)
 #}}}

@@ -19,9 +19,9 @@
 # The release modifier ( + Release) is not a standard X modifier, but you can
 # use it if you want to catch release events instead of press events
 
-"herbstclient use_index -$(xrandr --query | awk '/ connected/{print}' | wc -l)"
+"herbstclient use_index -$(herbstclient get_attr monitors.count)"
 	b:9 + Release
-"herbstclient use_index +$(xrandr --query | awk '/ connected/{print}' | wc -l)"
+"herbstclient use_index +$(herbstclient get_attr monitors.count)"
 	b:8 + Release
 "[ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ] && xdotool click --window $(xdotool getactivewindow) 5 || ( amixer set Master 5%-; herbstclient emit_hook volume )"
 	m:0x0 + c:122 + Release
@@ -69,9 +69,9 @@
 	m:0x0 + c:96 + Release
 #}}}
 
-"[ \"$(xrandr --listactivemonitors | head -n 1)\" == \"Monitors: 2\" ] && monitorsoff || monitorson"
-	m:0x0 + c:202 + Release
-"monitorson"
-	m:0x0 + c:201 + Release
-"rmonitoroff"
-	m:0x0 + c:200 + Release
+#"[ \"$(herbstclient get_attr monitors.count)\" = \"2\" ] && monitorsoff || monitorson"
+#	m:0x0 + c:202 + Release
+#"monitorson"
+#	m:0x0 + c:201 + Release
+#"rmonitoroff"
+#	m:0x0 + c:200 + Release
