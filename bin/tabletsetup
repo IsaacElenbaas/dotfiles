@@ -16,7 +16,7 @@ fixstuff=1
 
 
 # Number of monitors
-monitors=2
+monitors=1
 # Tablet x / y (see hawku measurements or your vendor's official drivers if you
 # can't find inner area online)
 tabletratio="1.5"
