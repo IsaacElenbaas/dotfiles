@@ -20,7 +20,7 @@ xset -r 59 # ,
 xset -r 60 # .
 xset -r 65 # space
 
-xinput list | {
+xinput list 2>/dev/null | {
 	while IFS= read -r line; do
 		[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
 	done

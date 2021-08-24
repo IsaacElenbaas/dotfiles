@@ -63,7 +63,7 @@ done
 #{{{ timers
 {
 	watch -n 1 -pt "herbstclient emit_hook time" &
-	watch -n 10 -t "herbstclient emit_hook ram" &
+	watch -n 10 -t "herbstclient emit_hook status" &
 	watch -n $((60*60*60)) -t "herbstclient emit_hook updates" &
 # was giving me garbage characters and lots of newlines
 } &>/dev/null
@@ -93,10 +93,14 @@ while IFS= read -r line; do
 			updateplural=$([ "$dzupdates" = "1" ] && printf "" || printf "s")
 			update=1
 		;;
-		"ram")
-			ram="$(free | awk '/Mem/ { printf "%d%% RAM", ($2-$7)/$2*100 }')"
-			[ "$ram" != "$dzram" ] && update=1
-			dzram=$ram
+		"status")
+			dzstatus="$(free | awk '/Mem/ { printf "%d%% RAM", ($2-$7)/$2*100 }')"
+			if [ -d /sys/class/power_supply/BAT0 ]; then
+				dzstatus="$dzstatus$div$(cat /sys/class/power_supply/BAT0/status) "
+				charge="$((10000*10/8*$(cat /sys/class/power_supply/BAT0/charge_now)/$(cat /sys/class/power_supply/BAT0/charge_full)))"
+				dzstatus="$dzstatus${charge:: -2}.${charge: -2}%"
+			fi
+			update=1
 		;;
 		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit }' <(amixer sget Master))"; update=1 ;;
 		"time")
@@ -125,7 +129,7 @@ while IFS= read -r line; do
 			monitor="${monitor:-$primary}"
 			printf "%s" "${tagTexts[$monitor]}" >&"${mProcs[$monitor]}"
 			if [ $monitor = $primary ]; then
-				printf "%s" "^pa(0;0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzram$div$dzvol$div$dzdate$div" >&"${mProcs[$primary]}"
+				printf "%s" "^pa(0;0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzstatus$div$dzvol$div$dzdate$div" >&"${mProcs[$primary]}"
 			fi
 			printf "\n" >&"${mProcs[$monitor]}"
 		;;
@@ -136,7 +140,7 @@ done < <(
 		printf "tag_changed ${tag%$'\n'} $i\n"
 		printf "tag_changed ${tag%$'\n'} $i\n" >&2
 	done
-	printf "volume\nsong\nram\nupdates\n"
+	printf "volume\nsong\nstatus\nupdates\n"
 	herbstclient -i
 )
 #}}}
