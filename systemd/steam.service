@@ -6,6 +6,3 @@ ExecStart=steam -noasync -no-browser -silent
 Restart=always
 RestartSec=5s
 StandardOutput=null
-
-[Install]
-WantedBy=multi-user.target

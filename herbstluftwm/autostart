@@ -163,8 +163,6 @@ for (( i=0; i<$m; i++ )); do
 done
 hc focus_monitor $primary
 hc unlock
-ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while read line; do line="${line# }" && pkill -9 -g "${line%% *}"; done
-killall dzenbar
-killall dzen2
+ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while IFS= read -r line; do line="${line#${line%%[![:space:]]*}}" && pkill -g "${line%%[[:space:]]*}"; done
 dzenbar $h &
 #}}}

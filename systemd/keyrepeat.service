@@ -2,7 +2,7 @@
 Description=Applies keyrepeat settings
 
 [Service]
-ExecStart=/bin/bash -c 'DISPLAY="$(ps -u $(id -u) -o pid= | while IFS= read -r line; do cat /proc/$line/environ 2>/dev/null; done | tr "\0" "\n" | grep -m1 "^DISPLAY=")"; export DISPLAY="${DISPLAY:8}"; while %h/dotfiles/bin/keyrepeat; inotifywait -q -e create -e delete /dev/input; do sleep 1; done'
+ExecStart=/bin/bash -c 'while %h/dotfiles/bin/keyrepeat; inotifywait -q -e create -e delete /dev/input; do sleep 1; done'
 
 [Install]
 WantedBy=default.target

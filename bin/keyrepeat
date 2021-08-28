@@ -1,34 +1,39 @@
 #!/bin/bash
 
-xset r rate 150
-# xmodmap -pke
-xset -r 10 # 1
-xset -r 11 # 2
-xset -r 12 # 3
-xset -r 13 # 4
-xset -r 14 # 5
-xset -r 15 # 6
-xset -r 16 # 7
-xset -r 17 # 8
-xset -r 18 # 9
-xset -r 19 # 0
-xset -r 21 # =
-xset -r 34 # {
-xset -r 35 # }
-xset -r 49 # `
-xset -r 59 # ,
-xset -r 60 # .
-xset -r 65 # space
+kbdrate -d 150
+[ -n "$DISPLAY" ] && {
+	xset r rate 150
+	# xmodmap -pke
+	xset -r 10 # 1
+	xset -r 11 # 2
+	xset -r 12 # 3
+	xset -r 13 # 4
+	xset -r 14 # 5
+	xset -r 15 # 6
+	xset -r 16 # 7
+	xset -r 17 # 8
+	xset -r 18 # 9
+	xset -r 19 # 0
+	xset -r 21 # =
+	xset -r 34 # {
+	xset -r 35 # }
+	xset -r 49 # `
+	xset -r 59 # ,
+	xset -r 60 # .
+	xset -r 65 # space
 
-xinput list 2>/dev/null | {
-	while IFS= read -r line; do
-		[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
+	xinput list 2>/dev/null | {
+		while IFS= read -r line; do
+			[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
+		done
+		while IFS= read -r line; do printf "$line\n"; done
+	} | while IFS= read -r line; do
+		[[ "$line" =~ .?\s*Virtual\ core\ keyboard.* ]] && break
+		line="${line##*id=}"
+		printf "${line%%[[:space:]]*}\n"
+	done | while IFS= read -r pointer; do
+		[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 0 1
 	done
-	while IFS= read -r line; do printf "$line\n"; done
-} | while IFS= read -r line; do
-	[[ "$line" =~ .?\s*Virtual\ core\ keyboard.* ]] && break
-	line="${line##*id=}"
-	printf "${line%%[[:space:]]*}\n"
-done | while IFS= read -r pointer; do
-	[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 0 1
-done
+
+	[ -f "$HOME/dotfiles/bin/tabletsetup" ] && $HOME/dotfiles/bin/tabletsetup 2>/dev/null
+}

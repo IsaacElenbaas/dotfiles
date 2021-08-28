@@ -1,0 +1,9 @@
+#!/bin/bash
+
+ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while IFS= read -r line; do line="${line#${line%%[![:space:]]*}}" && pkill -g "${line%%[[:space:]]*}"; done
+systemctl --user stop mocp
+systemctl --user stop osu-keysounds
+systemctl --user stop steam
+systemctl --user stop vnc
+systemctl --user stop dunst
+herbstclient quit

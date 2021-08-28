@@ -795,6 +795,8 @@ xnoremap ` di`<c-r>"`<Esc>
 		"{{{ curly brackets
 inoremap {} {}<Left>
 inoremap {}<Left> {}<Left>
+inoremap {}, {},
+inoremap {}<Space> {}<Space>
 imap {) {}
 " the t is to keep indent level
 inoremap {<CR> {<CR>t<CR>}<Up><End><BS>
@@ -1049,6 +1051,7 @@ tnoremap ()<CR> ()<CR>
 
 			"{{{ brackets
 tnoremap [] []<Left>
+tnoremap []<Left> []<Left>
 tnoremap [], [],
 tnoremap []<Space> []<Space>
 tnoremap []<CR> []<CR>
@@ -1087,6 +1090,9 @@ tnoremap ``<CR> ``<CR>
 
 			"{{{ curly brackets
 tnoremap {} {}<Left>
+tnoremap {}<Left> {}<Left>
+tnoremap {}, {},
+tnoremap {}<Space> {}<Space>
 tmap {) {}
 			"}}}
 		"}}}
