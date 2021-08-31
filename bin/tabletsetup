@@ -1,59 +1,52 @@
 #!/bin/bash
 
-# https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations
-
-# Assumes you have horizontal (I think, see screenratio) and (definitely)
-# identical resolution (if multiple) monitor(s). If you don't, adapt it yourself
-# - though I hate being that guy that won't add support because they don't use
-# it, this absolutely sucked to make and I'm relatively sure different
-# resolution monitors is impossible as the matrix must be relative to the sum.
-
-# Also, two signs were supposed to change when rotating one way, and it used to
-# break if I didn't swap them, but now it doesn't and I think I know why but I'm
-# not 100% confident. Anywho, if you rotate and everything breaks horribly
-# (you'll know, screen area will be skewed) then just change this to -1.
-fixstuff=1
-
-
-# Number of monitors
-monitors=1
-# Tablet x / y (see hawku measurements or your vendor's official drivers if you
-# can't find inner area online)
+# tablet x / y - see hawku measurements or your vendor's official drivers if you can't find inner area online
 tabletratio="1.5"
-# Monitor x / y. Vertical oriented monitors MIGHT work by doing y / x, or with
-# r = 90. I haven't tried either.
+# monitor x / y - vertical oriented monitors MIGHT work by doing y / x, or with r = 90
 screenratio="1.77777"
-# Positive moves CURSOR right (effective area left), percent of one monitor to
-# move (actually moves screen rect explained below)
+# positive moves CURSOR right (effective area left), percent of monitor to move (actually moves screen rect explained below)
 tx="0.775"
-# Positive moves CURSOR down (effective area up)
+# positive moves CURSOR down (effective area up)
 ty="0.5"
-# Rotation in degrees (positive is screen rect clockwise). Initial is squares as
-# big as possible in the center of your monitor and tablet, scales multiply the
-# dimensions of the monitor one (making effective/tablet area smaller)
+# rotation in degrees (positive is screen rect clockwise) - initial is squares as big as possible in the center of your monitor and tablet, scales multiply the dimensions of the monitor one (making effective/tablet area smaller)
 r="5"
-# Overall scale (I recommend using sx and sy for proportions if you don't want a
-# square, and this for actual size so you can easily grow/shrink your area
+# scale - I recommend using sx and sy for proportions if you don't want a square, and s for actual size
 s="3.15"
 sx="1"
 sy="1"
 
 
-# Makes translation relative to one monitor
-declare $( awk -v tx=$tx -v m=$monitors 'BEGIN {
-	result = tx / m;
-	printf "tx=%f", result
-}' )
-read m1 m2 m3 m4 m5 m6 <<< $( awk -v r=$r -v s=$s -v sx=$sx -v sy=$sy -v m=$monitors -v sr=$screenratio -v tr=$tabletratio -v tx=$tx -v ty=$ty -v fs=$fixstuff 'BEGIN { PI = 3.14159265;
-	sinr = sin(r * PI / 180);
-	cosr = cos(r * PI / 180);
-	abssinr = sqrt(sinr * sinr);
-	abscosr = sqrt(cosr * cosr);
-	m1 = s * sx * tr * cosr / ((m * sr - 1) * abscosr + 1);
-	m2 = s * sy * -fs * sinr / ((m * sr - 1) * abssinr + 1);
-	m3 = (1 / m - (m1 + m2)) / 2 + tx;
-	m4 = s * sx * fs * sinr * ((tr - 1) * abssinr + 1);
-	m5 = s * sy * cosr;
-	m6 = (1 - (m5 + m4)) / 2 + ty;
-printf "%f %f %f %f %f %f", m1, m2, m3, m4, m5, m6 }' )
+p="$(xrandr --query | grep "connected[[:space:]]*primary")"
+# just in case
+p="${p#*[[:space:]]}"
+p="${p%%(*}"
+p="${p%${p##*[![:space:]]}}"
+p="${p##*[[:space:]]}"
+pw="${p%%x*}"
+ph="${p#*x}"
+ph="${ph%%+*}"
+px="${p#*+}"
+px="${px%%+*}"
+py="${p##*+}"
+sc="$(xrandr --query | head -n 1)"
+sc="${sc##*current}"
+scw="${sc%%x*}"
+scw="${scw#${scw%%[![:space:]]*}}"
+scw="${scw%${scw##*[![:space:]]}}"
+sch="${sc#*x}"
+sch="${sch#${sch%%[![:space:]]*}}"
+sch="${sch%%[![:digit:]]*}"
+
+read m1 m2 m3 m4 m5 m6 <<< $(awk -v r=$r -v s=$s -v sx=$sx -v sy=$sy -v sr=$screenratio -v tr=$tabletratio -v tx=$tx -v ty=$ty -v pw=$pw -v ph=$ph -v px=$px -v py=$py -v scw=$scw -v sch=$sch 'BEGIN { PI = 3.14159265;
+	sinr = sin(r*PI/180);
+	cosr = cos(r*PI/180);
+	abssinr = sqrt(sinr*sinr);
+	abscosr = sqrt(cosr*cosr);
+	m1 = pw/scw*s*sx*tr*cosr/((sr-1)*abscosr+1);
+	m2 = ph/sch*s*sy*-sinr/((sr-1)*abssinr+1);
+	m3 = px/scw+(pw/scw-(m1+m2))/2+pw/scw*tx;
+	m4 = pw/scw*s*sx*sinr*((tr-1)*abssinr+1);
+	m5 = ph/sch*s*sy*cosr;
+	m6 = py/sch+(ph/sch-(m5+m4))/2+ph/sch*ty;
+printf "%f %f %f %f %f %f", m1, m2, m3, m4, m5, m6 }')
 xinput set-prop "VEIKK.INC S640 Mouse" --type=float "Coordinate Transformation Matrix" $m1 $m2 $m3 $m4 $m5 $m6 0 0 1
