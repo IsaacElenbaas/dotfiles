@@ -941,12 +941,12 @@ function Terminal()
 
 	" doesn't trigger outside of vim terminal due to VIM_TERMINAL=-1 in zshrc
 	" time check is for sessions started with "screen vim"
-	if $VIM_TERMINAL == "" && $STY != "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1
+	if $VIM_TERMINAL == "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1
 		call lightline#disable()
 		set laststatus=0
 		set noshowcmd
 		set noruler
-		if str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
+		if $STY != "" && str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
 			" auto save screen layouts and fix size
 			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset" "source ~/.screenrc"')
 		endif

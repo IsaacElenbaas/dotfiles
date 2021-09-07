@@ -42,7 +42,7 @@ hc keybind $Mod-d spawn bash -c "[ \$(herbstclient get_attr tags.focus.curframe_
 		#{{{ vim terminal
 vimTerm() {
 	# autocommands aren't triggered for some reason
-	printf "%s" "screen vim -c 'execute '\\''augroup TermStart'\\''.\"\\n\".'\\''autocmd VimEnter * call Terminal() | call term_start($1, {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1}) | execute \"autocmd! TermStart\"'\\''.\"\\n\".'\\''augroup END'\\'''"
+	printf "%s" "screen vim -c 'execute '\\''augroup TermStart'\\''.\"\\n\".'\\''autocmd VimEnter * call Terminal() | noswapfile call term_start($1, {\"term_finish\":\"close\", \"curwin\":1, \"norestore\":1}) | execute \"autocmd! TermStart\"'\\''.\"\\n\".'\\''augroup END'\\'''"
 }
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons). Whatever, only an extra ~5MB of RAM wasted per additional screen item.
 hc keybind $Mod-Return spawn xterm -e "$(vimTerm "[\"zsh\", \"-l\"]")"
