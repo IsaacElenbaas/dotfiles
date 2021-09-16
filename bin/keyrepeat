@@ -1,6 +1,6 @@
 #!/bin/bash
 
-kbdrate -d 150
+kbdrate -d 150 &>/dev/null
 [ -n "$DISPLAY" ] && {
 	xset r rate 150
 	# xmodmap -pke
@@ -22,6 +22,7 @@ kbdrate -d 150
 	xset -r 60 # .
 	xset -r 65 # space
 
+	xinput enable "AT Translated Set 2 keyboard" 2>/dev/null
 	xinput list 2>/dev/null | {
 		while IFS= read -r line; do
 			[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
@@ -33,6 +34,10 @@ kbdrate -d 150
 		printf "${line%%[[:space:]]*}\n"
 	done | while IFS= read -r pointer; do
 		[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 0 1
+		[ -n "$(xinput --list-props "$pointer" | grep "libinput Click Method Enabled")" ] && {
+			xinput --set-prop "$pointer" "libinput Click Method Enabled" 0 1
+			[ -n "$(xinput --list-props "$pointer" | grep "libinput Natural Scrolling Enabled")" ] && xinput --set-prop "$pointer" "libinput Natural Scrolling Enabled" 1
+		}
 	done
 
 	[ -f "$HOME/dotfiles/bin/tabletsetup" ] && $HOME/dotfiles/bin/tabletsetup 2>/dev/null
