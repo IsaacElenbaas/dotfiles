@@ -11,3 +11,11 @@ set bell-style none
 "\033OC":    forward-word
 "\033[1;5D": backward-word
 "\033OD":    backward-word
+"\033[1;6C": nop
+"\033[1;6D": nop
+"\033[1;2H": nop
+"\033[1;2F": nop
+"\033OA":    nop
+"\033OB":    nop
+"\033OC":    nop
+"\033OD":    nop

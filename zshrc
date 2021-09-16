@@ -295,9 +295,10 @@ bindkey "^[OF"    end-of-line
 bindkey "^[[4~"   end-of-line
 bindkey "^[[8~"   end-of-line
 bindkey "^[[1;5C" forward-word
-bindkey "^[OC"    forward-word
+# OC/OD are s-Right/Left for me
+#bindkey "^[OC"    forward-word
 bindkey "^[[1;5D" backward-word
-bindkey "^[OD"    forward-word
+#bindkey "^[OD"    forward-word
 	#}}}
 
 	#{{{ spaces in enclosing characters
@@ -318,21 +319,79 @@ bindkey " " snip_space
 	#}}}
 
 	#{{{ vim terminal
+# don't (ever) use x, it breaks things
+tapi_feedkeys() { printf '\033]51;["call","Tapi_feedkeys",["'"%s"'", "'"%s"'"]]\007' "$1" "$2"; }
+
+	#{{{ shift movement -> visual
+		#{{{ c-Right
+_tapi_feedkeys_s_c_Right() { tapi_feedkeys "\\\\<c-w>N\\\\<Esc>" "n"; tapi_feedkeys "\\\\<s-c-Right>"; }
+zle -N _tapi_feedkeys_s_c_Right
+bindkey "^[[1;6C" _tapi_feedkeys_s_c_Right
+		#}}}
+
+		#{{{ c-Left
+_tapi_feedkeys_s_c_Left() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-c-Left>"; }
+zle -N _tapi_feedkeys_s_c_Left
+bindkey "^[[1;6D" _tapi_feedkeys_s_c_Left
+		#}}}
+
+		#{{{ Home
+_tapi_feedkeys_s_Home() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Home>"; }
+zle -N _tapi_feedkeys_s_Home
+bindkey "^[[1;2H" _tapi_feedkeys_s_Home
+		#}}}
+
+		#{{{ End
+_tapi_feedkeys_s_End() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-End>"; }
+zle -N _tapi_feedkeys_s_End
+bindkey "^[[1;2F" _tapi_feedkeys_s_End
+		#}}}
+
+		#{{{ Up
+_tapi_feedkeys_s_Up() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Up>"; }
+zle -N _tapi_feedkeys_s_Up
+bindkey "^[OA" _tapi_feedkeys_s_Up
+bindkey "^[[1;2A" _tapi_feedkeys_s_Up
+		#}}}
+
+		#{{{ Down
+_tapi_feedkeys_s_Down() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Down>"; }
+zle -N _tapi_feedkeys_s_Down
+bindkey "^[OB" _tapi_feedkeys_s_Down
+bindkey "^[[1;2B" _tapi_feedkeys_s_Down
+		#}}}
+
+		#{{{ Right
+_tapi_feedkeys_s_Right() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Right>"; }
+zle -N _tapi_feedkeys_s_Right
+bindkey "^[OC" _tapi_feedkeys_s_Right
+bindkey "^[[1;2C" _tapi_feedkeys_s_Right
+		#}}}
+
+		#{{{ Left
+_tapi_feedkeys_s_Left() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Left>"; }
+zle -N _tapi_feedkeys_s_Left
+bindkey "^[OD" _tapi_feedkeys_s_Left
+bindkey "^[[1;2D" _tapi_feedkeys_s_Left
+		#}}}
+	#}}}
+
 		#{{{ cutting/deleting
-_trash() {
+_tapi_trash() {
 	BUFFER=
 }
-_delete() {
+_tapi_delete() {
 	BUFFER="${BUFFER//\\/\\\\\\\\}"
 	BUFFER="${BUFFER//\%/%%}"
 	BUFFER="${BUFFER//\"/\\\\\"}"
+	# TODO: should use %s (scan for others. . . this wasn't even long ago)
 	printf '\033]51;["call","Tapi_yank",["'"$BUFFER"'"]]\007'
 	_trash
 }
-zle -N _trash
-bindkey "^Ux" _trash
+zle -N _tapi_trash
+bindkey "^Ux" _tapi_trash
 zle -N _delete
-bindkey "^Ud" _delete
+bindkey "^Ud" _tapi_delete
 bindkey "^Ut" push-line
 		#}}}
 	#}}}

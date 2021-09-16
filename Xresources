@@ -32,15 +32,7 @@ xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift
     Super Shift <Key>apostrophe: larger-vt-font() \n\
     Super Shift <Key>slash: smaller-vt-font() \n\
     Ctrl <Key>plus: larger-vt-font() \n\
-    Ctrl <Key>minus: smaller-vt-font() \n\
-    Ctrl Shift <Key>Left: ignore() \n\
-    Ctrl Shift <Key>Right: ignore() \n\
-    Shift <Key>Home: ignore() \n\
-    Shift <Key>End: ignore() \n\
-    Shift <Key>Up: ignore() \n\
-    Shift <Key>Down: ignore() \n\
-    Shift <Key>Right: ignore() \n\
-    Shift <Key>Left: ignore()
+    Ctrl <Key>minus: smaller-vt-font()
 
 #define cFG #e5e9f0
 #define cBG #232831

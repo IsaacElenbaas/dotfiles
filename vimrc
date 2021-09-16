@@ -622,6 +622,33 @@ nnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && 
 xnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'sW')\<lt>CR>"
 nnoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call search(g:search, 'bsW')\<lt>CR>"
 xnoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'bsW')\<lt>CR>"
+
+		"{{{ shift movement -> visual
+nmap <s-c-Right> v<c-Right>
+xmap <s-c-Right> <c-Right>
+imap <s-c-Right> <Esc>v<c-Right>
+nmap <s-c-Left> v<c-Left>
+xmap <s-c-Left> <c-Left>
+imap <s-c-Left> <Esc>v<c-Left>
+nmap <s-Home> v<Home>
+xmap <s-Home> <Home>
+imap <s-Home> <Esc>v<Home>
+nmap <s-End> v<End>
+xmap <s-End> <End>
+imap <s-End> <Esc>v<End>
+nmap <s-Up> v<Up>
+xmap <s-Up> <Up>
+imap <s-Up> <Esc>v<Up>
+nmap <s-Down> v<Down>
+xmap <s-Down> <Down>
+imap <s-Down> <Esc>v<Down>
+nmap <s-Right> v<Right>
+xmap <s-Right> <Right>
+imap <s-Right> <Esc>v<Right>
+nmap <s-Left> v<Left>
+xmap <s-Left> <Left>
+imap <s-Left> <Esc>v<Left>
+		"}}}
 	"}}}
 
 	"{{{ pasting
@@ -1007,6 +1034,13 @@ function Tapi_send(bufnum, arglist)
 		endif
 	endif
 	execute "set t_ts=" . a:arglist[1] . " t_fs=" . a:arglist[3] | let &titlestring=a:arglist[2] | set title | redraw | set notitle | set t_ts& t_fs&
+endfunc
+	"}}}
+
+	"{{{ Tapi_feedkeys()
+" just passes arguments to feedkeys
+function Tapi_feedkeys(bufnum, arglist)
+	exec "call feedkeys(\"" . a:arglist[0] . "\", \"" . a:arglist[1] . "\")"
 endfunc
 	"}}}
 
