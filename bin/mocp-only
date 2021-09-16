@@ -1,7 +1,11 @@
 #!/bin/bash
 
-{ mocp --clear && mocp --exit; } &>/dev/null
-while [ -f ~/.moc/pid ]; do sleep 0.1; done
+if [ "$(cat /proc/$(cat ~/.moc/pid)/comm 2>/dev/null)" = "mocp" ] && mocp --clear; then
+	mocp --exit &>/dev/null
+else
+	rm -f ~/.moc/pid
+fi
+timeout 5 bash -c "while [ -f ~/.moc/pid ]; do sleep 0.1; done" || exit 1
 mocp --server &>/dev/null
 mocp --on shuffle --append "${@:-.}"
 herbstclient emit_hook song 2>/dev/null || true
