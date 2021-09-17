@@ -264,20 +264,10 @@ endfunction
 	"{{{ ScrollPercent(percent, visual)
 " scrolls to visible percentage even when there are folds
 function ScrollPercent(percent, visual)
-	call feedkeys("G", "nx")
-	let l:i=0
-	while line(".") > 1
-		call feedkeys((1+line("$")/1000) . "k", "nx")
-		let i+=1+line('$')/1000
-	endwhile
-	call feedkeys(a:percent*l:i/100 . "j", "nx")
 	if a:visual
-		let l:scroll=line(".")
-		call feedkeys("gv" . l:scroll . "ggzz", "n")
-	else
-		call feedkeys("zz", "n")
+		call feedkeys("gv", "n")
 	endif
-	call feedkeys("", "x")
+	call feedkeys(byte2line(float2nr(round(a:percent*(line2byte(line("$")+1)-1)/100))) . "zz", "nx")
 endfunction
 	"}}}
 
