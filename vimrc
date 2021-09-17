@@ -948,8 +948,9 @@ set linebreak
 "{{{ autocommands
 augroup MySh
 	autocmd!
-	" cursor fixes
-	autocmd InsertLeave * call cursor([getpos(".")[1], getpos(".")[2]+1])
+	" i esc moving left fix
+	autocmd InsertLeave * echomsg getpos(".")[2] | if getpos(".")[2] != 1 | call cursor([getpos(".")[1], getpos(".")[2]+1]) | exec "autocmd! EscFix" | else | let g:escfix=getpos(".") | endif
+	autocmd InsertEnter * exec "augroup EscFix\nautocmd CursorMoved * if getpos(\".\") == g:escfix | call cursor([getpos(\".\")[1], getpos(\".\")[2]+1]) | endif | exec \"autocmd! EscFix\"\naugroup END"
 	autocmd BufNewFile,BufRead * set textwidth=0
 	" per filetype
 	autocmd BufNewFile,BufRead *.pde let &makeprg="processing-java --sketch=" . expand("%:p:h") . " --run > /dev/null &"
