@@ -40,6 +40,8 @@ setopt autocd
 setopt cdsilent
 CDPATH=".:$HOME"
 WORDCHARS=
+# just kill background jobs
+setopt nocheckjobs
 unsetopt beep
 #}}}
 
@@ -265,6 +267,7 @@ chpwd() {
 	#{{{ zshaddhistory
 zshaddhistory() {
 	[ -n "${1%%[![:space:]]*}" ] && return 1
+	[ -d "${@%$'\n'}" ] && return 1
 	start="${1%$'\n'}"
 	start="${start#${start%%[![:space:]]*}}"
 	start="${start%%[[:space:]]*}"
@@ -289,9 +292,11 @@ KEYTIMEOUT=1
 
 	#{{{ broken keys/key combos
 bindkey "^[OH"    beginning-of-line
+bindkey "^[[H"    beginning-of-line
 bindkey "^[[1~"   beginning-of-line
 bindkey "^[[7~"   beginning-of-line
 bindkey "^[OF"    end-of-line
+bindkey "^[[F"    end-of-line
 bindkey "^[[4~"   end-of-line
 bindkey "^[[8~"   end-of-line
 bindkey "^[[1;5C" forward-word
@@ -505,7 +510,25 @@ bindkey "^[[A" up-line-or-search
 bindkey "^[[B" down-line-or-search
 #}}}
 
-# auto save screen layouts
+#{{{ terminal emulator config
 # doesn't trigger in vim terminal, equivalent function in vimrc
-[ -z "$VIM_TERMINAL" ] && [ -n "$STY" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" && VIM_TERMINAL=-1
+if [ -z "$VIM_TERMINAL" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ]; then
+	# auto save screen layouts
+	[ -n "$STY" ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next"
+	# prevent future vim terminals from running this
+	export VIM_TERMINAL=-1
+fi
+# global theme - not above as difficult to recreate in vimrc
+[ -f "/var/tmp/$USER-theme" ] && theme "$(cat "/var/tmp/$USER-theme")" 0
+# not above as original shell could exit
+[ -p "/var/tmp/$USER-update-theme" ] || mkfifo "/var/tmp/$USER-update-theme" && \
+() {
+	setopt localoptions nomonitor
+	while true; do
+		cat -u < "/var/tmp/$USER-update-theme" > /dev/null
+		theme "$(cat /var/tmp/$USER-theme)" 1
+		sleep 3
+	done &
+}
 export SHELL="/usr/bin/zsh"
+#}}}

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+[ -f "$1" ] && [ -r "$1" ] || { printf "Cannot read file or it does not exist!\n"; exit 2; }
+[ -z "$2" ] && printf "%s\n" "$(realpath "$1")" > "/var/tmp/$USER-theme"
+if [ ${2:-1} -eq 1 ]; then
+	printf "\n" > "/var/tmp/$USER-update-theme" 2>/dev/null || { printf "No receiver!\n" >&2; exit 1; }
+fi
+if [ -n "$2" ]; then
+	cBG=;cFG=;cCU=;c00=;c08=;c01=;c09=;c02=;c10=;c03=;c11=;c04=;c12=;c05=;c13=;c06=;c14=;c07=;c15=
+	sendEscape() { [ -n "$2" ] && printf "${ps}$1${vc}$2$vc$pt"; }
+	esc="$([ -z "$VIM_TERMINAL" ] && printf "\033" || printf "%s" '\\\\033')"
+	bell="$([ -z "$VIM_TERMINAL" ] && printf "\007" || printf "%s" '\\\\007')"
+	vc="$([ -n "$VIM_TERMINAL" ] && printf '","')"
+	ps="$([ -n "$VIM_TERMINAL" ] && printf '\033]51;["call","Tapi_send",[1,"')$([ -n "$STY" ] && printf "%s" "${esc}P")$esc]"
+	pt="$bell$([ -n "$STY" ] && printf "%s" "$esc$([ -z "$VIM_TERMINAL" ] && printf "%s" "\\" || printf "%s" '\\\\\\\\\')")$([ -n "$VIM_TERMINAL" ] && printf '"]]\007')"
+	source <(grep '^#define c' "$1" | sed 's/^#define \(c..\) \(.*\)/\1=\2/')
+	[ -n "$cFG" ] && sendEscape "10;" "$cFG"
+	[ -n "$cBG" ] && sendEscape "11;" "$cBG"
+	[ -n "$cCU" ] && sendEscape "12;" "$cCU"
+	for (( i=0; i <= 15; i++ )); do
+		c=$(printf "c%02d" $i)
+		sendEscape "4;$i;" "${!c}"
+	done
+	[ -n "$VIM_TERMINAL" ] && sendEscape "4;248;" "$c07" && sendEscape "4;242;" "$c08"
+else
+	sleep 1
+	{ while true; do cat -u "/var/tmp/$USER-update-theme"; done > /dev/null; } & sleep 1; kill $!
+fi

@@ -939,7 +939,7 @@ set linebreak
 augroup MySh
 	autocmd!
 	" i esc moving left fix
-	autocmd InsertLeave * echomsg getpos(".")[2] | if getpos(".")[2] != 1 | call cursor([getpos(".")[1], getpos(".")[2]+1]) | exec "autocmd! EscFix" | else | let g:escfix=getpos(".") | endif
+	autocmd InsertLeave * if getpos(".")[2] != 1 | call cursor([getpos(".")[1], getpos(".")[2]+1]) | exec "autocmd! EscFix" | else | let g:escfix=getpos(".") | endif
 	autocmd InsertEnter * exec "augroup EscFix\nautocmd CursorMoved * if getpos(\".\") == g:escfix | call cursor([getpos(\".\")[1], getpos(\".\")[2]+1]) | endif | exec \"autocmd! EscFix\"\naugroup END"
 	autocmd BufNewFile,BufRead * set textwidth=0
 	" per filetype
@@ -958,12 +958,12 @@ function Terminal()
 	let g:wasTerm=1
 
 	" doesn't trigger outside of vim terminal due to VIM_TERMINAL=-1 in zshrc
-	" time check is for sessions started with "screen vim"
 	if $VIM_TERMINAL == "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1
 		call lightline#disable()
 		set laststatus=0
 		set noshowcmd
 		set noruler
+		" time check is for sessions started with "screen vim" (just vim terminal now - Mod-s-v should launch in my funky setup now)
 		if $STY != "" && str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
 			" auto save screen layouts and fix size
 			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset" "source ~/.screenrc"')

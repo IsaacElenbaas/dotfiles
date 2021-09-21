@@ -17,6 +17,7 @@ kbdrate -d 150 &>/dev/null
 	xset -r 21 # =
 	xset -r 34 # {
 	xset -r 35 # }
+	xset -r 48 # '"
 	xset -r 49 # `
 	xset -r 59 # ,
 	xset -r 60 # .
