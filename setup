@@ -39,6 +39,10 @@ mkdir -p ~/.local/share/qutebrowser
 ln -sf ~/dotfiles/qutebrowser/greasemonkey ~/.local/share/qutebrowser/
 ln -sf ~/dotfiles/qutebrowser/userscripts  ~/.local/share/qutebrowser/
 
+sudo chown root:root ~/dotfiles/bin/power
+sudo ln -sf ~/dotfiles/systemd/power.service /etc/systemd/system/
+sudo systemctl enable power
+
 # git config here so I don't have to worry about accidentally pushing .gitconfig sensitive info
 git config --global core.editor "vim"
 git config --global core.pager "diff-so-fancy | less -x2 -RFX"
