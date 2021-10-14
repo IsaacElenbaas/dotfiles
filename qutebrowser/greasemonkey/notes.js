@@ -888,6 +888,7 @@ var css = `
 		overflow: visible;
 		line-height: inherit;
 		word-wrap: normal;
+		white-space: pre-wrap;
 		background-color: initial;
 		border: 0;
 	}
