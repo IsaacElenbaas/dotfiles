@@ -275,7 +275,7 @@ zshaddhistory() {
 	start="${start%%[[:space:]]*}"
 	case "$start" in
 		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
-		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
+		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ps" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
 		"cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
 	for alias in "${(@k)aliases}"; do
@@ -331,7 +331,7 @@ tapi_feedkeys() { printf '\033]51;["call","Tapi_feedkeys",["'"%s"'", "'"%s"'"]]\
 
 	#{{{ shift movement -> visual
 		#{{{ c-Right
-_tapi_feedkeys_s_c_Right() { tapi_feedkeys "\\\\<c-w>N\\\\<Esc>" "n"; tapi_feedkeys "\\\\<s-c-Right>"; }
+_tapi_feedkeys_s_c_Right() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-c-Right>"; }
 zle -N _tapi_feedkeys_s_c_Right
 bindkey "^[[1;6C" _tapi_feedkeys_s_c_Right
 		#}}}
@@ -523,7 +523,10 @@ fi
 # global theme - not above as difficult to recreate in vimrc
 [ -f "/var/tmp/$USER-theme" ] && theme "$(cat "/var/tmp/$USER-theme")" 0
 # not above as original shell could exit
-[ -p "/var/tmp/$USER-update-theme" ] || mkfifo "/var/tmp/$USER-update-theme" && \
+[ -p "/var/tmp/$USER-update-theme" ] || {
+	[ -e "/var/tmp/$USER-update-theme" ] && rm "/var/tmp/$USER-update-theme"
+	mkfifo "/var/tmp/$USER-update-theme"
+} && \
 () {
 	setopt localoptions nomonitor
 	while true; do

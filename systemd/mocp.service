@@ -3,6 +3,6 @@ Description=Starts Music on Console Player
 
 [Service]
 ExecStart=%h/dotfiles/bin/mocp-only "%h/Music/Default"
-ExecStop=/usr/bin/mocp --exit
+ExecStop=mocp --exit
 Type=oneshot
 RemainAfterExit=yes

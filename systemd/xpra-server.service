@@ -1,0 +1,8 @@
+[Unit]
+Description=Starts xpra display
+
+[Service]
+ExecStart=xpra --no-daemon start :10
+
+[Install]
+WantedBy=default.target

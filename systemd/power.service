@@ -8,7 +8,13 @@ After=suspend-then-hibernate.target
 
 [Service]
 # remember %s are doubled
-ExecStart=/bin/bash -c '{ [ $(find /tmp/.X11-unix -mindepth 1 -maxdepth 1 | wc -l) -ge 1 ] || inotifywait -q -e create /tmp/.X11-unix; } && { x="$$(realpath /etc/systemd/system/power.service)"; export XAUTHORITY="$${x%%$${x#/home/*/}}.Xauthority"; USER="$${XAUTHORITY#/home/}"; export USER="$${USER%%%%/*}"; DISPLAY="$$(ps -u $$(id -u $$USER) -o pid= | while IFS= read -r pid; do pid=$${pid#$${pid%%%%[![:space:]]*}}; cat /proc/$${pid%%$${pid##*[![:space:]]}}/environ 2>/dev/null; done | tr "\\\\0" "\\\\n" | grep "^DISPLAY=" | head -n 1)"; export DISPLAY="$${DISPLAY#DISPLAY=}"; source "$${x%%/*}/../bin/power"; }'
+ExecStart=bash -c '\
+{ [ $(find /tmp/.X11-unix -mindepth 1 -maxdepth 1 | wc -l) -ge 1 ] || inotifywait -q -e create /tmp/.X11-unix; } && \
+{ x="$$(realpath /etc/systemd/system/power.service)"; export XAUTHORITY="$${x%%$${x#/home/*/}}.Xauthority"; \
+USER="$${XAUTHORITY#/home/}"; export USER="$${USER%%%%/*}"; \
+DISPLAY="$$(ps -u $$(id -u $$USER) -o pid= | while IFS= read -r pid; do pid=$${pid#$${pid%%%%[![:space:]]*}}; cat /proc/$${pid%%$${pid##*[![:space:]]}}/environ 2>/dev/null; done | tr "\\\\0" "\\\\n" | grep "^DISPLAY=" | head -n 1)"; export DISPLAY="$${DISPLAY#DISPLAY=}"; \
+source "$${x%%/*}/../bin/power"; }\
+'
 Type=oneshot
 
 [Install]

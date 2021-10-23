@@ -4,6 +4,9 @@ ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while IFS= read -r line; do line=
 systemctl --user stop mocp
 systemctl --user stop osu-keysounds
 systemctl --user stop steam
+systemctl --user stop xbindkeys
 systemctl --user stop vnc
 systemctl --user stop dunst
+systemctl --user stop xpra-client
+export DISPLAY="${$REAL_DISPLAY:-"$DISPLAY"}"
 herbstclient quit

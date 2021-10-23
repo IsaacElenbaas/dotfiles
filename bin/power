@@ -4,17 +4,18 @@
 case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 	"1da09fe64b64478344b1b0ab7cf4f9fd")
 		# Enable runtime PM for all PCI devices
-		for i in /sys/bus/pci/devices/*; do
-			find "$i/" -type f -path "*/power/control" -not -path "*usb*" -not -path "*sound*" | while IFS= read -r line; do
-				sudo tee "$line" <<< "auto" > /dev/null
-			done
+		find /sys/bus/pci/devices/*/ -type f -path "*/power/control" -not -path "*usb*" | while IFS= read -r line; do
+			sudo tee "$line" <<< "auto" > /dev/null
 		done
 		# Enable runtime PM for all storage devices
-		for i in /sys/block/*; do
-			{ find "$i/" -type f -path "*/power/control"; find "$i/device/" -type f -path "*/power/control"; } | while IFS= read -r line; do
-				sudo tee "$line" <<< "auto" > /dev/null
-			done
+		find /sys/block/*/ /sys/block/*/device/ -type f -path "*/power/control" | while IFS= read -r line; do
+			sudo tee "$line" <<< "auto" > /dev/null
 		done
+		# Enable runtime PM for audio
+		sudo tee /sys/module/snd_hda_intel/parameters/power_save <<< 1 > /dev/null
+		sudo tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "Y" > /dev/null
+		# Enable runtime PM for WiFi
+		sudo iw dev wlan0 set power_save on
 		# Enable autosuspend for ITE Devices (trackpad, keyboard)
 		sudo tee /sys/bus/usb/devices/1-6/power/control <<< "auto" > /dev/null
 
@@ -39,5 +40,15 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 		# Only 2-light gaming mode
 		# 200 is very doable but has crashed before
 		nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffset[3]=180"
+
+		# Disable runtime PM for sound devices
+		find /sys/bus/pci/devices/*/ -type f -path "*sound*/power/control" | while IFS= read -r line; do
+			sudo tee "$line" <<< "on" > /dev/null
+		done
+		# Disable runtime PM for audio
+		sudo tee /sys/module/snd_hda_intel/parameters/power_save <<< 0 > /dev/null
+		sudo tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "N" > /dev/null
+		# Disable runtime PM for WiFi
+		sudo iw dev wlan0 set power_save on
 	;;
 esac

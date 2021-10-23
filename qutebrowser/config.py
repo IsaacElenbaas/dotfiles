@@ -91,7 +91,7 @@ config.set('content.javascript.enabled', True, 'qute://*/*')
 
 #{{{ aliases
 c.aliases['desmos']       = 'spawn --userscript smart-open file:///home/isaacelenbaas/Projects/Desmos/index.html'
-c.aliases['mpv']          = 'spawn --detach mpv {url} --title=noMin --force-window=immediate'
+c.aliases['mpv']          = 'spawn --detach mpv {url} --force-window=yes'
 c.aliases['passthrough']  = 'mode-enter passthrough'
 c.aliases['paywall']      = 'open https://www.google.com/search?q=cache:{{url}}'
 c.aliases['q']            = 'session-save --only last ;; close'
@@ -129,9 +129,9 @@ c.bindings.commands['hint'] = {
     '<Escape>': 'mode-leave',
     'f'       : 'set --temp hints.chars gcldhsv ;; mode-leave ;; hint noinputs',
     'i'       : 'hint inputs',
-    'm'       : 'hint links spawn --detach mpv {hint-url} --pause --force-window=immediate',
-    'nm'      : 'hint links spawn --detach mpv {hint-url} --title=noMin --force-window=immediate',
-    'rm'      : 'hint --rapid links spawn --detach mpv {hint-url} --pause --force-window=immediate',
+    'm'       : 'hint links spawn --detach mpv {hint-url} --title=min --pause --force-window=yes',
+    'nm'      : 'hint links spawn --detach mpv {hint-url} --force-window=yes',
+    'rm'      : 'hint --rapid links spawn --detach mpv {hint-url} --title=min --pause --force-window=yes',
     'rt'      : 'hint --rapid all tab-bg',
     't'       : 'hint noinputs tab-bg',
     'y'       : 'hint links yank',
@@ -184,6 +184,7 @@ c.bindings.commands['normal'] = {
     'n'             : 'tab-next',
     'h'             : 'tab-prev',
 
+    'yo'            : 'set-cmd-text :open {url}',
     'yt'            : 'yank title',
     'yy'            : 'yank',
 

@@ -1,14 +1,19 @@
 #!/bin/bash
 
-xinput list 2>/dev/null | {
-	while IFS= read -r line; do
-		[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
+export PATH="${PATH//$HOME\/dotfiles\/bin:/}"
+for DISPLAY in "${REAL_DISPLAY:-"$DISPLAY"}" ":10"; do
+	export DISPLAY
+	xinput list 2>/dev/null | {
+		while IFS= read -r line; do
+			[[ "$line" =~ .?\s*Virtual\ core\ pointer.* ]] && break
+		done
+		while IFS= read -r line; do printf "$line\n"; done
+	} | while IFS= read -r line; do
+		[[ "$line" =~ .?\s*Virtual\ core\ keyboard.* ]] && break
+		line="${line##*id=}"
+		printf "${line%%[[:space:]]*}\n"
+	done | while IFS= read -r pointer; do
+		[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 1 0
 	done
-	while IFS= read -r line; do printf "$line\n"; done
-} | while IFS= read -r line; do
-	[[ "$line" =~ .?\s*Virtual\ core\ keyboard.* ]] && break
-	line="${line##*id=}"
-	printf "${line%%[[:space:]]*}\n"
-done | while IFS= read -r pointer; do
-	[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 1 0
+	systemctl is-active --user --quiet xpra-server || break
 done

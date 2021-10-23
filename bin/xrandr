@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export DISPLAY="${REAL_DISPLAY:-"$DISPLAY"}"
+/usr/bin/xrandr "$@"

@@ -23,17 +23,17 @@
 	b:9 + Release
 "herbstclient use_index +$(herbstclient get_attr monitors.count)"
 	b:8 + Release
-"[ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ] && xdotool click --window $(xdotool getactivewindow) 5 || ( amixer set Master 5%-; herbstclient emit_hook volume )"
+"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click --window $(xdotool getactivewindow) 5 || ( amixer set Master 5%-; herbstclient emit_hook volume )"
 	m:0x0 + c:122 + Release
-"[ \"$(herbstclient get_attr clients.focus.class)\" == \"mpv\" ] && xdotool click --window $(xdotool getactivewindow) 4 || ( amixer set Master 5%+; herbstclient emit_hook volume )"
+"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click --window $(xdotool getactivewindow) 4 || ( amixer set Master 5%+; herbstclient emit_hook volume )"
 	m:0x0 + c:123 + Release
 "ffcast -s png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x40 + c:33 + Release
 "ffcast -# $(xdotool getactivewindow) png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x41 + c:33
-"qutebrowser &"
+"systemctl is-active --user --quiet xpra-server && export DISPLAY=":10"; qutebrowser &"
 	m:0x44 + c:57 + Release
-"qutebrowser ':open -p' &"
+"systemctl is-active --user --quiet xpra-server && export DISPLAY=":10"; qutebrowser ":open -p" &"
 	m:0x45 + c:57
 "pause"
 	m:0x0 + c:172
@@ -69,7 +69,7 @@
 	m:0x0 + c:96 + Release
 #}}}
 
-#"[ \"$(herbstclient get_attr monitors.count)\" = \"2\" ] && monitorsoff || monitorson"
+#"[ "$(herbstclient get_attr monitors.count)" = "2" ] && monitorsoff || monitorson"
 #	m:0x0 + c:202 + Release
 #"monitorson"
 #	m:0x0 + c:201 + Release

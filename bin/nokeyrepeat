@@ -1,3 +1,10 @@
 #!/bin/bash
 
-[ -n "$DISPLAY" ] && xset r off
+[ -n "$DISPLAY" ] && {
+	export PATH="${PATH//$HOME\/dotfiles\/bin:/}"
+	for DISPLAY in "${REAL_DISPLAY:-"$DISPLAY"}" ":10"; do
+		export DISPLAY
+		xset r off
+		systemctl is-active --user --quiet xpra-server || break
+	done
+}
