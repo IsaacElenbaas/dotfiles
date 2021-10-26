@@ -35,11 +35,11 @@
 	m:0x44 + c:57 + Release
 "systemctl is-active --user --quiet xpra-server && export DISPLAY=":10"; qutebrowser ":open -p" &"
 	m:0x45 + c:57
-"pause"
+"/home/$USER/dotfiles/bin/pause"
 	m:0x0 + c:172
-"next"
+"/home/$USER/dotfiles/bin/next"
 	m:0x0 + c:171 + Release
-"previous"
+"/home/$USER/dotfiles/bin/previous"
 	m:0x0 + c:173 + Release
 
 #{{{ hue lights

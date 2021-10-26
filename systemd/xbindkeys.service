@@ -3,3 +3,4 @@ Description=Starts xbindkeys
 
 [Service]
 ExecStart=xbindkeys --nodaemon
+KillMode=process

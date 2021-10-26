@@ -1,8 +1,11 @@
 ;#{{{ git
 % git
 
-# Check out a PR branch
+# Check out a PR branch (GitHub)
 git fetch origin pull/<pr_number>/head:pr/<pr_number> && git checkout pr/<pr_number>
+
+# Check out a PR branch (Bitbucket)
+git fetch origin refs/pull-requests/<pr_number>/from:refs/remotes/origin/pr/<pr_number> && git checkout pr/<pr_number>
 
 # Rebase from a branch
 git rebase -i <branch>
