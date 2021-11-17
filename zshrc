@@ -90,6 +90,8 @@ alias q='exit'
 alias qq='exit'
 alias rm='rm -d'
 alias sc='sc || exit'
+alias stopx='rm -f /tmp/xpra-restartx && \stopx; exit'
+alias switchx='touch /tmp/xpra-restartx && \stopx; exit'
 alias v='vim'
 
 	#{{{ mocp
@@ -147,6 +149,7 @@ prompt-git() {
 
 	#{{{ PROMPT definition
 promptfgs=(
+	""
 	"black"
 	"255"
 	"255"
@@ -155,14 +158,16 @@ promptfgs=(
 	""
 )
 promptbgs=(
+	"\$([ \$? = 0 ] && printf \"15\" || { printf \"red\"; false; })"
 	"15"
 	"32"
-	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf '34' || printf '%s' '$nlb')"
+	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf \"34\" || printf \"%s\" \"$nlb\")"
 	"$nlb"
 	"32"
 	"$nlb"
 )
 promptsections=(
+	"\$([ \$? = 0 ] || { for (( i=0; i<\$COLUMNS; i++ )); do printf \" \"; done; printf \"%s\" \"$nl\"; })"
 	" %n$([ "$USER" != "isaacelenbaas" ] && printf "%s" "@%M") $c"
 	" %~ $c"
 	"\$(prompt-git %cb %cnb %cnf)"
@@ -215,7 +220,8 @@ OLDPROMPT="%B${OLDPROMPT}%b%u%s%f%k %{"$'\033[?7h'"%}"
 	#{{{ preexec
 preexec() {
 		#{{{ OLDPROMPT
-	plines=$(printf "%b" "$PROMPT\n" | wc -l)
+	[ $? = 0 ] && plines=0 || plines=-1
+	plines=$(($(printf "%b" "$PROMPT\n" | wc -l)-1))
 	for (( i = 1; i <= $plines; i++ )); do
 		printf "\033[A\033[K"
 	done
@@ -243,7 +249,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ "$VIM_TERMINAL" -eq -1 ] && printf '\033k%s\033\\' "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call","Tapi_rename",["'"${start//\"/\\\"}"'"]]\007' )
+		[ "$VIM_TERMINAL" -eq -1 ] && printf "\033k%s\033\\" "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call","Tapi_rename",["'"${start//\"/\\\"}"'"]]\007' )
 	fi
 }
 	#}}}
@@ -316,7 +322,7 @@ snip_space() {
 	   ([ "${LBUFFER: -1}" = "{" ] && [ "${RBUFFER:0:1}" = "}" ]) ||
 	then
 		LBUFFER="$LBUFFER " && RBUFFER=" $RBUFFER"
-	elif [ "${LBUFFER: -2}" = " +" ] && ([ "${RBUFFER:0:1}" = '"' ] || [ "${RBUFFER:0:1}" = "'" ]); then
+	elif [ "${LBUFFER: -2}" = " +" ] && ([ "${RBUFFER:0:1}" = "\"" ] || [ "${RBUFFER:0:1}" = "'" ]); then
 		LBUFFER="${LBUFFER:0:-2}${RBUFFER:0:1} + " && RBUFFER="${RBUFFER:1}"
 	else
 		LBUFFER="$LBUFFER "

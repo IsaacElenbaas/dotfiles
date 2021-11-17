@@ -2,7 +2,7 @@
 Description=Starts xpra display
 
 [Service]
-ExecStart=xpra --no-daemon start :10
+ExecStart=xpra --no-daemon start :10 --dpi=96 --start="xrdb -merge /etc/X11/xinit/.Xresources" --start="xrdb -merge %h/.Xresources"
 
 [Install]
 WantedBy=default.target

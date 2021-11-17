@@ -44,6 +44,8 @@ alias q='exit'
 alias qq='exit'
 alias rm='rm -d'
 alias sc='sc || exit'
+alias stopx='rm -f /tmp/xpra-restartx && \stopx; exit'
+alias switchx='touch /tmp/xpra-restartx && \stopx; exit'
 alias v='vim'
 alias vi='vim'
 

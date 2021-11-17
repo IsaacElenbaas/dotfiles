@@ -3,15 +3,9 @@
 [ ! -d /sys/class/power_supply/BAT0 ] && { xrandr --setprovideroutputsource modesetting NVIDIA-0; xset s off -dpms; }
 xrandr --auto
 
-# merge in defaults and keymaps
-sysresources=/etc/X11/xinit/.Xresources
-[ -f $sysresources ] && xrdb -merge $sysresources
-sysmodmap=/etc/X11/xinit/.Xmodmap
-[ -f $sysmodmap ] && xmodmap $sysmodmap
-userresources=$HOME/.Xresources
-[ -f "$userresources" ] && xrdb -merge "$userresources"
-usermodmap=$HOME/.Xmodmap
-[ -f "$usermodmap" ] && xmodmap "$usermodmap"
+# merge in defaults
+[ -f $sysresources ] && xrdb -merge /etc/X11/xinit/.Xresources
+[ -f "$userresources" ] && xrdb -merge ~/.Xresources
 
 # start some nice programs
 if [ -d /etc/X11/xinit/xinitrc.d ]; then
@@ -33,7 +27,7 @@ else
 	[ -f "$HOME/.config/systemd/user/steam.service" ]         && systemctl --user restart steam
 fi
 [ -f "$HOME/.config/systemd/user/xbindkeys.service" ] && systemctl --user restart xbindkeys
-[ -f "$HOME/.config/systemd/user/vnc.service" ]       && systemctl --user restart vnc
+#[ -f "$HOME/.config/systemd/user/vnc.service" ]       && systemctl --user restart vnc
 [ -f /usr/lib/systemd/user/dunst.service ]            && systemctl --user restart dunst
 
 { [ -d /sys/class/power_supply/BAT0 ] && printf "power off\nexit" || printf "power on\nexit"; } | bluetoothctl

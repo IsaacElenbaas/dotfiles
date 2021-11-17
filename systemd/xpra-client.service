@@ -2,5 +2,5 @@
 Description=Connects to xpra display
 
 [Service]
-ExecStart=bash -c 'trap "xpra detach; exit" SIGTERM; while true; do xpra attach :10 --dpi=96 & wait $$!; sleep 5; done'
+ExecStart=bash -c 'trap "xpra detach; wait $$PID; exit" SIGTERM; while true; do xpra attach :10 --dpi=96 & PID=$$!; wait $$PID; sleep 5; done'
 KillMode=process

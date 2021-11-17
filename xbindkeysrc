@@ -23,9 +23,9 @@
 	b:9 + Release
 "herbstclient use_index +$(herbstclient get_attr monitors.count)"
 	b:8 + Release
-"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click --window $(xdotool getactivewindow) 5 || ( amixer set Master 5%-; herbstclient emit_hook volume )"
+"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click 5 || ( amixer set Master 5%-; herbstclient emit_hook volume )"
 	m:0x0 + c:122 + Release
-"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click --window $(xdotool getactivewindow) 4 || ( amixer set Master 5%+; herbstclient emit_hook volume )"
+"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click 4 || ( amixer set Master 5%+; herbstclient emit_hook volume )"
 	m:0x0 + c:123 + Release
 "ffcast -s png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x40 + c:33 + Release
