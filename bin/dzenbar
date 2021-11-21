@@ -29,7 +29,7 @@ tagText() {
 #{{{ setup
 export m=$(herbstclient get_attr monitors.count)
 t=$(herbstclient get_attr tags.count)
-primary="$(xrandr --query | grep "connected[[:space:]]*primary")"
+primary="$(xrandr --query | grep "connected[[:space:]]primary[[:space:]][[:digit:]]" || xrandr --query | grep "[[:space:]]connected[[:space:]][[:digit:]]")"
 # just in case
 primary="${primary#*[[:space:]]}"
 primary="${primary%%(*}"
