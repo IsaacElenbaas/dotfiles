@@ -51,6 +51,10 @@ document.head.appendChild(JaxSrc);
 console.log("MathJax complete");
 
 var css = `
+	mjx-math {
+		white-space: normal !important;
+	}
+
 	.octicon {
 		display: inline-block;
 		fill: currentColor;
@@ -925,7 +929,6 @@ var css = `
 		line-height: 20px;
 		color: rgba(27,31,35,.3);
 		text-align: right;
-		white-space: nowrap;
 		vertical-align: top;
 		cursor: pointer;
 		-webkit-user-select: none;

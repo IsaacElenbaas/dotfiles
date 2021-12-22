@@ -39,6 +39,7 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 		sudo nvidia-smi -i 0 -lgc 300,1850
 		# Only 2-light gaming mode
 		# 200 is very doable but has crashed before
+		# nvidia-settings -q GPUPowerMizerMode
 		nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffset[3]=180"
 
 		# Disable runtime PM for sound devices

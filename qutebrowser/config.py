@@ -46,6 +46,7 @@ except ValueError:pass
 
 #{{{ settings
 c.downloads.location.prompt = True
+c.content.prefers_reduced_motion = True
 config.set('hints.selectors', {
     **c.hints.selectors,
     'noinputs': [i for i in c.hints.selectors['all'] if not re.match('.*(input|contenteditable|tabindex)', i)],
@@ -127,7 +128,7 @@ c.bindings.commands['command'] = {
 c.bindings.commands['hint'] = {
     '<Return>': 'follow-hint',
     '<Escape>': 'mode-leave',
-    'f'       : 'set --temp hints.chars gcldhsv ;; mode-leave ;; hint noinputs',
+    'f'       : 'set --temp hints.chars gcrdhtnlmwvs ;; mode-leave ;; hint noinputs',
     'i'       : 'hint inputs',
     'm'       : 'hint links spawn --detach mpv {hint-url} --title=min --pause --force-window=yes',
     'nm'      : 'hint links spawn --detach mpv {hint-url} --force-window=yes',
@@ -169,7 +170,7 @@ c.bindings.commands['normal'] = {
     'O'             : 'set-cmd-text -s :open -t',
     '.'             : 'set-cmd-text :open !',
     '!'             : 'set-cmd-text :open -t !',
-    'f'             : 'set --temp hints.chars pgclaoeuidhsjkxbwv ;; hint noinputs',
+    'f'             : 'set --temp hints.chars piueokjqagcrdhtnlmwvs ;; hint noinputs',
     'r'             : 'reload',
     'p'             : 'print',
 
@@ -329,7 +330,7 @@ c.colors.statusbar.caret.selection.bg   = c.colors.statusbar.caret.bg
 c.colors.statusbar.caret.selection.fg   = c.colors.statusbar.caret.fg
 c.colors.statusbar.command.bg           = c.colors.statusbar.caret.bg
 c.colors.statusbar.command.fg           = themeColors['cFG']
-c.colors.statusbar.command.private.bg   = c.colors.statusbar.caret.bg
+c.colors.statusbar.command.private.bg   = '#586e75'
 c.colors.statusbar.command.private.fg   = c.colors.statusbar.caret.fg
 c.colors.statusbar.insert.bg            = c.colors.statusbar.caret.bg
 c.colors.statusbar.insert.fg            = c.colors.statusbar.caret.fg
@@ -337,7 +338,7 @@ c.colors.statusbar.normal.bg            = c.colors.statusbar.caret.bg
 c.colors.statusbar.normal.fg            = c.colors.statusbar.caret.fg
 c.colors.statusbar.passthrough.bg       = c.colors.statusbar.caret.bg
 c.colors.statusbar.passthrough.fg       = c.colors.statusbar.caret.fg
-c.colors.statusbar.private.bg           = '#586e75'
+c.colors.statusbar.private.bg           = c.colors.statusbar.command.private.bg
 c.colors.statusbar.private.fg           = c.colors.statusbar.caret.fg
 c.colors.statusbar.progress.bg          = c.colors.statusbar.normal.fg
 c.colors.statusbar.url.error.fg         = themeColors['c01']

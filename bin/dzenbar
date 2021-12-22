@@ -94,7 +94,7 @@ while IFS= read -r line; do
 			update=1
 		;;
 		"status")
-			dzstatus="$(free | awk '/Mem/ { printf "%d%% RAM", ($2-$7)/$2*100 }')"
+			dzstatus="$(free | awk '/Mem/ { printf "%d%% RAM", ($2-$7)/$2*100; }')"
 			if [ -d /sys/class/power_supply/BAT0 ]; then
 				dzstatus="$dzstatus$div$(cat /sys/class/power_supply/BAT0/status) "
 				charge="$((10000*10/8*$(cat /sys/class/power_supply/BAT0/charge_now)/$(cat /sys/class/power_supply/BAT0/charge_full)))"
@@ -102,7 +102,7 @@ while IFS= read -r line; do
 			fi
 			update=1
 		;;
-		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit }' <(amixer sget Master))"; update=1 ;;
+		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit; }' <(amixer sget Master))"; update=1 ;;
 		"time")
 			dzdate="$(date +'%a %d %b %r')"
 			[ "${songTrigger:-0}" -ne 0 ] && [ "$SECONDS" -ge "$songTrigger" ] && herbstclient emit_hook song || update=1

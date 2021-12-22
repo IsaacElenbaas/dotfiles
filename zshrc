@@ -78,6 +78,7 @@ alias ls='ls -hl --color=auto'
 alias m='neomutt'
 alias mkdir='mkdir -p'
 alias mocp='mocp -T ~/dotfiles/mocp-theme 2>/dev/null'
+alias mpv='mpv --wid=$WINDOWID'
 alias mutt='neomutt'
 alias mv='mv -i'
 alias nokeysounds='systemctl --user stop osu-keysounds'
@@ -283,7 +284,7 @@ zshaddhistory() {
 	case "$start" in
 		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
 		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ps" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
-		"cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
+		"abstrack" | "cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
 	for alias in "${(@k)aliases}"; do
 		[ "$start" = "$alias" ] && return 2

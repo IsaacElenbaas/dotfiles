@@ -1,22 +1,103 @@
 #!/bin/bash
 
+# xinput device to apply transformation to
+device="VEIKK.INC S640 Mouse"
 # tablet x / y - see hawku measurements or your vendor's official drivers if you can't find inner area online
 tabletratio="1.5"
-# monitor x / y - vertical oriented monitors MIGHT work by doing y / x, or with r = 90
-screenratio="1.77777"
 # positive moves CURSOR right (effective area left), percent of monitor to move (actually moves screen rect explained below)
 tx="0.775"
 # positive moves CURSOR down (effective area up)
 ty="0.5"
-# rotation in degrees (positive is screen rect clockwise) - initial is squares as big as possible in the center of your monitor and tablet, scales multiply the dimensions of the monitor one (making effective/tablet area smaller)
+# rotation in degrees (positive is screen rect clockwise or curser counterclockwise) - initial is squares as big as possible in the center of your monitor and tablet, scales multiply the dimensions of the monitor one (making effective/tablet area smaller)
 r="5"
-# scale - I recommend using sx and sy for proportions if you don't want a square, and s for actual size
+# scale - use sx and sy for proportions if you don't want a square, and s for actual size
 s="3.15"
 sx="1"
 sy="1"
 
+#{{{ parameter parsing
+shopt -s extglob
+print=0
+usage="Usage: $(basename "$0") [OPTIONS]
+  --device NAME          xinput device to apply transformation matrix to
+  --tablet-ratio NUM     tablet x / y
+  --tx                   x translation, percent of monitor
+  --ty                   y translation, percent of monitor, positive moves cursor down
+  --r                    rotation in degrees, positive is cursor counterclockwise
+  --s                    overall scale, larger makes tablet area smaller
+  --sx                   x scale, to be used for changing proportions
+  --sy                   y scale, to be used for changing proportions
+  -p, --print            print transformation matrix and do nothing
+  -h, --help             display this help
+"
+for (( i=1; i <= $#; i++ )); do
+	[ "${!i:0:1}" != "-" ] && { printf "$usage" >&2; exit 2; }
+	if [ "${!i:1:1}" = "-" ]; then
 
-p="$(xrandr --query | grep "connected[[:space:]]*primary")"
+	#{{{ long parameters
+		case "${!i}" in
+			--device)
+				i=$((i+1))
+				device="${!i}"
+			;;
+			--tablet-ratio)
+				i=$((i+1))
+				tabletratio="${!i}"
+			;;
+			--tx)
+				i=$((i+1))
+				tx="${!i}"
+			;;
+			--ty)
+				i=$((i+1))
+				ty="${!i}"
+			;;
+			--r)
+				i=$((i+1))
+				r="${!i}"
+			;;
+			--s)
+				i=$((i+1))
+				s="${!i}"
+			;;
+			--sx)
+				i=$((i+1))
+				sx="${!i}"
+			;;
+			--sy)
+				i=$((i+1))
+				sy="${!i}"
+			;;
+			--print)
+				print=1
+			;;
+			*)
+				printf "$usage" >&2
+				exit 2
+			;;
+		esac
+		#}}}
+
+	else
+
+	#{{{ short parameters
+		bumped=false
+		case "${!i}" in
+			*p*)
+				print=1
+			;;&
+			!(-+([p])))
+				printf "$usage" >&2
+				exit 2
+			;;
+		esac
+	#}}}
+
+	fi
+done
+#}}}
+
+p="$(xrandr --query | grep "connected[[:space:]]primary[[:space:]][[:digit:]]" || xrandr --query | grep "[[:space:]]connected[[:space:]][[:digit:]]")"
 # just in case
 p="${p#*[[:space:]]}"
 p="${p%%(*}"
@@ -37,16 +118,22 @@ sch="${sc#*x}"
 sch="${sch#${sch%%[![:space:]]*}}"
 sch="${sch%%[![:digit:]]*}"
 
-read m1 m2 m3 m4 m5 m6 <<< $(awk -v r=$r -v s=$s -v sx=$sx -v sy=$sy -v sr=$screenratio -v tr=$tabletratio -v tx=$tx -v ty=$ty -v pw=$pw -v ph=$ph -v px=$px -v py=$py -v scw=$scw -v sch=$sch 'BEGIN { PI = 3.14159265;
+read m1 m2 m3 m4 m5 m6 < <(awk -v r=$r -v s=$s -v sx=$sx -v sy=$sy -v tr=$tabletratio -v tx=$tx -v ty=$ty -v pw=$pw -v ph=$ph -v px=$px -v py=$py -v scw=$scw -v sch=$sch 'BEGIN { PI = 3.14159265;
 	sinr = sin(r*PI/180);
 	cosr = cos(r*PI/180);
 	abssinr = sqrt(sinr*sinr);
 	abscosr = sqrt(cosr*cosr);
+	sr = pw/ph;
 	m1 = pw/scw*s*sx*tr*cosr/((sr-1)*abscosr+1);
 	m2 = ph/sch*s*sy*-sinr/((sr-1)*abssinr+1);
 	m3 = px/scw+(pw/scw-(m1+m2))/2+pw/scw*tx;
 	m4 = pw/scw*s*sx*sinr*((tr-1)*abssinr+1);
 	m5 = ph/sch*s*sy*cosr;
 	m6 = py/sch+(ph/sch-(m5+m4))/2+ph/sch*ty;
-printf "%f %f %f %f %f %f", m1, m2, m3, m4, m5, m6 }')
-xinput set-prop "VEIKK.INC S640 Mouse" --type=float "Coordinate Transformation Matrix" $m1 $m2 $m3 $m4 $m5 $m6 0 0 1
+	printf "%f %f %f %f %f %f", m1, m2, m3, m4, m5, m6;
+}')
+if [ $print -eq 0 ]; then
+	xinput set-prop "$device" --type=float "Coordinate Transformation Matrix" $m1 $m2 $m3 $m4 $m5 $m6 0 0 1
+else
+	printf "$m1 $m2 $m3 $m4 $m5 $m6 0 0 1\n"
+fi

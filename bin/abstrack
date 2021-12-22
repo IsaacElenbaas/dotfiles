@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -e
+dev="$(sudo libinput list-devices | grep -A 1 "1336[[:space:]]Touchpad" | tail -n 1)"
+dev="${dev##*[[:space:]]}"
+[ -n "$dev" ] || { printf "Failed to find trackpad!\n" >&2; exit 1; }
+sudo evtest --grab "$dev" | grep --line-buffered -oP "ABS_MT_POSITION_\K.*" | {
+	IFS= read -r line
+	read -d '' -t 1 || :
+	X=0
+	Y=0
+	printf "Starting. . .\n" >&2
+	while IFS= read -r line; do
+		#[ "${line::1}" = "X" ] && X=${line##*[[:space:]]} || { [ "${line::1}" = "Y" ] && Y=${line##*[[:space:]]}; }
+		declare ${line::1}=${line##*[[:space:]]}
+		read -t 0 && continue
+		printf "mousemove $X $Y\n"
+		#read -d '' -t 0.005 || :
+	done
+} | {
+	p="$(xrandr --query | grep "connected[[:space:]]primary[[:space:]][[:digit:]]" || xrandr --query | grep "[[:space:]]connected[[:space:]][[:digit:]]")"
+	# just in case
+	p="${p#*[[:space:]]}"
+	p="${p%%(*}"
+	p="${p%${p##*[![:space:]]}}"
+	p="${p##*[[:space:]]}"
+	pw="${p%%x*}"
+	ph="${p#*x}"
+	ph="${ph%%+*}"
+	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --s $(awk 'BEGIN { printf "%f", 3.15*4/2.675; exit; }') --tx -0.5 --ty 1)
+	read m3 < <(awk -v pw=$pw -v m3=$m3 'BEGIN { printf "%f\n", pw*m3; exit; }')
+	read m6 < <(awk -v ph=$ph -v m6=$m6 'BEGIN { printf "%f\n", ph*m6; exit; }')
+	awk -v m1=$m1 -v m2=$m2 -v m3=$m3 -v m4=$m4 -v m5=$m5 -v m6=$m6 '
+		function max(num1, num2) {
+			return (num1 > num2) ? num1 : num2;
+		}
+		{
+			printf "mousemove %d %d\n", max(0, int(m1*$2+m2*$3+m3)), max(0, int(m4*$2+m5*$3+m6));
+			fflush("/dev/stdout");
+		}
+	'
+} | xdotool -
