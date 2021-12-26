@@ -1,9 +1,243 @@
 #!/bin/bash
 
+dev="" # string that matches some or all of the 'Device:' line in `sudo libinput list-devices`
+tmp="" # temporary folder for building packages with patches
+
 set -e
-dev="$(sudo libinput list-devices | grep -A 1 "1336[[:space:]]Touchpad" | tail -n 1)"
-dev="${dev##*[[:space:]]}"
-[ -n "$dev" ] || { printf "Failed to find trackpad!\n" >&2; exit 1; }
+
+#{{{ functions
+	#{{{ getPKGBUILD
+getPKGBUILD() {
+	base="https://raw.githubusercontent.com/archlinux/svntogit-packages/$(
+		curl -s https://api.github.com/repos/archlinux/svntogit-packages/commits/packages/$1?until="$(
+			while IFS= read -r line; do
+				[ "${line%%[[:space:]:][[:space:]]*}" = "Install Date" ] && { date="${line#*:}"; break; }
+			done < <(pacman -Qi $1)
+			date -u -d "${date#${date%%[![:space:]]*}}" +'%Y-%m-%dT%H:%M:%SZ'
+		)"?per_page=1 | while IFS= read -r line; do
+			line="${line#${line%%[![:space:]]*}}"
+			if [ "${line%%[[:space:]:]*}" = "\"sha\"" ]; then
+				line="${line#*:}"
+				line="${line#*\"}"
+				line="${line%\"*}"
+				printf "$line\n"
+			fi
+		done | head -n 1
+	)/trunk"
+	curl -s "$base/PKGBUILD" > PKGBUILD.old
+	for i in "${@:2}"; do
+		curl -s "$base/$i" > "$i"
+	done
+
+	while IFS= read -r line; do
+		[ "${line%%[[:space:]:]*}" = "Version" ] && { ver="${line#*:}"; break; }
+	done < <(pacman -Qi libinput)
+	ver="${ver#${ver%%[![:space:]]*}}"
+	ver="${ver%${ver##*[![:space:]]}}"
+
+	while IFS= read -r line; do
+		line="${line#${line%%[[:space:]]*}}"
+		if [ "${line%%[[:space:]=]}" = "pkgver" ]; then
+			line="${line#*=}"
+			line="${line#${line%%[[:space:]]*}}"
+			line="${line%${line##*[[:space:]]}}"
+			[ "$line" = "${ver%-*}" ] || { printf "Failed to get correct PKGBUILD! (got v$line, wanted v${ver%-*})\n" >&2; exit 1; }
+		fi
+	done < PKGBUILD.old
+	while IFS= read -r line; do
+		line="${line#${line%%[[:space:]]*}}"
+		if [ "${line%%[[:space:]=]}" = "pkgrel" ]; then
+			line="${line#*=}"
+			line="${line#${line%%[[:space:]]*}}"
+			line="${line%${line##*[[:space:]]}}"
+			[ "$line" = "${ver#*-}" ] || { printf "Failed to get correct PKGBUILD! (got release $line, wanted release ${ver#*-})\n" >&2; exit 1; }
+		fi
+	done < PKGBUILD.old
+}
+	#}}}
+#}}}
+
+#{{{ patch system packages to remove smoothing
+tmp="${tmp%/}"
+rm -rf "$tmp/abstrack"
+
+if ! command -v libinput &>/dev/null; then
+	printf "libinput is not installed, skipping\n" >&2
+elif [ -z "$tmp" ]; then
+	printf "tmp folder not specified, skipping smoothing removal\n" >&2
+else
+	while IFS= read -r line; do
+		[ "${line%%[[:space:]:]*}" = "Description" ] && { desc="${line#*:}"; break; }
+	done < <(pacman -Qi libinput)
+	patch=""
+	[ "${desc#*no smoothing}" != "$desc" ] || ! command -v pacman &>/dev/null || while [ -z "$patch" ]; do
+		printf "Would you like to patch libinput to remove smoothing? [y/n]: "
+		IFS= read -r patch
+		{ [ "$patch" = "y" ] || [ "$patch" = "n" ]; } || { printf "\033[A\033[K"; patch=""; continue; }
+		[ "$patch" = "n" ]
+	done || {
+
+	#{{{ libinput
+		mkdir -p "$tmp/abstrack/libinput"
+		cd "$tmp/abstrack/libinput"
+		getPKGBUILD libinput
+		{
+			# patches are lame we die like men
+			while IFS= read -r line; do
+				ws="${line%%[![:space:]]*}"
+				line="${line#$ws}"
+				line="${line%${line##*[![:space:]]}}"
+				[ "${line%%[[:space:]=]*}" != "pkgdesc" ] && printf "$ws%s\n" "$line" || { printf "$ws%s\n" "${line%?} - no smoothing${line#"${line%?}"}"; break; }
+			done
+			while IFS= read -r line; do
+				ws="${line%%[![:space:]]*}"
+				line="${line#$ws}"
+				line="${line%${line##*[![:space:]]}}"
+				printf "$ws%s\n" "$line"
+				[ "${line%%[[:space:]\(]*}" != "build" ] || {
+					# patches are lame we die like men x2 but it's worse this time
+					cat <<- '__EOF__'
+					  tar -xJf libinput-$pkgver.tar.xz
+
+					  mv libinput-$pkgver/src/evdev-tablet.c libinput-$pkgver/src/evdev-tablet.c.old
+					  while IFS= read -r line; do
+					    if [ "${line#*tablet_smoothen_axes*;}" = "$line" ]; then
+					      printf "%s\n" "$line"
+					    else
+					      printf "%s\n" "${line//tablet_smoothen_axes/\/\/tablet_smoothen_axes}"
+					    fi
+					  done < libinput-$pkgver/src/evdev-tablet.c.old > libinput-$pkgver/src/evdev-tablet.c
+
+					  mv libinput-$pkgver/src/evdev.c libinput-$pkgver/src/evdev.c.old
+					  while IFS= read -r line; do
+					    if [ "${line#*return fuzz;}" = "$line" ]; then
+					      printf "%s\n" "$line"
+					    else
+					      # tp_init_hysteresis checks fuzz directly which is false for 0, and we don't want non-moving updates anyway
+					      printf "%s\n" "${line%%[![:space:]]*}return 1;"
+					    fi
+					  done < libinput-$pkgver/src/evdev.c.old > libinput-$pkgver/src/evdev.c
+
+					  mv libinput-$pkgver/src/evdev-mt-touchpad-gestures.c libinput-$pkgver/src/evdev-mt-touchpad-gestures.c.old
+					  while IFS= read -r line; do
+					    if [ "${line#*define*HOLD_AND_MOTION_THRESHOLD}" = "$line" ]; then
+					      printf "%s\n" "$line"
+					    else
+					      line2="${line%%//*}"
+					      line2="${line2%%/\**}"
+					      line2="${line2%${line2##*[![:space:]]}}"
+					      printf "%s\n" "${line2%${line2##*[![:digit:].]}}0"
+					    fi
+					  done < libinput-$pkgver/src/evdev-mt-touchpad-gestures.c.old > libinput-$pkgver/src/evdev-mt-touchpad-gestures.c
+
+					  mv libinput-$pkgver/src/evdev-mt-touchpad.c libinput-$pkgver/src/evdev-mt-touchpad.c.old
+					  while IFS= read -r line; do
+					    if [ "${line#*t->history.count <}" = "$line" ]; then
+					      printf "%s\n" "$line"
+					    else
+					      num="${line#*t->history.count <}"
+					      num="${num#=}"
+					      num="${num#${num%%[![:space:]]*}}"
+					      num="${num%%[![:digit:]]*}"
+					      [ -n "$num" ] && [ $num -gt 1 ] && printf "%s\n" "${line%%t->history.count <*}false && t->history.count <${line#*t->history.count <}" || printf "%s\n" "$line"
+					    fi
+					  done < libinput-$pkgver/src/evdev-mt-touchpad.c.old > libinput-$pkgver/src/evdev-mt-touchpad.c
+
+					  rm libinput-$pkgver.tar.xz
+					  tar -cJf libinput-$pkgver.tar.xz libinput-$pkgver
+
+					__EOF__
+					break
+				}
+			done
+			cat
+		} < PKGBUILD.old > PKGBUILD
+		makepkg -si --skippgpcheck
+		cd - &>/dev/null
+	#}}}
+
+		clear
+		printf "Restart Xorg to load non-smoothed libinput\n"
+	}
+fi
+
+if [ "$(uname -s | cut -c 2-)" != "inux" ]; then
+	printf "linux is not installed, skipping\n" >&2
+elif [ -z "$tmp" ]; then
+	printf "tmp folder not specified, skipping smoothing removal\n" >&2
+else
+	while IFS= read -r line; do
+		[ "${line%%[[:space:]:]*}" = "Description" ] && { desc="${line#*:}"; break; }
+	done < <(pacman -Qi linux)
+	patch=""
+	[ "${desc#*no smoothing}" != "$desc" ] || ! command -v pacman &>/dev/null || while [ -z "$patch" ]; do
+		printf "Would you like to patch usb-hid through the kernel to remove smoothing (LONG)? [y/n]: "
+		IFS= read -r patch
+		{ [ "$patch" = "y" ] || [ "$patch" = "n" ]; } || { printf "\033[A\033[K"; patch=""; continue; }
+		[ "$patch" = "n" ]
+	done || {
+
+	#{{{ linux->usb-hid
+		mkdir -p "$tmp/abstrack/linux"
+		cd "$tmp/abstrack/linux"
+		getPKGBUILD linux config
+		{
+			# patches are lame we die like men
+			while IFS= read -r line; do
+				ws="${line%%[![:space:]]*}"
+				line="${line#$ws}"
+				line="${line%${line##*[![:space:]]}}"
+				[ "${line%%[[:space:]=]*}" != "pkgdesc" ] && printf "$ws%s\n" "$line" || { printf "$ws%s\n" "${line%?} - no smoothing (trackpad only)${line#"${line%?}"}"; break; }
+			done
+			while IFS= read -r line; do
+				ws="${line%%[![:space:]]*}"
+				line="${line#$ws}"
+				line="${line%${line##*[![:space:]]}}"
+				printf "$ws%s\n" "$line"
+				[ "${line%%[[:space:]\(]*}" != "build" ] || {
+					IFS= read -r buildLine
+					buildLine="$buildLine"$'\n'
+					[ "${buildLine#*cd[[:space:]]}" != "$buildLine" ] && { printf "%s" "$buildLine"; buildLine=""; }
+					cat <<- '__EOF__'
+					  mv drivers/hid/hid-multitouch.c drivers/hid/hid-multitouch.c.old
+					  while IFS= read -r line; do
+					    if [ "${line#*input_set_abs_params*;}" = "$line" ]; then
+					      printf "%s\n" "$line"
+					    else
+					      printf "%s\n" "${line%,*,*}, 0,${line##*,}"
+					    fi
+					  done < drivers/hid/hid-multitouch.c.old > drivers/hid/hid-multitouch.c
+					__EOF__
+					printf "%s" "$buildLine"
+					break
+				}
+			done
+			cat
+		} < PKGBUILD.old > PKGBUILD
+		makepkg -si --skippgpcheck
+		cd - &>/dev/null
+	#}}}
+
+		clear
+		printf "Restart to load non-smoothed linux->usb-hid\n"
+	}
+fi
+
+rm -rf "$tmp/abstrack"
+#}}}
+
+dev="$(sudo libinput list-devices | {
+	# grep won't work here unfortunately, consumes all stdin with `-m 1` or `--line-buffered | head -n 1`
+	while IFS= read -r line && [ "${line#*"$dev"}" = "$line" ]; do :; done
+	while IFS= read -r line; do
+		[ "${line%%[[:space:]:]*}" = "Kernel" ] && {
+			line="${line#*:}"
+			printf "%s\n" "${line#${line%%[![:space:]]*}}"
+			break
+		}
+	done
+})"
+[ -e "$dev" ] || { printf "Failed to find trackpad!\n" >&2; exit 1; }
 sudo evtest --grab "$dev" | grep --line-buffered -oP "ABS_MT_POSITION_\K.*" | {
 	IFS= read -r line
 	read -d '' -t 1 || :
@@ -15,9 +249,11 @@ sudo evtest --grab "$dev" | grep --line-buffered -oP "ABS_MT_POSITION_\K.*" | {
 		declare ${line::1}=${line##*[[:space:]]}
 		read -t 0 && continue
 		printf "mousemove $X $Y\n"
-		#read -d '' -t 0.005 || :
 	done
 } | {
+	command -v tabletsetup &>/dev/null || cat
+
+#{{{ get and use transformation matrix
 	p="$(xrandr --query | grep "connected[[:space:]]primary[[:space:]][[:digit:]]" || xrandr --query | grep "[[:space:]]connected[[:space:]][[:digit:]]")"
 	# just in case
 	p="${p#*[[:space:]]}"
@@ -27,7 +263,7 @@ sudo evtest --grab "$dev" | grep --line-buffered -oP "ABS_MT_POSITION_\K.*" | {
 	pw="${p%%x*}"
 	ph="${p#*x}"
 	ph="${ph%%+*}"
-	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --s $(awk 'BEGIN { printf "%f", 3.15*4/2.675; exit; }') --tx -0.5 --ty 1)
+	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --s $(awk 'BEGIN { printf "%f", 2.15*4/2.675; exit; }') --tx -0.25 --ty 0.75)
 	read m3 < <(awk -v pw=$pw -v m3=$m3 'BEGIN { printf "%f\n", pw*m3; exit; }')
 	read m6 < <(awk -v ph=$ph -v m6=$m6 'BEGIN { printf "%f\n", ph*m6; exit; }')
 	awk -v m1=$m1 -v m2=$m2 -v m3=$m3 -v m4=$m4 -v m5=$m5 -v m6=$m6 '
@@ -39,4 +275,6 @@ sudo evtest --grab "$dev" | grep --line-buffered -oP "ABS_MT_POSITION_\K.*" | {
 			fflush("/dev/stdout");
 		}
 	'
+#}}}
+
 } | xdotool -
