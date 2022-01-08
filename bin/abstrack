@@ -1,6 +1,7 @@
 #!/bin/bash
 
-dev="" # string that matches some or all of the 'Device:' line in `sudo libinput list-devices`
+dev="" # string that matches an identifier of the device in /proc/bus/input/devices
+absPrefix="" # event code prefix - use ABS_MT_POSITION_, ABS_ if that doesn't work
 tmp="" # temporary folder for building packages with patches
 
 set -e
@@ -77,6 +78,7 @@ else
 		[ "$patch" = "n" ]
 	done || {
 
+# not necessary for this as evdev is used directly, but not like I have somewhere better to put this for my tablet
 	#{{{ libinput
 		mkdir -p "$tmp/abstrack/libinput"
 		cd "$tmp/abstrack/libinput"
@@ -226,52 +228,95 @@ fi
 rm -rf "$tmp/abstrack"
 #}}}
 
-dev="$(sudo libinput list-devices | {
-	# grep won't work here unfortunately, consumes all stdin with `-m 1` or `--line-buffered | head -n 1`
+dev="$({
+	# grep won't work here unfortunately, consumes all stdin even with `-m 1` or `--line-buffered | head -n 1`
 	while IFS= read -r line && [ "${line#*"$dev"}" = "$line" ]; do :; done
 	while IFS= read -r line; do
-		[ "${line%%[[:space:]:]*}" = "Kernel" ] && {
-			line="${line#*:}"
-			printf "%s\n" "${line#${line%%[![:space:]]*}}"
+		[ "${line::11}" = "H: Handlers" ] && {
+			line="${line#*event}"
+			printf "/dev/input/event${line%%[![:digit:]]*}\n"
 			break
 		}
 	done
-})"
+} < /proc/bus/input/devices)"
 [ -e "$dev" ] || { printf "Failed to find trackpad!\n" >&2; exit 1; }
-sudo evtest --grab "$dev" | grep --line-buffered -oP "ABS_MT_POSITION_\K.*" | {
+sudo evtest --grab "$dev" | {
+
+#{{{ get trackpad maximum X and Y values
 	IFS= read -r line
-	read -d '' -t 1 || :
+	while true; do
+		[ "${line::7}" != "Testing" ] || { printf "This trackpad may not support absolute positioning - try changing your absPrefix.\n"; exit 1; }
+		[ "${line#*"$absPrefix"}" != "$line" ] && {
+			ws="${line%%[![:space:]]*}"
+			line="${line#*"$absPrefix"}"
+			while IFS= read -r line2; do
+				[ -n "${ws#${line2%%[![:space:]]*}}" ] || { line="$line2"; break; }
+				line2="${line2#${line2%%[![:space:]]*}}"
+				[ "${line2::3}" = "Max" ] && {
+					line2="${line2#"${line2%%[[:digit:]]*}"}"
+					[ "${line::1}" = "X" ] && MX=$line2 || { [ "${line::1}" = "Y" ] && MY=$line2; }
+				}
+			done
+			[ -n "$MX" ] && [ -n "$MY" ] && break
+			continue
+		}
+		IFS= read -r line
+	done
+#}}}
+
+	printf "$MX\n$MY\n"
+	grep --line-buffered -oP "$absPrefix\K.*|BTN_LEFT.*1$"
+} | {
+	head -n 2 # pass on MX and MY
 	X=0
 	Y=0
 	printf "Starting. . .\n" >&2
 	while IFS= read -r line; do
-		#[ "${line::1}" = "X" ] && X=${line##*[[:space:]]} || { [ "${line::1}" = "Y" ] && Y=${line##*[[:space:]]}; }
-		declare ${line::1}=${line##*[[:space:]]}
+		[ "${line::8}" = "BTN_LEFT" ] && { printf "click 1\n"; continue; }
+		[ "${line::1}" = "X" ] && X=${line##*[[:space:]]} || { [ "${line::1}" = "Y" ] && Y=${line##*[[:space:]]}; }
+		#declare ${line::1}=${line##*[[:space:]]}
 		read -t 0 && continue
 		printf "mousemove $X $Y\n"
 	done
 } | {
-	command -v tabletsetup &>/dev/null || cat
+	read MX
+	read MY
+
+#{{{ get xorg screen size
+	s="$(xrandr --query | head -n 1)"
+	s="${s##*current}"
+	s="${s#${s%%[![:space:]]*}}"
+	sw="${s%%[[:space:]x]*}"
+	s="${s#*x}"
+	s="${s#${s%%[![:space:]]*}}"
+	sh="${s%%[,[:space:]]*}"
+#}}}
+
+	command -v tabletsetup &>/dev/null || awk -v sw=$sw -v sh=$sh -v MX=$MX -v MY=$MY '{
+		if($1 != "mousemove")
+			printf "%s\n", $0
+		else
+			printf "mousemove %d %d\n", int(sw*$2/MX), int(sh*$3/MY);
+		fflush("/dev/stdout");
+	}'
 
 #{{{ get and use transformation matrix
-	p="$(xrandr --query | grep "connected[[:space:]]primary[[:space:]][[:digit:]]" || xrandr --query | grep "[[:space:]]connected[[:space:]][[:digit:]]")"
-	# just in case
-	p="${p#*[[:space:]]}"
-	p="${p%%(*}"
-	p="${p%${p##*[![:space:]]}}"
-	p="${p##*[[:space:]]}"
-	pw="${p%%x*}"
-	ph="${p#*x}"
-	ph="${ph%%+*}"
-	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --s $(awk 'BEGIN { printf "%f", 2.15*4/2.675; exit; }') --tx -0.25 --ty 0.75)
-	read m3 < <(awk -v pw=$pw -v m3=$m3 'BEGIN { printf "%f\n", pw*m3; exit; }')
-	read m6 < <(awk -v ph=$ph -v m6=$m6 'BEGIN { printf "%f\n", ph*m6; exit; }')
+	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --tablet-ratio $(awk 'BEGIN { printf "%f", 4.365/2.675; exit; }') --tx -0.45 --ty 0.25 --s $(awk 'BEGIN { printf "%f", 3.15*2.675/4; exit; }'))
+	read m1 < <(awk -v sw=$sw -v MX=$MX -v m1=$m1 'BEGIN { printf "%f\n", sw*m1/MX; exit; }')
+	read m2 < <(awk -v sh=$sh -v MY=$MY -v m2=$m2 'BEGIN { printf "%f\n", sh*m2/MY; exit; }')
+	read m3 < <(awk -v sw=$sw           -v m3=$m3 'BEGIN { printf "%f\n", sw*m3;    exit; }')
+	read m4 < <(awk -v sw=$sw -v MX=$MX -v m4=$m4 'BEGIN { printf "%f\n", sw*m4/MX; exit; }')
+	read m5 < <(awk -v sh=$sh -v MY=$MY -v m5=$m5 'BEGIN { printf "%f\n", sh*m5/MY; exit; }')
+	read m6 < <(awk -v sh=$sh           -v m6=$m6 'BEGIN { printf "%f\n", sh*m6;    exit; }')
 	awk -v m1=$m1 -v m2=$m2 -v m3=$m3 -v m4=$m4 -v m5=$m5 -v m6=$m6 '
 		function max(num1, num2) {
 			return (num1 > num2) ? num1 : num2;
 		}
 		{
-			printf "mousemove %d %d\n", max(0, int(m1*$2+m2*$3+m3)), max(0, int(m4*$2+m5*$3+m6));
+			if($1 != "mousemove")
+				printf "%s\n", $0
+			else
+				printf "mousemove %d %d\n", max(0, int(m1*$2+m2*$3+m3)), max(0, int(m4*$2+m5*$3+m6));
 			fflush("/dev/stdout");
 		}
 	'
