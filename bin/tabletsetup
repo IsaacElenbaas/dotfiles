@@ -5,13 +5,13 @@ device="VEIKK.INC S640 Mouse"
 # tablet x / y - see hawku measurements or your vendor's official drivers if you can't find inner area online
 tabletratio="1.5"
 # positive moves CURSOR right (effective area left), percent of monitor to move (actually moves screen rect explained below)
-tx="0.775"
+tx="0.45"
 # positive moves CURSOR down (effective area up)
 ty="0.5"
 # rotation in degrees (positive is screen rect clockwise or curser counterclockwise) - initial is squares as big as possible in the center of your monitor and tablet, scales multiply the dimensions of the monitor one (making effective/tablet area smaller)
 r="5"
 # scale - use sx and sy for proportions if you don't want a square, and s for actual size
-s="3.15"
+s="2.5"
 sx="1"
 sy="1"
 

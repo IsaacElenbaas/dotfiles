@@ -301,7 +301,7 @@ sudo evtest --grab "$dev" | {
 	}'
 
 #{{{ get and use transformation matrix
-	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --tablet-ratio $(awk 'BEGIN { printf "%f", 4.365/2.675; exit; }') --tx -0.45 --ty 0.25 --s $(awk 'BEGIN { printf "%f", 3.15*2.675/4; exit; }'))
+	read m1 m2 m3 m4 m5 m6 m7 m8 m9 < <(tabletsetup -p --tablet-ratio $(awk 'BEGIN { printf "%f", 4.365/2.675; exit; }') --tx -0.15 --ty 0 --s $(awk 'BEGIN { printf "%f", 2.15*2.675/4; exit; }'))
 	read m1 < <(awk -v sw=$sw -v MX=$MX -v m1=$m1 'BEGIN { printf "%f\n", sw*m1/MX; exit; }')
 	read m2 < <(awk -v sh=$sh -v MY=$MY -v m2=$m2 'BEGIN { printf "%f\n", sh*m2/MY; exit; }')
 	read m3 < <(awk -v sw=$sw           -v m3=$m3 'BEGIN { printf "%f\n", sw*m3;    exit; }')
