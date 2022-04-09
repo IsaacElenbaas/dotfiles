@@ -1,0 +1,11 @@
+#!/bin/bash
+
+command -v display &>/dev/null || { printf "display command not present!\n" >&2; exit 1; }
+desc="2x2 0,1 0,1@622,1080:1920x1080 0,0@0,0:1920x1080 1,0@1920,0:1920x1080"
+if [ -x "$HOME/Projects/RWBG/main" ]; then
+	cd ~/Projects/RWBG
+	./main $desc
+else
+	cd /tmp
+	curl "http://isaacelenbaas.us.to/RWBG/${desc//[[:space:]]/%20}" 2>/dev/null > ./background.png
+fi && { display -window root ./background.png; true; }

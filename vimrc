@@ -20,7 +20,7 @@ if $VIM_TERMINAL == "" && $SSH_TTY == ""
 			execute g:t_tf | let &titlestring="4;242;" . slice(g:color, 4) | set title | redraw | set notitle
 			echo
 		endif
-	endfunction
+	endfunc
 	augroup FixColorsAG
 		autocmd VimEnter *
 			\ if $STY == ""
@@ -67,25 +67,25 @@ function Word(forward, big, visual)
 		endif
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ Home(visual)
 " makes home go left of whitespace only if already at 'beginning' of line
 function Home(visual)
-	let l:position=col(".")
+	let l:position=charcol(".")
 	if a:visual
 		normal! gv
 	endif
 	call feedkeys("g^", "nx")
-	if col(".") == l:position
+	if charcol(".") == l:position
 		call feedkeys("0g^", "nx")
 	endif
-	if col(".") == l:position
+	if charcol(".") == l:position
 		call feedkeys("0", "n")
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ End(visual)
@@ -94,7 +94,7 @@ function End(visual)
 	if a:visual
 		normal! gv
 	endif
-	let l:oldcol=col(".")
+	let l:oldcol=charcol(".")
 	let l:oldnum=line(".")
 	call feedkeys("^", "nx")
 	let cnum=0
@@ -106,7 +106,7 @@ function End(visual)
 	call feedkeys((a:visual) ? "$\<Left>" : "g$", "nx")
 	" no comment on line
 	if l:cnum != l:oldnum
-		if col(".") == l:oldcol
+		if charcol(".") == l:oldcol
 			call feedkeys((a:visual) ? "$\<Left>" : "$g$", "n")
 		endif
 	" comment on line
@@ -114,14 +114,14 @@ function End(visual)
 		" at/past comment start
 		if l:ccol <= l:oldcol
 			" soft wrapped line
-			if col(".") == l:oldcol
+			if charcol(".") == l:oldcol
 				call feedkeys((a:visual) ? "$\<Left>" : "$g$", "nx")
 			endif
-			if col(".") == l:oldcol
+			if charcol(".") == l:oldcol
 				call cursor(0, l:ccol)
 			endif
 		" before comment start
-		elseif col(".") == l:oldcol || col(".") > l:ccol
+		elseif charcol(".") == l:oldcol || charcol(".") > l:ccol
 			" comment starts before end of soft wrapped line or already at end of soft wrapped
 			call cursor(0, l:ccol)
 		endif
@@ -131,7 +131,7 @@ function End(visual)
 		call feedkeys("\<Right>\<Left>", "n")
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ Search(visual)
@@ -152,7 +152,7 @@ function Search(visual)
 			autocmd CursorMoved,InsertEnter * if exists("g:lastsearch") && histget("/", -1) != g:lastsearch | let g:search=histget("/", -1) | call histdel("/", -1) | let @/=histget("/", -1) | silent call feedkeys(":\<c-u>noh\<bar>echo\<CR>", "") | endif | autocmd! Search
 		endif
 	augroup END
-endfunction
+endfunc
 	"}}}
 
 	"{{{ GUnmap()
@@ -175,7 +175,7 @@ function GUnmap()
 			break
 		endif
 	endwhile
-endfunction
+endfunc
 	"}}}
 
 	"{{{ Find(forward)
@@ -187,43 +187,43 @@ function Find(forward)
 	endtry
 	let g:findforward=a:forward
 	return ((a:forward) ? "f" : "F") . nr2char(getchar())
-endfunction
+endfunc
 	"}}}
 
 	"{{{ In/Outdent(...)
 " makes 2>2j indent three lines two times
 function Indent(...)
-	if exists("a:1")
+	if a:0 == 1
 		call feedkeys("`[V`]" . g:temp . ">", "n")
 	else
 		call feedkeys("V" . g:temp . ">", "n")
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 function Outdent(...)
-	if exists("a:1")
+	if a:0 == 1
 		call feedkeys("`[V`]" . g:temp . "<", "n")
 	else
 		call feedkeys("V" . g:temp . "<", "n")
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ VExpand(left, right)
 " expands or contracts the visual selection with provided motions on the left and right sides
 function VExpand(left, right)
 	normal! gv
-	let l:col=col(".")
+	let l:col=charcol(".")
 	let l:line=line(".")
 	let l:swap=0
 	call feedkeys("o", "nx")
-	if (line(".") == l:line && col(".") > l:col) || line(".") > l:line
+	if (line(".") == l:line && charcol(".") > l:col) || line(".") > l:line
 		let l:swap=1
 		call feedkeys("o", "n")
 	endif
 	call feedkeys(a:left . "o" . a:right . ((l:swap) ? "o" : ""), "nx")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ ScrollOnlyScreenPercent(percent, visual)
@@ -246,7 +246,7 @@ function ScrollOnlyScreenPercent(percent, visual)
 		normal! gv
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ ScrollScreenPercent(percent, visual)
@@ -258,7 +258,7 @@ function ScrollScreenPercent(percent, visual)
 		call feedkeys("gv" . l:scroll . "gg", "n")
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ ScrollPercent(percent, visual)
@@ -268,7 +268,7 @@ function ScrollPercent(percent, visual)
 		call feedkeys("gv", "n")
 	endif
 	call feedkeys(byte2line(float2nr(round(a:percent*(line2byte(line("$")+1)-1)/100))) . "zz", "nx")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ ToggleFold()
@@ -285,7 +285,7 @@ function ToggleFold()
 	silent! normal! za
 	call feedkeys(l:position . "gg" . l:i . "kzt" . l:position . "gg", "n")
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ ToggleAllFolds()
@@ -296,7 +296,7 @@ function ToggleAllFolds()
 	call feedkeys(((line(".") == 1) ? "zR" : "zM"), "n")
 	call feedkeys(l:position . "gg", "n")
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ SelectFold(around)
@@ -314,7 +314,7 @@ function SelectFold(around)
 		call feedkeys("V", "n")
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 
 	"{{{ SelectMath(around)
@@ -340,7 +340,7 @@ function SelectMath(around)
 		endif
 	endif
 	call feedkeys("", "x")
-endfunction
+endfunc
 	"}}}
 "}}}
 
@@ -351,6 +351,7 @@ call plug#begin('~/.vim/plugged')
 Plug 'chaoren/vim-wordmotion'
 Plug 'dstein64/vim-startuptime'
 Plug 'dylanaraps/fff.vim'
+Plug 'IsaacElenbaas/true-vim-terminal'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'kshenoy/vim-signature'
@@ -435,11 +436,11 @@ let g:ulti_expand_or_jump_res=0
 function! Ulti_ExpandOrJump_getRes()
 	call UltiSnips#ExpandSnippetOrJump()
 	return g:ulti_expand_or_jump_res
-endfunction
+endfunc
 " has to be <c-r>=, not sure why
 inoremap <silent> <Space> <c-r>=(Ulti_ExpandOrJump_getRes() > 0) ? "\<lt>Left>" : "\<lt>Space>" <CR>
-xnoremap <silent> m di\`<c-r>"\`<Esc>
-nnoremap <silent> mm 0vg_di\`<c-r>"\`<Esc>
+xnoremap <silent> <expr> m expand("%:e") == "md" ? "di\\`<c-r>\"\\`<Esc>" : ":<c-u>call matchaddpos(\"Search\", [getpos(\"'<\")[1:2]+[line2byte(\"'>\")+charcol(\"'>\")-(line2byte(\"'<\")+charcol(\"'<\"))+1]])<CR>"
+nnoremap <silent> <expr> mm (expand("%:e") == "md") ? "0vg_di\\`<c-r>\"\\`<Esc>" : ":<c-u>call matchaddpos(\"Search\",[line(\".\")])<CR>"
 		"}}}
 	"}}}
 "}}}
@@ -522,8 +523,8 @@ cnoremap w!! w !sudo tee > /dev/null %
 command D execute "w !git diff --no-index --color=always -- % - | less -R" | execute "silent! !stty sane" | redraw!
 command M silent make<bar>call feedkeys("\<lt>CR>", "nx")
 set wildcharm=<C-z>
-cnoremap <expr> <Tab>   getcmdtype() =~ "[?/]" ? "<c-g>" : "<c-z>"
-cnoremap <expr> <s-Tab> getcmdtype() =~ "[?/]" ? "<c-t>" : "<c-z>"
+cnoremap <expr> <Tab>   (getcmdtype() =~ "[?/]") ? "<c-g>" : "<c-z>"
+cnoremap <expr> <s-Tab> (getcmdtype() =~ "[?/]") ? "<c-t>" : "<c-z>"
 	"}}}
 
 	"{{{ broken keys/key combos
@@ -560,13 +561,14 @@ nnoremap yY g^y$
 xnoremap Y ""y:silent execute "!printf -- '".substitute(substitute(substitute(substitute(substitute(getreg('"'),'\%(\\\\|#\)\@=','\\',"g"),'%','\\%\\%',"g"),'!','\\!',"g"),'\n','\\n',"g"),"'","'\\\\''","g")."'<bar>xsel -ib"<bar>redraw!<CR>
 " better chance of working but leaves newlines as \n
 "vnoremap Y ""y:silent execute "!printf -- '\\%s' '".substitute(substitute(substitute(getreg('"'),"'","'\\\\''","g"),'\n','\\n',"g"),'%','\\%',"g")."'<bar>xsel -ib"<bar>redraw!<CR>
-nnoremap <silent> <Leader>/ :<c-u>noh<CR>
+nnoremap <silent> <Leader>/ :<c-u>noh<bar>call clearmatches()<bar>doautocmd ColorScheme<CR>
 nnoremap j gJ
 inoremap <bar>& <bar><bar>
 xnoremap <silent> <Space> :<c-u>if visualmode()==#"v"<bar>call VExpand("h","l")<bar>else<bar>execute "normal! gv"<bar>endif<CR>
 xnoremap <silent> <CR> :<c-u>if visualmode()==#"V"<bar>call VExpand("k0","jg$")<bar>else<bar>execute "normal! gv"<bar>endif<CR>
 xnoremap <silent> <BS> :<c-u>if visualmode()==#"v"<bar>call VExpand("l","h")<bar>else<bar>call VExpand("jg$","k0")<bar>endif<CR>
 
+" TODO: split this up
 	"{{{ basic movement
 map <c-Right> w
 inoremap <silent> <c-Right> <Esc>:<c-u>call feedkeys("w", "mx")<bar>startinsert<CR>
@@ -577,8 +579,8 @@ nnoremap <silent> <s-Tab> :<c-u>let temp=@/<CR>:call cursor([getpos(".")[1],getp
 nnoremap $ g$
 nnoremap M zz
 xnoremap M zz
-nnoremap <silent> <expr> zz (v:count == 0) ? "" : ":<c-u>" . v:count . "\<lt>CR>"
-onoremap <silent> <expr> zz (v:count == 0) ? "" : ":<c-u>" . v:count . "\<lt>CR>"
+nnoremap <silent> <expr> (zz (v:count == 0)) ? "" : ":<c-u>" . v:count . "\<lt>CR>"
+onoremap <silent> <expr> (zz (v:count == 0)) ? "" : ":<c-u>" . v:count . "\<lt>CR>"
 nnoremap k <Nop>
 nnoremap l <Nop>
 nnoremap <silent> <Home> :<c-u>call Home(0)<CR>
@@ -608,10 +610,18 @@ xnoremap <expr> G Find(0)
 onoremap <expr> G Find(0)
 nnoremap / :<c-u>autocmd! Search<CR>/
 xnoremap / :<c-u>autocmd! Search<CR>gv/
+nnoremap <expr> n "Nn"[v:searchforward]
+xnoremap <expr> n "Nn"[v:searchforward]
+onoremap <expr> n "Nn"[v:searchforward]
+nnoremap <expr> N "nN"[v:searchforward]
+xnoremap <expr> N "nN"[v:searchforward]
+onoremap <expr> N "nN"[v:searchforward]
 nnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call search(g:search, 'sW')\<lt>CR>"
 xnoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'sW')\<lt>CR>"
+onoremap <silent> <expr> . (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? ";" : ",") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'sW')\<lt>CR>"
 nnoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call search(g:search, 'bsW')\<lt>CR>"
 xnoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'bsW')\<lt>CR>"
+onoremap <silent> <expr> , (!exists("g:search")) ? ((exists("g:findforward") && g:findforward) ? "," : ";") : ":<c-u>call feedkeys('gv', 'nx')\<lt>bar>call search(g:search, 'bsW')\<lt>CR>"
 
 		"{{{ shift movement -> visual
 nmap <s-c-Right> v<c-Right>
@@ -885,7 +895,7 @@ function! FoldText()
 	endif
 	" +2 chars at beginning makes it more obvious when something is opened
 	return repeat("-", v:foldlevel*2+2) . l:label . repeat(" ", winwidth(0))
-endfunction
+endfunc
 		"}}}
 
 		"{{{ fold markers
@@ -893,16 +903,16 @@ hi link FoldMarker Folded
 hi FoldMarkerSpace ctermfg=8 ctermbg=8
 augroup FoldMarkerHighlight
 	autocmd!
-	autocmd BufNewfile,Bufread * set foldtext=FoldText()
+	autocmd BufEnter * set foldtext=FoldText()
 	" remove commentchar spaces, here so it's before these
-	autocmd BufNewfile,Bufread * let &commentstring=substitute(&commentstring, '\s\+', "", "g")
+	autocmd BufEnter * let &commentstring=substitute(&commentstring, '\s\+', "", "g")
 
 	" color fold markers - only in comments
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarker", '\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\V', "")) . ((substitute(&commentstring, '.*%s', "", "") != "") ? "" : '\m$')) | endif
+	autocmd BufEnter,ColorScheme * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarker", '\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\V', "")) . ((substitute(&commentstring, '.*%s', "", "") != "") ? "" : '\m$')) | endif
 	" whitespace before comment chars
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '^\s\+\%(\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\V', "")) . '\m\)\@=') | endif
+	autocmd BufEnter * if(match(&commentstring, '%s') != -1) | call matchadd("FoldMarkerSpace", '^\s\+\%(\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\V', "")) . '\m\)\@=') | endif
 	" closing part of commentstring + its preceding spaces if at end of line
-	autocmd BufNewfile,Bufread * if(match(&commentstring, '%s') != -1 && substitute(&commentstring, '.*%s', "", "") != "") | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\)\\@<=\\s*\\V', "")) . '\m$') | endif
+	autocmd BufEnter * if(match(&commentstring, '%s') != -1 && substitute(&commentstring, '.*%s', "", "") != "") | call matchadd("FoldMarkerSpace", '\%(\V' . (substitute(&commentstring, '%s', '\\m.\\{-}\\%({{{\\|}}}\\).\\{-}\\)\\@<=\\s*\\V', "")) . '\m$') | endif
 	" matching spaces in fold comment is near impossible because if you match
 	" the fold comment with zero width and then non-matching .\{-} and \s* it
 	" will match the fold comment once, get one space group, and move on
@@ -915,18 +925,21 @@ augroup END
 	"{{{ leading and bad whitespace
 set list
 set listchars=tab:\|\ ,space:·
-" hides listchars for non-leading whitespace (as best as possible, BG doesn't seem to be referenceable and 0 is as close as you can get without hardcoding
-highlight NormalWhitespace ctermfg=0
-call matchadd("NormalWhitespace", ' \+')
-highlight LeadingWhitespace ctermfg=255
-call matchadd("LeadingWhitespace", '^\s\+')
-highlight BadWhitespace ctermfg=255 ctermbg=9
-" tabs used after start of lines
-call matchadd("BadWhitespace", '[^^\t]\zs\t\+')
-" whitespace at the end of lines
-call matchadd("BadWhitespace", '\s\+$')
-" if accidentally sent two spaces
-call matchadd("BadWhitespace", '\%(\s\{2\}.*\n\=.*\)\@<!\S\zs\s\{2\}\ze\S\%(.*\n\=.*\s\{2\}\)\@!')
+augroup MiscHighlights
+	autocmd!
+	" hides listchars for non-leading whitespace (as best as possible, BG doesn't seem to be referenceable and 0 is as close as you can get without hardcoding
+	autocmd BufEnter,ColorScheme * highlight NormalWhitespace ctermfg=0
+	autocmd BufEnter,ColorScheme * call matchadd("NormalWhitespace", ' \+')
+	autocmd BufEnter,ColorScheme * highlight LeadingWhitespace ctermfg=255
+	autocmd BufEnter,ColorScheme * call matchadd("LeadingWhitespace", '^\s\+')
+	autocmd BufEnter,ColorScheme * highlight BadWhitespace ctermfg=255 ctermbg=9
+	" tabs used after start of lines
+	autocmd BufEnter,ColorScheme * call matchadd("BadWhitespace", '[^^\t]\zs\t\+')
+	" whitespace at the end of lines
+	autocmd BufEnter,ColorScheme * call matchadd("BadWhitespace", '\s\+$')
+	" if accidentally sent two spaces
+	autocmd BufEnter,ColorScheme * call matchadd("BadWhitespace", '\%(\s\{2\}.*\n\=.*\)\@<!\S\zs\s\{2\}\ze\S\%(.*\n\=.*\s\{2\}\)\@!')
+augroup END
 	"}}}
 
 " soft wrapping
@@ -948,118 +961,45 @@ augroup END
 "}}}
 
 "{{{ terminal
+let g:TrueVimTerm_prompt_regex='^\s.\s\%uE0B0\s'
 if $STY != ""
 	let $SHELL="/usr/bin/zsh"
 endif
 
-	"{{{ Terminal()
-function Terminal()
+	"{{{ TrueVimTerm_Start_User(buf, new)
+function TrueVimTerm_Start_User(buf, new)
 	" for fixing terminal colors, can be removed when #7227 is closed
 	let g:wasTerm=1
-
+	setlocal laststatus=0
+	setlocal noshowcmd
+	setlocal noruler
 	" doesn't trigger outside of vim terminal due to VIM_TERMINAL=-1 in zshrc
-	if $VIM_TERMINAL == "" && str2nr(system('ps -o etimes= -p "$PPID" | tail -n1')) <= 1
+	if $VIM_TERMINAL == ""
 		call lightline#disable()
-		set laststatus=0
-		set noshowcmd
-		set noruler
-		" time check is for sessions started with "screen vim" (just vim terminal now - Mod-s-v should launch in my funky setup now)
 		if $STY != "" && str2nr(system('ps -o etimes= -C "screen" | tail -n1')) <= 1
 			" auto save screen layouts and fix size
 			call system('screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next" "reset" "source ~/.screenrc"')
 		endif
 	endif
-	" sets up terminal mode mappings
-	call Tapi_scEnd(1, [])
+endfunction
+	"}}}
 
-		"{{{ normal mode mappings
-	" normal mode mappings can always be present as they don't need to be disabled for sc or paste (you'll be in insert and can't even get to normal in sc's case)
-	if $VIM_TERMINAL == ""
-		nnoremap r :<c-u>call Tapi_rename(0,[0])<CR>
-	endif
-	" <BS> is for if it's not zsh
-	nnoremap <silent> dt :<c-u>call term_sendkeys(1,"\<lt>c-u>t\<lt>BS>")<CR>i
-	nnoremap <silent> dd :<c-u>call term_sendkeys(1,"\<lt>c-u>d\<lt>BS>")<CR>i
-	nnoremap <silent> xx :<c-u>call term_sendkeys(1,"\<lt>c-u>x\<lt>BS>")<CR>i
-	nnoremap <silent> p :<c-u>call setreg("",substitute(substitute(getreg(""),'\%(\n\)\?[^\n]* ','\1',"g"),'\n$','',"g"))<CR>i<c-w>""
+	"{{{ TrueVimTerm_Mappings_User()
+function TrueVimTerm_Mappings_User()
+		"{{{ broken keys/key combos
+" for some reason mapping to <Home> doesn't work but the escape sequence does
+tnoremap <kHome> <Esc>[1~
+tnoremap <kEnd> <Esc>[4~
 		"}}}
 
-endfunction
-"}}}
-
-	"{{{ TerminalEnd()
-function TerminalEnd()
-	try
-		nunmap r
-		nunmap dt
-		nunmap dd
-		nunmap xx
-		nunmap p
-		source $MYVIMRC
-	catch /.*/
-	endtry
-	call lightline#highlight()
-endfunction
+		"{{{ normal mode mappings
+if $VIM_TERMINAL == ""
+	nnoremap <buffer> r :<c-u>call Tapi_TVT_Rename(0,[0])<CR>
+endif
+" <BS> is for if it's not zsh (remove garbage 't')
+nnoremap <silent> dt :<c-u>call term_sendkeys(1,"\<lt>c-u>t\<lt>BS>")<CR>i
 	"}}}
 
-augroup Terminal
-	autocmd!
-	autocmd TerminalOpen * call Terminal()
-	autocmd VimEnter * call Tapi_send(0, [0, "\033]51;", '["call","Tapi_sc",[]]',    "\007"])
-	autocmd VimLeave * call Tapi_send(0, [0, "\033]51;", '["call","Tapi_scEnd",[]]', "\007"])
-	" :term is used for quick commands, otherwise there will never be more than one buffer
-	autocmd BufDelete * if len(getbufinfo({'buflisted':1})) != "0" | call TerminalEnd() | endif
-augroup END
-
-	"{{{ Tapi_send()
-" sends a string to the parent
-function Tapi_send(bufnum, arglist)
-	if a:arglist[0]
-		if match(a:arglist, '|\|"') == -1
-			execute 'let a:arglist[1]="' . a:arglist[1] . '"'
-			execute 'let a:arglist[2]="' . a:arglist[2] . '"'
-			execute 'let a:arglist[3]="' . a:arglist[3] . '"'
-		else
-			echo "Illegal characters! Improve Tapi_send if this sequence should work."
-			return
-		endif
-	endif
-	execute "set t_ts=" . a:arglist[1] . " t_fs=" . a:arglist[3] | let &titlestring=a:arglist[2] | set title | redraw | set notitle | set t_ts& t_fs&
-endfunc
-	"}}}
-
-	"{{{ Tapi_feedkeys()
-" just passes arguments to feedkeys
-function Tapi_feedkeys(bufnum, arglist)
-	exec "call feedkeys(\"" . a:arglist[0] . "\", \"" . a:arglist[1] . "\")"
-endfunc
-	"}}}
-
-"{{{ Tapi_rename()
-" automatically or manually changes title in screen
-function Tapi_rename(bufnum, arglist)
-	if $STY
-		if a:bufnum
-			let name=a:arglist[0]
-		else
-			call inputsave()
-			let name=input("Enter name: ")
-			call inputrestore()
-			let g:screenTitle=1
-			if l:name == ""
-				unlet g:screenTitle
-				let name="-----"
-			endif
-		endif
-		if !a:bufnum || (a:bufnum && !exists("g:screenTitle"))
-			call Tapi_send(0, [0, "\033k", l:name, "\033\\"])
-		endif
-	endif
-endfunction
-"}}}
-
-	"{{{ Tapi_mappings()
-function Tapi_mappings()
 		"{{{ misc.
 tnoremap <silent> <BS> <c-w>N:<c-u>call feedkeys("i" . (((search('( \%# )', "bcn", line(".")) != search('\[ \%# \]', "bcn", line("."))) != search('{ \%# }', "bcn", line("."))) ? "\<lt>Right>\<lt>BS>\<lt>BS>" : "\<lt>BS>"), "nx")<CR>
 tnoremap <bar>& <bar><bar>
@@ -1124,69 +1064,28 @@ tmap {) {}
 endfunc
 	"}}}
 
-	"{{{ Tapi_sc()
-" disable outer binds on sc or in vim
-function Tapi_sc(bufnum, arglist)
-	set termwinsize=
-	autocmd! TerminalResize
-	try
-		"{{{ removing all terminal mappings
-		let l:maps="\n" . substitute(substitute(execute("tmap"), '\nt\s*', '\n', "g"), '^\n*', '', "")
-		let l:nl=0
-		while 1
-			let l:sp=stridx(l:maps, " ", l:nl)
-			try
-				" entire check is for fixing terminal colors, can be removed when #7227 is closed
-				if strcharpart(l:maps, l:nl+1, l:sp-l:nl-1) != "<Esc>]" || str2nr(system('ps -o etimes= -C "screen" | tail -n1')) > 1
-					execute "tunmap " . substitute(strcharpart(l:maps, l:nl+1, l:sp-l:nl-1), '|', '<bar>', "g")
-				endif
-			catch /^.*E31:.*/
-			endtry
-			let l:nl=stridx(l:maps, "\n", l:sp)
-			if l:nl == -1
-				break
+	"{{{ Tapi_TVT_Rename()
+" automatically or manually changes title in screen
+function Tapi_TVT_Rename(bufnum, arglist)
+	if $STY
+		if a:bufnum
+			let name=a:arglist[0]
+		else
+			call inputsave()
+			let name=input("Enter name: ")
+			call inputrestore()
+			let g:screenTitle=1
+			if l:name == ""
+				unlet g:screenTitle
+				let name="-----"
 			endif
-		endwhile
-		"}}}
-	catch /^.*E31:.*/
-	endtry
-
-		"{{{ broken keys/key combos
-	" for some reason mapping to <Home> doesn't work but the escape sequence does
-	tnoremap <kHome> <Esc>[1~
-	tnoremap <kEnd> <Esc>[4~
-		"}}}
-
-	" setting termwinkey doesn't make c-w pass through
-	tnoremap <expr> <c-w> (term_sendkeys(1, "\<c-w>"))?"":""
+		endif
+		if !a:bufnum || (a:bufnum && !exists("g:screenTitle"))
+			call Tapi_TVT_Send(0, [0, "\033k", l:name, "\033\\"])
+		endif
+	endif
 endfunc
 	"}}}
-
-	"{{{ Tapi_scEnd()
-" restore binds if aborted sc or exited vim
-function Tapi_scEnd(bufnum, arglist)
-	execute "set termwinsize=0x" . (winwidth("%")-6)
-	augroup TerminalResize
-		autocmd VimResized * execute "set termwinsize=0x" . (winwidth("%")-6)
-	augroup END
-	call Tapi_mappings()
-	tnoremap <c-w> <c-w>N
-endfunc
-	"}}}
-
-	"{{{ Tapi_yank()
-function Tapi_yank(bufnum, arglist)
-	let @@=a:arglist[0]
-endfunc
-	"}}}
-
-	"{{{ broken keys/key combos
-" for some reason mapping to <Home> doesn't work but the escape sequence does
-tnoremap <kHome> <Esc>OH
-tnoremap <kEnd> <Esc>OF
-	"}}}
-
-tnoremap <c-w> <c-w>N
 "}}}
 
 let g:resource=1

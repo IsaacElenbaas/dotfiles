@@ -50,6 +50,6 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 		sudo tee /sys/module/snd_hda_intel/parameters/power_save <<< 0 > /dev/null
 		sudo tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "N" > /dev/null
 		# Disable runtime PM for WiFi
-		sudo iw dev wlan0 set power_save on
+		sudo iw dev wlan0 set power_save off
 	;;
 esac

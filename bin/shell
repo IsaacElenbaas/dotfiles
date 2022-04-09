@@ -1,3 +1,1 @@
-#!/bin/bash
-
-vim "+terminal ++close ++curwin ++norestore zsh -l$(for i in "$@"; do printf -- ' %q' "$i" | sed -e 's/ /\ /g' -e 's/^\\//'; done)"
+/home/isaacelenbaas/Projects/true-vim-terminal/shell

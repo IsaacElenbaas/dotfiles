@@ -31,7 +31,7 @@ usage="Usage: $(basename "$0") [OPTIONS]
   -h, --help             display this help
 "
 for (( i=1; i <= $#; i++ )); do
-	[ "${!i:0:1}" != "-" ] && { printf "$usage" >&2; exit 2; }
+	[ "${!i:0:1}" != "-" ] && { printf "$usage" >&2; exit 1; }
 	if [ "${!i:1:1}" = "-" ]; then
 
 	#{{{ long parameters
@@ -73,7 +73,7 @@ for (( i=1; i <= $#; i++ )); do
 			;;
 			*)
 				printf "$usage" >&2
-				exit 2
+				exit 1
 			;;
 		esac
 		#}}}
@@ -88,7 +88,7 @@ for (( i=1; i <= $#; i++ )); do
 			;;&
 			!(-+([p])))
 				printf "$usage" >&2
-				exit 2
+				exit 1
 			;;
 		esac
 	#}}}

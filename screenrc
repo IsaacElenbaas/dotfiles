@@ -12,6 +12,9 @@ startup_message off
 altscreen on
 # vim is used for scrollback
 defscrollback 0
+hardstatus alwaysfirstline "%{= Wk}%-w%{=b Kd} %n %t %{= Wk}%+w%{= kd}%="
+caption string " "
+rendition so "dk"
 term xterm-256color
 maptimeout 5
 

@@ -15,13 +15,50 @@ ts3=$(($ts2-2*$ts3_t))
 tagText() {
 	local text="^p(_LOCK_X)^p($ts1;$ts1)^ib(1)"
 	for (( i=$1; i<$t; i=($i+$m) )); do
-		if [ "$i" = "$2" ]; then
+		if [ "$i" = "${tags[$1]}" ]; then
 			text="$text^p(-$ts1;-$ts1)^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^p($h)^fg()"
 		else
 			text="$text^r(${ts2}x$ts2)^p($ts3_t;$ts3_t)^fg(black)^r(${ts3}x$ts3)^p(-$ts3_t;-$ts3_t)^p($h)^fg()"
 		fi
 	done
-	printf "$text^p(_UNLOCK_X)"
+	printf "$text^p(-$ts1;-$ts1)^p(_UNLOCK_X)"
+}
+	#}}}
+
+	#{{{ updateMinClients
+jumpLast="   ^ca(1,herbstclient chain , jumpto last-minimized , emit_hook misc)⁘^ca()   "
+updateMinClients() {
+	[ -n "$1" ] && minClients[$1]="" || for (( i=0; i<$m; i++ )); do minClients[$i]=""; done
+	while IFS= read -r line; do
+		winid="${line%%[[:space:]]*}"
+		winid="${winid##*.}"
+		line="${line#*[[:space:]]}"
+		tag=$((${line%%[[:space:]]*}))
+		if [ -n "$1" ]; then
+			[ $tag -eq ${tags[$1]} ] && i=$1 || i=$m
+		else
+			for (( i=0; i<$m; i++ )); do
+				[ $tag -eq ${tags[$i]} ] && break
+			done
+		fi
+		[ $i -ne $m ] || continue
+		class="${line#*[[:space:]]}"
+		[ ${#class} -le 15 ] || class="${class::12}..."
+		minClients[$i]="${minClients[$i]}^ca(1,herbstclient chain , set_attr clients.$winid.minimized false , emit_hook misc)$class^ca()   "
+	done < <(
+		herbstclient foreach CLIENT clients. \
+		sprintf CMIN "%c.minimized" CLIENT \
+		sprintf CTAG "%c.tag" CLIENT substitute CTAG CTAG \
+		sprintf CCLASS "%c.class" CLIENT substitute CCLASS CCLASS \
+		and , compare CMIN "=" "true" , echo CLIENT CTAG CCLASS
+	)
+	if [ -n "$1" ]; then
+		[ -n "${minClients[$1]}" ] && minClients[$1]="$jumpLast${minClients[$1]}"
+	else
+		for (( i=0; i<$m; i++ )); do
+			[ -n "${minClients[$i]}" ] && minClients[$i]="$jumpLast${minClients[$i]}"
+		done
+	fi
 }
 	#}}}
 #}}}
@@ -41,8 +78,11 @@ for (( i=0; i<$m; i++ )); do
 done
 
 	#{{{ tag setup
-declare -a mProcs
+declare -a monProcs
 declare -a tags
+declare -a tagTexts
+declare -a minClients
+exec 3>&2 2>&-
 for (( i=0; i<$m; i++ )); do
 	herbstclient pad $i $h
 	coproc dzen2 {
@@ -50,20 +90,25 @@ for (( i=0; i<$m; i++ )); do
 		read -d "+" x
 		read -d "+" x
 		read y
-		cat -u | dzen2 -fn "DejaVu" -ta l -e '' -p -x $x -y $y -h $h
+		cat -u | dzen2 -fn "DejaVu" -ta l -e '' -p -x $x -y $y -w $w -h $h
 	}
 	herbstclient get_attr monitors.$i.geometry >&"${dzen2[1]}"
 	# this is illegal but works at the moment so. . .
-	mProcs+=(${dzen2[1]}); unset dzen2
+	monProcs+=(${dzen2[1]}); unset dzen2
 	tags+=(-1)
 done
+exec 2>&3 3>&-
+	#}}}
+
+	#{{{ available commands
+command -v pactl &>/dev/null && pactl=1 || pactl=0
 	#}}}
 #}}}
 
 #{{{ timers
 {
 	watch -n 1 -pt "herbstclient emit_hook time" &
-	watch -n 10 -t "herbstclient emit_hook status" &
+	watch -n 10 -t "herbstclient emit_hook misc" &
 	watch -n $((60*60*60)) -t "herbstclient emit_hook updates" &
 # was giving me garbage characters and lots of newlines
 } &>/dev/null
@@ -74,39 +119,72 @@ while IFS= read -r line; do
 	update=0
 	monitor=
 	case "${line%${line##*[![:space:]]}}" in
+
+	#{{{ song
 		"song")
 			mocp="$(mocp --format '%tl %song')"
 			# pause play will for sure have this run again before song ends, that sets again to right time (so pause/play doesn't call this)
 			# skip/prev will call this as old could come in after new song ends
-			songTrigger="${mocp%% *}"
-			if [ "$songTrigger" != "" ]; then
+			songTrigger="${mocp%%[[:space:]]*}"
+			[ -n "$songTrigger" ] && {
 				songTrigger="$((SECONDS+10#${songTrigger%:*}*60+10#${songTrigger#*:}+1))"
-				title="${mocp#* }"
-			else
-				songTrigger=0
-				title="----------------"
-			fi
-			[ "$title" != "$dzsong" ] && dzsong="$title" && update=1
+				title="${mocp#*[[:space:]]}"
+			} || { songTrigger=0; title="----------------"; }
+			[ "$title" = "$dzsong" ] || { dzsong="$title"; [ $update -lt 1 ] && update=1; }
 		;;
+	#}}}
+
+	#{{{ updates
 		"updates")
 			dzupdates="$({ checkupdates; yay -Qu; } | wc -l)"
 			updateplural=$([ "$dzupdates" = "1" ] && printf "" || printf "s")
-			update=1
+			[ $update -lt 1 ] && update=1
 		;;
-		"status")
-			dzstatus="$(free | awk '/Mem/ { printf "%d%% RAM", ($2-$7)/$2*100; }')"
+	#}}}
+
+	#{{{ misc
+		"misc")
+
+		#{{{ minimized
+			updateMinClients
+			[ $update -lt 2 ] && update=2
+		#}}}
+
+		#{{{ status
+			dzstatus="$(free | { IFS= read -r line; head -n 1; } | tr -s " " | cut -d " " -f 2,7)"
+			dzstatus="$((100-(100*${dzstatus#*[[:space:]]})/${dzstatus%[[:space:]]*}))% RAM"
 			if [ -d /sys/class/power_supply/BAT0 ]; then
 				dzstatus="$dzstatus$div$(cat /sys/class/power_supply/BAT0/status) "
-				charge="$((10000*10/8*$(cat /sys/class/power_supply/BAT0/charge_now)/$(cat /sys/class/power_supply/BAT0/charge_full)))"
+				charge="$((((10000*10)/8*$(cat /sys/class/power_supply/BAT0/charge_now))/$(cat /sys/class/power_supply/BAT0/charge_full)))"
 				dzstatus="$dzstatus${charge:: -2}.${charge: -2}%"
 			fi
-			update=1
+			[ $update -lt 1 ] && update=1
+		#}}}
+
 		;;
-		"volume") dzvol="$(awk -F "[][]" '/\[/ { print $2; exit; }' <(amixer sget Master))"; update=1 ;;
+	#}}}
+
+	#{{{ volume
+		"volume")
+			if [ $pactl -eq 1 ]; then
+				dzvol="$(pactl get-sink-volume @DEFAULT_SINK@ | grep -o "[[:digit:]]*%" | head -n 1)"
+			else
+				dzvol="$(amixer sget Master | grep -m 1 '][[:space:]]*\[on\]')"
+				dzvol="${dzvol%][[:space:]]*\[on\]}"
+				dzvol="${dzvol##*[}"
+			fi
+			[ $update -lt 1 ] && update=1
+		;;
+	#}}}
+
+	#{{{ time
 		"time")
 			dzdate="$(date +'%a %d %b %r')"
-			[ "${songTrigger:-0}" -ne 0 ] && [ "$SECONDS" -ge "$songTrigger" ] && herbstclient emit_hook song || update=1
+			[ "${songTrigger:-0}" -ne 0 ] && [ "$SECONDS" -ge "$songTrigger" ] && herbstclient emit_hook song || { [ $update -lt 1 ] && update=1; }
 		;;
+	#}}}
+
+	#{{{ tag_changed
 		"tag_changed"*)
 			tag="${line#*[[:space:]]}"
 			tag="${tag#${tag%%[![:space:]]*}}"
@@ -114,33 +192,34 @@ while IFS= read -r line; do
 			monitor="${line##*[[:space:]]}"
 			monitor="${monitor#${monitor%%[![:space:]]*}}"
 			if [ "${tags[$monitor]}" != "$tag" ]; then
-				update=2
-				tagTexts[$monitor]="$(tagText $monitor $tag)"
+				tags[$monitor]=$tag
+				tagTexts[$monitor]="$(tagText $monitor)"
+				updateMinClients $monitor
+				[ $update -lt 1 ] && update=1
 			fi
-			tags[$monitor]=$tag
 		;;
+	#}}}
+
 		"focus_changed"*"0x0")
 			herbstclient chain , lock , and : compare tags.focus.curframe_wcount = 0 : set_layout horizontal , unlock
 		;;
 	esac
-	case $update in
-		0) ;;
-		*)
-			monitor="${monitor:-$primary}"
-			printf "%s" "${tagTexts[$monitor]}" >&"${mProcs[$monitor]}"
-			if [ $monitor = $primary ]; then
-				printf "%s" "^pa(0;0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzstatus$div$dzvol$div$dzdate$div" >&"${mProcs[$primary]}"
-			fi
-			printf "\n" >&"${mProcs[$monitor]}"
-		;;
-	esac
+	[ $update -ne 0 ] || continue
+	[ $update = 2 ] && monitor=0 || monitor="${monitor:-$primary}"
+	while [ $monitor -lt $m ]; do
+		printf "%s" "${tagTexts[$monitor]}${minClients[$monitor]}" >&"${monProcs[$monitor]}"
+		if [ $monitor = $primary ]; then
+			printf "%s" "^pa(0;0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzstatus$div$dzvol$div$dzdate$div" >&"${monProcs[$primary]}"
+		fi
+		printf "\n" >&"${monProcs[$monitor]}"
+		[ $update = 2 ] && monitor=$(($monitor+1)) || break
+	done
 done < <(
 	for (( i=0; i<$m; i++ )); do
 		tag="$(herbstclient get_attr monitors.$i.tag)"
 		printf "tag_changed ${tag%$'\n'} $i\n"
-		printf "tag_changed ${tag%$'\n'} $i\n" >&2
 	done
-	printf "volume\nsong\nstatus\nupdates\n"
+	printf "time\nvolume\nmisc\nsong\nupdates\n"
 	herbstclient -i
 )
 #}}}

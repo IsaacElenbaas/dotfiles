@@ -3,13 +3,14 @@ source ~/.profile
 #{{{ plugins
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/manydots.plugin.zsh
 
+export TVT_ESCAPE="^K"
+source ~/Projects/true-vim-terminal/true-vim-terminal.plugin.zsh
+
 	#{{{ You Should Use
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/you-should-use.plugin.zsh
 export YSU_MESSAGE_POSITION="after"
-# display all aliases
 export YSU_MODE=ALL
-# force use of aliases
-export YSU_HARDCORE=1
+export YSU_HARDCORE=0
 	#}}}
 #}}}
 
@@ -49,14 +50,14 @@ unsetopt beep
 	#{{{ f
 f() {
 	\fff "$@"
-	cd "$(cat "${XDG_CACHE_HOME:=$HOME/.cache}/fff/.fff_d" 2>/dev/null)"
-	rm "${XDG_CACHE_HOME:=$HOME/.cache}/fff/.fff_d" 2>/dev/null
+	cd "$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d" 2>/dev/null)"
+	rm "${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d" 2>/dev/null
 }
 	#}}}
 
 	#{{{ Paste
-Paste() { printf '\033]51;["call","Tapi_sc",[]]\007' }
-Nopaste() { printf '\033]51;["call","Tapi_scEnd",[]]\007' }
+Paste() { printf '\033]51;["call","Tapi_TVT_Paste",[]]\007' }
+Nopaste() { printf '\033]51;["call","Tapi_TVT_NoPaste",[]]\007' }
 	#}}}
 #}}}
 
@@ -70,6 +71,13 @@ alias dirsize='du -sh -- .'
 alias fff='f'
 alias fpg='ffmpeg'
 alias fpr='ffprobe'
+alias g='git'
+alias ga='git add'
+alias gc='git checkout'
+alias gd='git diff'
+alias gp='git push'
+alias gsp='git stash pop'
+alias gss='git stash save'
 alias keysounds='systemctl --user restart osu-keysounds'
 alias lapkeys='xinput enable "AT Translated Set 2 keyboard"; nokeyrepeat; { sudo tee /sys/class/leds/*::kbd_backlight/color <<< "2288ff" && sudo tee /sys/class/leds/*::kbd_backlight/brightness <<< "$(($(cat /sys/class/leds/*::kbd_backlight/max_brightness)*2/5))"; } > /dev/null'
 alias less='less -x2'
@@ -251,7 +259,7 @@ preexec() {
 
 	# screen automatic window title
 	if [ -n "$STY" ]; then
-		[ "$VIM_TERMINAL" -eq -1 ] && printf "\033k%s\033\\" "$start" || ( start="${start//\%/%%}"; printf '\033]51;["call","Tapi_rename",["'"${start//\"/\\\"}"'"]]\007' )
+		[ $VIM_TERMINAL -eq -1 ] && printf "\033k%s\033\\" "$start" || { start="${start//\%/%%}"; printf '\033]51;["call","Tapi_TVT_Rename",["'"${start//\"/\\\"}"'"]]\007'; }
 	fi
 }
 	#}}}
@@ -282,10 +290,11 @@ zshaddhistory() {
 	start="${1%$'\n'}"
 	start="${start#${start%%[![:space:]]*}}"
 	start="${start%%[[:space:]]*}"
-	case "$start" in
+	[ -x "${start%[;&|]}" ] && return 1
+	case "${start%[;&|]}" in
 		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
-		"bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ps" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
-		"abstrack" | "cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
+		"bg" | "bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "fg" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "jobs" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ps" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
+		"abstrack" | "cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "rollbg" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
 	for alias in "${(@k)aliases}"; do
 		[ "$start" = "$alias" ] && return 2
@@ -335,80 +344,58 @@ bindkey " " snip_space
 	#}}}
 
 	#{{{ vim terminal
-# don't (ever) use x, it breaks things
-tapi_feedkeys() { printf '\033]51;["call","Tapi_feedkeys",["'"%s"'", "'"%s"'"]]\007' "$1" "$2"; }
+		#{{{ shift movement -> visual
+			#{{{ c-Right
+_tvt.tapi_feedkeys_s_c_Right() { tvt.tapi_feedkeys "\\<s-c-Right>"; }
+zle -N _tvt.tapi_feedkeys_s_c_Right
+bindkey "^[[1;6C" _tvt.tapi_feedkeys_s_c_Right
+			#}}}
 
-	#{{{ shift movement -> visual
-		#{{{ c-Right
-_tapi_feedkeys_s_c_Right() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-c-Right>"; }
-zle -N _tapi_feedkeys_s_c_Right
-bindkey "^[[1;6C" _tapi_feedkeys_s_c_Right
-		#}}}
+			#{{{ c-Left
+_tvt.tapi_feedkeys_s_c_Left() { tvt.tapi_feedkeys "\\<s-c-Left>"; }
+zle -N _tvt.tapi_feedkeys_s_c_Left
+bindkey "^[[1;6D" _tvt.tapi_feedkeys_s_c_Left
+			#}}}
 
-		#{{{ c-Left
-_tapi_feedkeys_s_c_Left() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-c-Left>"; }
-zle -N _tapi_feedkeys_s_c_Left
-bindkey "^[[1;6D" _tapi_feedkeys_s_c_Left
-		#}}}
+			#{{{ Home
+_tvt.tapi_feedkeys_s_Home() { tvt.tapi_feedkeys "\\<s-Home>"; }
+zle -N _tvt.tapi_feedkeys_s_Home
+bindkey "^[[1;2H" _tvt.tapi_feedkeys_s_Home
+			#}}}
 
-		#{{{ Home
-_tapi_feedkeys_s_Home() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Home>"; }
-zle -N _tapi_feedkeys_s_Home
-bindkey "^[[1;2H" _tapi_feedkeys_s_Home
-		#}}}
+			#{{{ End
+_tvt.tapi_feedkeys_s_End() { tvt.tapi_feedkeys "\\<s-End>"; }
+zle -N _tvt.tapi_feedkeys_s_End
+bindkey "^[[1;2F" _tvt.tapi_feedkeys_s_End
+			#}}}
 
-		#{{{ End
-_tapi_feedkeys_s_End() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-End>"; }
-zle -N _tapi_feedkeys_s_End
-bindkey "^[[1;2F" _tapi_feedkeys_s_End
-		#}}}
+			#{{{ Up
+_tvt.tapi_feedkeys_s_Up() { tvt.tapi_feedkeys "\\<s-Up>"; }
+zle -N _tvt.tapi_feedkeys_s_Up
+bindkey "^[OA" _tvt.tapi_feedkeys_s_Up
+bindkey "^[[1;2A" _tvt.tapi_feedkeys_s_Up
+			#}}}
 
-		#{{{ Up
-_tapi_feedkeys_s_Up() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Up>"; }
-zle -N _tapi_feedkeys_s_Up
-bindkey "^[OA" _tapi_feedkeys_s_Up
-bindkey "^[[1;2A" _tapi_feedkeys_s_Up
-		#}}}
+			#{{{ Down
+_tvt.tapi_feedkeys_s_Down() { tvt.tapi_feedkeys "\\<s-Down>"; }
+zle -N _tvt.tapi_feedkeys_s_Down
+bindkey "^[OB" _tvt.tapi_feedkeys_s_Down
+bindkey "^[[1;2B" _tvt.tapi_feedkeys_s_Down
+			#}}}
 
-		#{{{ Down
-_tapi_feedkeys_s_Down() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Down>"; }
-zle -N _tapi_feedkeys_s_Down
-bindkey "^[OB" _tapi_feedkeys_s_Down
-bindkey "^[[1;2B" _tapi_feedkeys_s_Down
-		#}}}
+			#{{{ Right
+_tvt.tapi_feedkeys_s_Right() { tvt.tapi_feedkeys "\\<s-Right>"; }
+zle -N _tvt.tapi_feedkeys_s_Right
+bindkey "^[OC" _tvt.tapi_feedkeys_s_Right
+bindkey "^[[1;2C" _tvt.tapi_feedkeys_s_Right
+			#}}}
 
-		#{{{ Right
-_tapi_feedkeys_s_Right() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Right>"; }
-zle -N _tapi_feedkeys_s_Right
-bindkey "^[OC" _tapi_feedkeys_s_Right
-bindkey "^[[1;2C" _tapi_feedkeys_s_Right
-		#}}}
-
-		#{{{ Left
-_tapi_feedkeys_s_Left() { tapi_feedkeys "\\\\<c-w>N" "n"; tapi_feedkeys "\\\\<s-Left>"; }
-zle -N _tapi_feedkeys_s_Left
-bindkey "^[OD" _tapi_feedkeys_s_Left
-bindkey "^[[1;2D" _tapi_feedkeys_s_Left
-		#}}}
-	#}}}
-
-		#{{{ cutting/deleting
-_tapi_trash() {
-	BUFFER=
-}
-_tapi_delete() {
-	BUFFER="${BUFFER//\\/\\\\\\\\}"
-	BUFFER="${BUFFER//\%/%%}"
-	BUFFER="${BUFFER//\"/\\\\\"}"
-	# TODO: should use %s (scan for others. . . this wasn't even long ago)
-	printf '\033]51;["call","Tapi_yank",["'"$BUFFER"'"]]\007'
-	_trash
-}
-zle -N _tapi_trash
-bindkey "^Ux" _tapi_trash
-zle -N _delete
-bindkey "^Ud" _tapi_delete
-bindkey "^Ut" push-line
+			#{{{ Left
+_tvt.tapi_feedkeys_s_Left() { tvt.tapi_feedkeys "\\<s-Left>"; }
+zle -N _tvt.tapi_feedkeys_s_Left
+bindkey "^[OD" _tvt.tapi_feedkeys_s_Left
+bindkey "^[[1;2D" _tvt.tapi_feedkeys_s_Left
+			#}}}
 		#}}}
 	#}}}
 
@@ -471,6 +458,20 @@ bindkey "^M" _enter
 #}}}
 
 	#{{{ autocommands
+		#{{{ c
+_autocommand-c() {
+	if [ "$LBUFFER" = "c" ] && [ -z "$RBUFFER" ]; then
+		BUFFER=" clear"
+		zle accept-line
+	else
+		zle self-insert
+	fi
+}
+zle -N _autocommand-c
+bindkey "c" _autocommand-c
+bindkey -s -M isearch "c" "\026c"
+		#}}}
+
 		#{{{ f
 _autocommand-f() {
 	if [ "$LBUFFER" = "f" ] && [ -z "$RBUFFER" ]; then
@@ -482,7 +483,21 @@ _autocommand-f() {
 }
 zle -N _autocommand-f
 bindkey "f" _autocommand-f
-bindkey -sM isearch "f" "\026f"
+bindkey -s -M isearch "f" "\026f"
+		#}}}
+
+		#{{{ g
+_autocommand-g() {
+	if [ "$LBUFFER" = "g" ] && [ -z "$RBUFFER" ]; then
+		BUFFER=" git status"
+		zle accept-line
+	else
+		zle self-insert
+	fi
+}
+zle -N _autocommand-g
+bindkey "g" _autocommand-g
+bindkey -s -M isearch "g" "\026g"
 		#}}}
 
 		#{{{ l
@@ -496,7 +511,7 @@ _autocommand-l() {
 }
 zle -N _autocommand-l
 bindkey "l" _autocommand-l
-bindkey -sM isearch "l" "\026l"
+bindkey -s -M isearch "l" "\026l"
 		#}}}
 
 		#{{{ n
@@ -512,7 +527,7 @@ _autocommand-n() {
 }
 zle -N _autocommand-n
 bindkey "n" _autocommand-n
-bindkey -sM isearch "n" "\026n"
+bindkey -s -M isearch "n" "\026n"
 		#}}}
 	#}}}
 
@@ -522,27 +537,32 @@ bindkey "^[[B" down-line-or-search
 #}}}
 
 #{{{ terminal emulator config
-# doesn't trigger in vim terminal, equivalent function in vimrc
+# doesn't trigger inside vim terminal, equivalent function in vimrc
 if [ -z "$VIM_TERMINAL" ] && [ "$(ps -o etimes= -p "$PPID")" -le 1 ]; then
 	# auto save screen layouts
 	[ -n "$STY" ] && screen -X -S "${STY%%.*}" eval "layout new \"s${STY%%.*}\"" "next"
-	# prevent future vim terminals from running this
+	# prevent future vim sessions from running this
 	export VIM_TERMINAL=-1
 fi
 # global theme - not above as difficult to recreate in vimrc
-[ -f "/var/tmp/$USER-theme" ] && theme "$(cat "/var/tmp/$USER-theme")" 0
-# not above as original shell could exit
-[ -p "/var/tmp/$USER-update-theme" ] || {
-	[ -e "/var/tmp/$USER-update-theme" ] && rm "/var/tmp/$USER-update-theme"
-	mkfifo "/var/tmp/$USER-update-theme"
-} && \
-() {
-	setopt localoptions nomonitor
-	while true; do
-		cat -u < "/var/tmp/$USER-update-theme" > /dev/null
-		theme "$(cat /var/tmp/$USER-theme)" 1
-		sleep 3
-	done &
+[ -f "/var/tmp/$USER-theme" ] && {
+	# to not interfere with vim terminal fixing broken colors
+	sleep 1
+	theme "$(cat "/var/tmp/$USER-theme")" 0
 }
+{
+	trap "" SIGINT
+	while true; do
+		sleep 5
+		[ -p "/var/tmp/$USER-update-theme" ] || {
+			[ -e "/var/tmp/$USER-update-theme" ] && rm -f "/var/tmp/$USER-update-theme"
+			mkfifo "/var/tmp/$USER-update-theme"
+		}
+		[ -p "/var/tmp/$USER-update-theme" ] || break
+		cat -u < "/var/tmp/$USER-update-theme" > /dev/null || continue
+		theme "$(cat /var/tmp/$USER-theme)" 1
+	done
+} &
+clear
 export SHELL="/usr/bin/zsh"
 #}}}

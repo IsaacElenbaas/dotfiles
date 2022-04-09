@@ -48,12 +48,12 @@ for (( i=1; i <= $#; i++ )); do
 			;;
 			--reference)
 				i=$((i+1))
-				[ ! -e "${!i}" ] && printf "RFILE does not exist!\n" && exit 2
+				[ ! -e "${!i}" ] && printf "RFILE does not exist!\n" >&2 && exit 1
 				target="--reference=${!i}"
 			;;
 			*)
-				printf "$usage"
-				exit 2
+				printf "$usage" >&2
+				exit 1
 			;;
 		esac
 	else
@@ -74,8 +74,8 @@ for (( i=1; i <= $#; i++ )); do
 				verbose="v"
 			;;&
 			!(-+([ogcv])))
-				printf "$usage"
-				exit 2
+				printf "$usage" >&2
+				exit 1
 			;;
 		esac
 	fi

@@ -1,0 +1,6 @@
+[Unit]
+Description=Starts unclutter
+
+[Service]
+ExecStart=unclutter -idle 2 -root
+KillMode=process
