@@ -8,4 +8,11 @@ if [ -x "$HOME/Projects/RWBG/main" ]; then
 else
 	cd /tmp
 	curl "http://isaacelenbaas.us.to/RWBG/${desc//[[:space:]]/%20}" 2>/dev/null > ./background.png
-fi && { display -window root ./background.png; true; }
+fi && {
+	screen="$(xrandr -q | grep "[Ss]creen" | head -n 1)"
+	screen="${screen##*current}"
+	screen="${screen%%,*}"
+	screen="${screen//[[:space:]]/}"
+	display -window root -extent "$screen+0+0" ./background.png
+	true
+}

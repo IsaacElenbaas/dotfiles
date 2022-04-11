@@ -50,3 +50,4 @@ kbdrate -d 150 &>/dev/null
 
 	[ -f "$HOME/dotfiles/bin/tabletsetup" ] && $HOME/dotfiles/bin/tabletsetup 2>/dev/null
 }
+true

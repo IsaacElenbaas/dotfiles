@@ -2,11 +2,13 @@
 
 ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while IFS= read -r line; do line="${line#${line%%[![:space:]]*}}" && pkill -g "${line%%[[:space:]]*}"; done
 systemctl --user stop mocp
+systemctl --user stop unclutter
+systemctl --user stop rollbg
+systemctl --user stop vnc
+systemctl --user stop xbindkeys
+systemctl --user stop dunst
 systemctl --user stop osu-keysounds
 systemctl --user stop steam
-systemctl --user stop xbindkeys
-systemctl --user stop vnc
-systemctl --user stop dunst
-systemctl --user stop xpra-client
 export DISPLAY="${REAL_DISPLAY:-"$DISPLAY"}"
+systemctl --user stop xpra-client
 herbstclient quit
