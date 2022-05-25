@@ -1,0 +1,5 @@
+[Unit]
+Description=Rerolls background every 3h
+
+[Service]
+ExecStart=bash -c 'while %h/dotfiles/bin/rollbg; do sleep 3h; done'

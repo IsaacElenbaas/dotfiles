@@ -13,7 +13,7 @@ if $VIM_TERMINAL == "" && $SSH_TTY == ""
 				execute g:t_tf | let &titlestring="4;8;?" | set title | redraw | set notitle
 				set updatetime=50
 				augroup FixColorsAG
-					autocmd CursorHold * unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasTerm | call feedkeys("i", "nx") | endif | unlet g:wasTerm | set updatetime=4000 | autocmd! FixColorsAG
+					autocmd CursorHold * set updatetime=4000 | autocmd! FixColorsAG | unlet g:t_tf | exec "nunmap <Esc>]" | exec "tunmap <Esc>]" | exec "cunmap <c-G>" | if g:wasTerm | call feedkeys("i", "nx") | endif | unlet g:wasTerm
 				augroup END
 			endif
 		elseif slice(g:color, 2, 4) == "8;"
@@ -691,16 +691,15 @@ nmap tmm t
 xmap tmm t
 nmap tmmt t
 xmap tmmt t
+" tt mappings are under scrolling to percentage
 nmap tmmm t
 xmap tmmm t
 nmap tmmmt t
 xmap tmmmt t
 nmap ttt tmmmm
 xmap ttt tmmmm
-nmap tmmmm t
-xmap tmmmm t
-nmap tmmmmt t
-xmap tmmmmt t
+nmap tmmmmt ttt
+xmap tmmmmt ttt
 
 nnoremap tm '
 xnoremap tm '
@@ -939,6 +938,9 @@ augroup MiscHighlights
 	autocmd BufEnter,ColorScheme * call matchadd("BadWhitespace", '\s\+$')
 	" if accidentally sent two spaces
 	autocmd BufEnter,ColorScheme * call matchadd("BadWhitespace", '\%(\s\{2\}.*\n\=.*\)\@<!\S\zs\s\{2\}\ze\S\%(.*\n\=.*\s\{2\}\)\@!')
+	" ffmpeg consumes some stdin even with -y and such
+	" troublesome in while read loops, note calls to it
+	autocmd BufEnter,ColorScheme * call matchadd("Error", 'ffmpeg')
 augroup END
 	"}}}
 

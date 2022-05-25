@@ -41,8 +41,6 @@ setopt autocd
 setopt cdsilent
 CDPATH=".:$HOME"
 WORDCHARS=
-# just kill background jobs
-setopt nocheckjobs
 unsetopt beep
 #}}}
 
@@ -230,7 +228,6 @@ OLDPROMPT="%B${OLDPROMPT}%b%u%s%f%k %{"$'\033[?7h'"%}"
 	#{{{ preexec
 preexec() {
 		#{{{ OLDPROMPT
-	[ $? = 0 ] && plines=0 || plines=-1
 	plines=$(($(printf "%b" "$PROMPT\n" | wc -l)-1))
 	for (( i = 1; i <= $plines; i++ )); do
 		printf "\033[A\033[K"
@@ -249,7 +246,7 @@ preexec() {
 	case "$start" in
 		"" | "bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mpv" | "mutt" | "sc" | "ssh" | "termdown" | "v" | "vim") starttime=0 ;;
 		*)
-			case "${end%% *}" in
+			case "${end%%[[:space:]]*}" in
 				"less") starttime=0 ;;
 				*) starttime=$SECONDS ;;
 			esac
@@ -267,9 +264,13 @@ preexec() {
 	#{{{ precmd
 precmd() {
 	# undistract-me
-	((starttime > 0 && SECONDS-starttime > 10)) &&
-		(notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga --volume=65536 &) &>/dev/null &&
-		printf "$((SECONDS-starttime))s\n"
+	[ ${starttime:-0} -gt 0 ] && {
+		starttime=$(($SECONDS-$starttime))
+		[ $starttime -gt 10 ] && {
+			( notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga --volume=65536 & ) &>/dev/null
+			printf "${starttime}s\n"
+		}
+	}
 	tput cnorm # vim can't handle guis run in it run in a screen lol https://groups.google.com/forum/#!topic/vim_dev/HhczoxAdcWE
 }
 	#}}}
@@ -293,7 +294,7 @@ zshaddhistory() {
 	[ -x "${start%[;&|]}" ] && return 1
 	case "${start%[;&|]}" in
 		"git") fc -p "$HOME/.zsh_git_history"; fc -P; return 2 ;;
-		"bg" | "bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "fg" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "jobs" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ps" | "ping" | "rm" | "scp" | "ssh" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
+		"bg" | "bluetoothctl" | "cat" | "cd" | "chmod" | "chown" | "colorpicker" | "cp" | "curl" | "diff" | "f" | "fg" | "ffmpeg" | "ffprobe" | "grep" | "herbstclient" | "jobs" | "kill" | "killall" | "less" | "ln" | "ls" | "man" | "mkdir" | "mocp" | "mpv" | "mv" | "powertop" | "ps" | "ping" | "rm" | "scp" | "sleep" | "ssh" | "stat" | "systemctl" | "tar" | "termdown" | "top" | "touch" | "unzip" | "wget" | "zip") return 2 ;;
 		"abstrack" | "cleanpkg" | "cleanpkgclean" | "cleanup" | "dim" | "hue" | "keyrepeat" | "mocp-only" | "monitorsoff" | "monitorson" | "nokeyrepeat" | "own" | "pauseafter" | "renumber" | "rmonitoroff" | "rollbg" | "runtime" | "sc" | "tabletsetup" | "theme" | "wn" | "ytdlmusic") return 2 ;;
 	esac
 	for alias in "${(@k)aliases}"; do
@@ -458,11 +459,34 @@ bindkey "^M" _enter
 #}}}
 
 	#{{{ autocommands
+		#{{{ autocommand-eval
+_autocommand-eval() {
+	BUFFER="$1"
+	zle redisplay
+	printf "\n"
+	local OLD_YSU_MESSAGE_POSITION="$YSU_MESSAGE_POSITION"
+	YSU_MESSAGE_POSITION="after"
+	preexec "$BUFFER" "${*:2}" "${*:2}"
+	for (( i=1; i <= ${#preexec_functions[@]}; i++ )); do "${preexec_functions[$i]}" "$BUFFER" "${*:2}" "${*:2}"; done
+	"$2" "${@:3}"
+	BUFFER=""
+	_YSU_BUFFER=""
+	precmd
+	for (( i=1; i <= ${#precmd_functions[@]}; i++ )); do "${precmd_functions[$i]}"; done
+	plines=$(($(printf "%b" "$PROMPT\n" | wc -l)-1))
+	YSU_MESSAGE_POSITION="$OLD_YSU_MESSAGE_POSITION"
+	for (( i = 1; i <= $plines; i++ )); do
+		printf "\n"
+	done
+	zle reset-prompt
+}
+zle -N _autocommand-eval
+		#}}}
+
 		#{{{ c
 _autocommand-c() {
 	if [ "$LBUFFER" = "c" ] && [ -z "$RBUFFER" ]; then
-		BUFFER=" clear"
-		zle accept-line
+		zle _autocommand-eval "clear" clear
 	else
 		zle self-insert
 	fi
@@ -489,8 +513,7 @@ bindkey -s -M isearch "f" "\026f"
 		#{{{ g
 _autocommand-g() {
 	if [ "$LBUFFER" = "g" ] && [ -z "$RBUFFER" ]; then
-		BUFFER=" git status"
-		zle accept-line
+		zle _autocommand-eval "git status" git status
 	else
 		zle self-insert
 	fi
@@ -503,8 +526,7 @@ bindkey -s -M isearch "g" "\026g"
 		#{{{ l
 _autocommand-l() {
 	if [ "$LBUFFER" = "l" ] && [ -z "$RBUFFER" ]; then
-		BUFFER=" ls"
-		zle accept-line
+		zle _autocommand-eval "ls" ls -hl --color=auto
 	else
 		zle self-insert
 	fi
@@ -550,19 +572,33 @@ fi
 	sleep 1
 	theme "$(cat "/var/tmp/$USER-theme")" 0
 }
-{
-	trap "" SIGINT
-	while true; do
+exec 3<> <(:)
+(
+	{
+		trap "" SIGINT
+		updatefail=0
 		sleep 5
-		[ -p "/var/tmp/$USER-update-theme" ] || {
-			[ -e "/var/tmp/$USER-update-theme" ] && rm -f "/var/tmp/$USER-update-theme"
-			mkfifo "/var/tmp/$USER-update-theme"
-		}
-		[ -p "/var/tmp/$USER-update-theme" ] || break
-		cat -u < "/var/tmp/$USER-update-theme" > /dev/null || continue
-		theme "$(cat /var/tmp/$USER-theme)" 1
-	done
-} &
-clear
+		while true; do
+			if ! [ -p "/var/tmp/$USER-update-theme" ]; then
+				[ -e "/var/tmp/$USER-update-theme" ] && rm -f "/var/tmp/$USER-update-theme"
+				mkfifo "/var/tmp/$USER-update-theme"
+				[ -p "/var/tmp/$USER-update-theme" ] || exit
+				updatefail=0
+			else
+				[ $updatefail -eq 0 ] || exit
+			fi
+			while true; do
+				timeout 1m cat -u "/var/tmp/$USER-update-theme" > /dev/null && break
+				[ $? -ne 125 ] || { updatefail=1; break; }
+				kill -0 $PPID || exit
+			done
+			[ $updatefail -eq 0 ] || continue
+			[ -e "/var/tmp/$USER-theme" ] || exit
+			theme "$(cat /var/tmp/$USER-theme)" 1
+			sleep 5
+		done
+	} &
+	( { cat <&3; kill -9 $!; } & )
+)
 export SHELL="/usr/bin/zsh"
 #}}}

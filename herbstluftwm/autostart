@@ -10,25 +10,30 @@ hc unrule -F
 hc set_attr theme.tiling.reset 1
 
 #{{{ monitor/tag setup
+hc silent new_attr string my_randr
+randr="$(xrandr --query | grep "[[:space:]]connected")"
 m=$(hc get_attr monitors.count)
-hc focus_monitor 0
-for (( i=1; i<$m; i++ )); do
-	hc remove_monitor 1
-done
-t=$(hc get_attr tags.count)
-hc use_index 0
-for (( i=1; i<$t; i++ )); do
-	hc merge_tag "$(hc get_attr tags.1.name)" 0
-done
-hc rename "$(hc get_attr tags.0.name)" 0 2>/dev/null
-m=$(xrandr --query | grep -e "[[:space:]]connected[[:space:]]primary[[:space:]][[:digit:]]" -e "[[:space:]]connected[[:space:]][[:digit:]]" | wc -l)
-for (( i=1; i<6*$m; i++ )); do
-	hc add "$i"
-done
-hc detect_monitors
-for (( i=1; i<$m; i++ )); do
-	hc chain , focus_monitor $i , use_index $i
-done
+if [ "$randr" != "$(hc get_attr my_randr)" ]; then
+	hc set_attr my_randr "$randr"
+	hc focus_monitor 0
+	for (( i=1; i<$m; i++ )); do
+		hc remove_monitor 1
+	done
+	t=$(hc get_attr tags.count)
+	hc use_index 0
+	for (( i=1; i<$t; i++ )); do
+		hc merge_tag "$(hc get_attr tags.1.name)" 0
+	done
+	hc silent rename "$(hc get_attr tags.0.name)" 0
+	m=$(xrandr --query | grep -e "[[:space:]]connected[[:space:]]primary[[:space:]][[:digit:]]" -e "[[:space:]]connected[[:space:]][[:digit:]]" | wc -l)
+	for (( i=1; i<6*$m; i++ )); do
+		hc add "$i"
+	done
+	hc detect_monitors
+	for (( i=1; i<$m; i++ )); do
+		hc chain , focus_monitor $i , use_index $i
+	done
+fi
 #}}}
 
 h=20
@@ -37,8 +42,9 @@ Mod=Mod4 # Use the super key as the main modifier
 
 #{{{ autostart
 hc set auto_detect_monitors false
+#xsetroot
 #pacwall.sh -b "#232831" -d "#e5e9f080" -e "#88c0d0" -s "#c5c8c626"
-xsetroot
+rollbg
 xrdb ~/.Xresources
 #}}}
 
@@ -58,7 +64,6 @@ hc export DISPLAY="$DISPLAY"
 #}}}
 
 #{{{ keybindings
-hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-a spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec '$HOME/Projects/Launcher/launcher.py'"
 hc keybind $Mod-d spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; [ \$(herbstclient get_attr tags.focus.curframe_wcount) -gt 0 ] && saveclose $h || herbstclient remove"
@@ -67,19 +72,27 @@ hc keybind $Mod-d spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; [
 		#{{{ no vim terminal
 # if reactivating this remember to change shell in screenrc
 #hc keybind $Mod-Return spawn xterm -e "screen"
+#hc keybind $Mod-Control-Return spawn xterm -T "max" -e "screen"
 #hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
+#hc keybind $Mod-Control-Shift-Return spawn xterm -T "max" -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
 #hc keybind $Mod-Shift-v spawn xterm -e "screen bash -c 'vim; exec zsh -l'"
+#hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "screen bash -c 'vim; exec zsh -l'"
 		#}}}
 
 		#{{{ vim terminal
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons)
 hc keybind $Mod-Return spawn xterm -e "screen shell"
+hc keybind $Mod-Control-Return spawn xterm -T "max" -e "shell"
 hc keybind $Mod-Shift-Return spawn xterm -e "screen shell -c 'fff; cd \"\$(cat '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d' 2>/dev/null; rm -f '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d')\"; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$PWD\"; exec zsh -l'"
-hc keybind $Mod-Shift-v spawn xterm -e "screen shell -c 'vim; exec zsh -l'"
+hc keybind $Mod-Control-Shift-Return spawn xterm -T "max" -e "fff"
+# sleep is so that Tapi_TVT_Paste print doesn't interfere with terminal color fixing
+hc keybind $Mod-Shift-v spawn xterm -e "screen shell -c 'sleep 0.1; vim; exec zsh -l'"
+hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "vim"
 		#}}}
 
 # this won't save layout but prevents breaking due to resize
-hc keybind $Mod-Shift-m spawn xterm -T "max" -e "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec mocp -T ~/dotfiles/mocp-theme"
+hc keybind $Mod-Control-m spawn xterm -T "max" -e "mocp -T ~/dotfiles/mocp-theme"
+hc keybind $Mod-Control-Shift-m spawn xterm -T "max" -e "neomutt"
 	#}}}
 
 	#{{{ navigation
@@ -114,6 +127,7 @@ hc keybind $Mod-Shift-n or / shift right / \
 	chain , lock , shift_to_monitor -r , focus_monitor -r , unlock
 hc keybind $Mod-y spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec herbstclient setenv clip \$(herbstclient get_attr clients.focus.winid)"
 hc keybind $Mod-i spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec herbstclient bring \$(herbstclient getenv clip)"
+hc keybind $Mod-Shift-m set_attr clients.focus.minimized true
 	#}}}
 
 	#{{{ frames
@@ -167,7 +181,7 @@ hc rule class="Steam" tag=3
 hc rule title="Steam" tag=3
 hc rule class="Steam" not title="Steam" focus=off
 hc rule class="mpv" title="min" focus=off index="/"
-hc rule title="max" fullscreen=true
+hc rule title="max" floating=true fullscreen=true
 hc rule title="Origin" manage=off
 #}}}
 
