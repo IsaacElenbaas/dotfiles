@@ -51,6 +51,7 @@ f() {
 	cd "$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d" 2>/dev/null)"
 	rm "${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d" 2>/dev/null
 }
+sc() { command sc "$@" || exit; }
 	#}}}
 
 	#{{{ Paste
@@ -96,7 +97,6 @@ alias pm='pacman'
 alias q='exit'
 alias qq='exit'
 alias rm='rm -d'
-alias sc='sc || exit'
 alias stopx='rm -f /tmp/xpra-restartx && \stopx; exit'
 alias suod='sudo'
 alias switchx='touch /tmp/xpra-restartx && \stopx; exit'
