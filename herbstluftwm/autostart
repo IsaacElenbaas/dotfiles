@@ -91,7 +91,7 @@ hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "vim"
 		#}}}
 
 # this won't save layout but prevents breaking due to resize
-hc keybind $Mod-Control-m spawn xterm -T "max" -e "mocp -T ~/dotfiles/mocp-theme"
+hc keybind $Mod-Control-m spawn xterm -T "max" -e "mocp -T ~/dotfiles/mocptheme -O \"Keymap=$HOME/dotfiles/mocpbinds\""
 hc keybind $Mod-Control-Shift-m spawn xterm -T "max" -e "neomutt"
 	#}}}
 

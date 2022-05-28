@@ -1,31 +1,35 @@
 #!/usr/bin/bash
 
-ln -sf ~/dotfiles/zsh                      ~/.zsh
-ln -sf ~/dotfiles/vim                      ~/.vim
-ln -sf ~/dotfiles/profile                  ~/.profile
+ln -sf ~/dotfiles/Xresources               ~/.Xresources
 ln -sf ~/dotfiles/bash_profile             ~/.bash_profile
 ln -sf ~/dotfiles/bashrc                   ~/.bashrc
-ln -sf ~/dotfiles/zshrc                    ~/.zshrc
+ln -sf ~/dotfiles/fff                      ~/.fff
 ln -sf ~/dotfiles/inputrc                  ~/.inputrc
-ln -sf ~/dotfiles/vimrc                    ~/.vimrc
+ln -sf ~/dotfiles/mutt/muttrc              ~/.muttrc
+ln -sf ~/dotfiles/profile                  ~/.profile
 ln -sf ~/dotfiles/screenrc                 ~/.screenrc
 ln -sf ~/dotfiles/screenrcunbind           ~/.screenrcunbind
 ln -sf ~/dotfiles/tmux.conf                ~/.tmux.conf
+ln -sf ~/dotfiles/vim                      ~/.vim
+ln -sf ~/dotfiles/vimrc                    ~/.vimrc
 ln -sf ~/dotfiles/xbindkeysrc              ~/.xbindkeysrc
 ln -sf ~/dotfiles/xinitrc                  ~/.xinitrc
-ln -sf ~/dotfiles/Xresources               ~/.Xresources
-ln -sf ~/dotfiles/fff                      ~/.fff
-ln -sf ~/dotfiles/muttrc                   ~/.muttrc
+ln -sf ~/dotfiles/zsh                      ~/.zsh
+ln -sf ~/dotfiles/zshrc                    ~/.zshrc
 
 mkdir -p ~/.config
 ln -sf ~/dotfiles/cleanup                  ~/.config/
-ln -sf ~/dotfiles/dunst                    ~/.config/
 ln -sf ~/dotfiles/herbstluftwm             ~/.config/
 ln -sf ~/dotfiles/navi                     ~/.config/
-ln -sf ~/dotfiles/neofetch                 ~/.config/
+mkdir -p ~/.config/dunst
+ln -sf ~/dotfiles/dunstrc                  ~/.config/dunst/
 mkdir -p ~/.config/mpv
 ln -sf ~/dotfiles/mpv.conf                 ~/.config/mpv/
 ln -sf ~/dotfiles/mpvbinds.conf            ~/.config/mpv/input.conf
+mkdir -p ~/.config/neofetch
+ln -sf ~/dotfiles/neofetch.conf            ~/.config/neofetch/config.conf
+mkdir -p ~/.config/pipewire
+ln -sf ~/dotfiles/pipewire-pulse.conf      ~/.config/pipewire/
 mkdir -p ~/.config/qutebrowser
 ln -sf ~/dotfiles/qutebrowser/config.py    ~/.config/qutebrowser/
 mkdir -p ~/.config/systemd

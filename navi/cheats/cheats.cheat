@@ -32,23 +32,23 @@ nvidia-led no-animation 0
 % media, ffmpeg
 
 # Normalize video
-bash -c 'i="<file>"; printf "%s\n" "$i" >&2; ffmpeg -i "$i" -vf "scale=1280:-2" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:v h264 -pix_fmt yuv420p -c:a aac -c:s copy -y "${i%.*}.new.${i##*.}" &>/dev/null && mv -f "${i%.*}.new.${i##*.}" "$i" || { printf "Failed to normalize %s\n" "$i" >&2; rm -f "${i%.*}.new.${i##*.}"; }'
+bash -c 'i="<file>"; ffmpeg -i "$i" -vf "scale=1280:-2" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:v h264 -pix_fmt yuv420p -c:a aac -c:s copy -y "${i%.*}.new.${i##*.}" &>/dev/null && mv -f "${i%.*}.new.${i##*.}" "$i" || { printf "Failed to normalize %s\n" "$i" >&2; rm -f "${i%.*}.new.${i##*.}"; }'
 
 # Normalize videos in directory
-bash -c 'shopt -s nullglob; for i in ./*.<extension>; do printf "%s\n" "$i"; ffmpeg -i "$i" -vf "scale=1280:-2" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:v h264 -pix_fmt yuv420p -c:a aac -c:s copy -y "${i%.*}.new.${i##*.}" &>/dev/null && mv -f "${i%.*}.new.${i##*.}" "$i" || { printf "Failed to normalize %s\n" "$i" >&2; rm -f "${i%.*}.new.${i##*.}"; }; done'
+bash -c 'shopt -s nullglob; for i in ./*.<extension>; do printf "%s\n" "$i" >&2; ffmpeg -i "$i" -vf "scale=1280:-2" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:v h264 -pix_fmt yuv420p -c:a aac -c:s copy -y "${i%.*}.new.${i##*.}" &>/dev/null && mv -f "${i%.*}.new.${i##*.}" "$i" || { printf "Failed to normalize %s\n" "$i" >&2; rm -f "${i%.*}.new.${i##*.}"; }; done'
 
 # ffmpeg consumes stdin
 # Normalize videos in directory recursively
-bash -c 'shopt -s nullglob; find . -type d | while IFS= read -r dir; do printf "%s\n" "$dir"; for i in "$dir/"*".<extension>"; do { ffmpeg -i "$i" -vf "scale=1280:-2" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:v h264 -pix_fmt yuv420p -c:a aac -c:s copy -y "${i%.*}.new.${i##*.}" &>/dev/null && mv -f "${i%.*}.new.${i##*.}" "$i" || { printf "Failed to normalize %s\n" "$i" >&2; rm -f "${i%.*}.new.${i##*.}"; }; } < /dev/null; done; done'
+bash -c 'shopt -s nullglob; find . -type d | while IFS= read -r dir; do printf "%s\n" "$dir" >&2; for i in "$dir/"*".<extension>"; do { ffmpeg -i "$i" -vf "scale=1280:-2" -map 0:0 -map 0:a -map 0:s -map_chapters -1 -c:v h264 -pix_fmt yuv420p -c:a aac -c:s copy -y "${i%.*}.new.${i##*.}" &>/dev/null && mv -f "${i%.*}.new.${i##*.}" "$i" || { printf "Failed to normalize %s\n" "$i" >&2; rm -f "${i%.*}.new.${i##*.}"; }; } < /dev/null; done; done'
 
 # Normalize video's audio
 ffmpeg-normalize "<file>" -c:a aac -ar 48000
 
 # Normalize videos' audio in directory
-ffmpeg-normalize "./*.<extension>" -c:a aac -ar 48000
+ffmpeg-normalize *".<extension>" -c:a aac -ar 48000
 
 # Normalize videos' audio in directory recursively
-bash -c 'find . -type d | while IFS= read -r dir; do cd "$dir"; ffmpeg-normalize "./*.<extension>" -c:a aac -ar 48000; cd -; done'
+bash -c 'find . -type d -not -name "normalized" | while IFS= read -r dir; do cd "$dir" || continue; printf "%s\n" "$dir" >&2; ffmpeg-normalize *".<extension>" -c:a aac -ar 48000; cd - &>/dev/null; done'
 
 # Run mp3gain on file (normalize)
 bash -c 'mp3gain -r -k -c "<name>" | grep Applying'
@@ -58,13 +58,13 @@ bash -c 'find . -type f -name "*\\.mp3" -exec mp3gain -r -k -c {} \; | grep Appl
 
 # ffmpeg consumes stdin
 # Normalize songs in directory recursively
-bash -c 'shopt -s nullglob; find . -type d | while IFS= read -r dir; do printf "%s\n" "$dir"; for i in "$dir/"*".<extension>"; do { ffmpeg -i "$i" -vn -maxrate 128k -y "${i%.*}.new.mp3" &>/dev/null && rm "$i" && mv -f "${i%.*}.new.mp3" "${i%.*}.mp3" || printf "Failed on %s\n" "$i" >&2; mp3gain -r -k -c "${i%.*}.mp3" | grep Applying; } < /dev/null; done; done'
+bash -c 'shopt -s nullglob; find . -type d | while IFS= read -r dir; do printf "%s\n" "$dir" >&2; for i in "$dir/"*".<extension>"; do { ffmpeg -i "$i" -vn -maxrate 128k -y "${i%.*}.new.mp3" &>/dev/null && rm "$i" && mv -f "${i%.*}.new.mp3" "${i%.*}.mp3" || printf "Failed to normalize %s\n" "$i" >&2; mp3gain -r -k -c "${i%.*}.mp3" | grep Applying; } < /dev/null; done; done'
 
 # Renumber
 renumber "<glob>" "<prefix>" <digits>
 
 # Bandicamp cleanup
-bash -c 'shopt -s nullglob; for i in *" - "*"-"[0-9]*; do n="${i#* - }"; ffmpeg -i "$i" -vn -metadata title="${n%-*}" -maxrate 128k -y "${n%-*}.mp3" &>/dev/null && rm "$i" || printf "Failed on %s\n" "$i" >&2; done'
+bash -c 'shopt -s nullglob; for i in *" - "*"-"[0-9]*; do n="${i#* - }"; ffmpeg -i "$i" -vn -metadata title="${n%-*}" -maxrate 128k -y "${n%-*}.mp3" &>/dev/null && rm "$i" || printf "Failed to normalize %s\n" "$i" >&2; done'
 ;	#}}}
 ;#}}}
 

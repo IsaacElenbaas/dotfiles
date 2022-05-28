@@ -1,0 +1,143 @@
+# COMMAND = [KEY ...]
+# COMMAND += KEY ...
+# The KEY can be:
+#     - Just a char, like i, L, ", *
+#     - CTRL-KEY sequence: ^k (CTRL-k), ^4
+#     - ALT-KEY (meta) sequence: M-j (ALT-j), M-/
+#     - Special keys: DOWN, UP
+#                     LEFT, RIGHT
+#                     HOME, END
+#                     BACKSPACE
+#                     INS, DEL
+#                     ENTER
+#                     PAGE_UP, PAGE_DOWN
+#                     SPACE, TAB
+#                     KEYPAD_CENTER
+#                     ESCAPE
+#                     F1 - F12
+# The use of a digit as a KEY is deprecated.
+# Maximum number of KEYs for one COMMAND is 5.
+# Omitting the KEY for a COMMAND will unbind all its default keys.
+# Individual default KEYs will be automatically unbound when they are explicitly bound to some other COMMAND.
+# Meta-key detection is sensitive to the ESCDELAY environment variable. In its absence, MOC resets the default delay to 25ms.
+
+# MOC control keys:
+quit_client = q
+quit =
+
+# Menu and interface control keys:
+go = ENTER RIGHT
+menu_down = DOWN
+menu_up = UP
+menu_page_down = PAGE_DOWN
+menu_page_up = PAGE_UP
+menu_first_item = g HOME
+menu_last_item = G END
+search_menu = /
+toggle_read_tags =
+toggle_show_time =
+toggle_show_format =
+toggle_menu = TAB
+toggle_layout =
+toggle_hidden_files =
+next_search = n
+show_lyrics = s
+theme_menu =
+help = ?
+refresh =
+reload = R
+
+# Audio playing and positioning keys:
+seek_forward =
+seek_backward =
+seek_forward_fast = n
+seek_backward_fast = h
+pause = SPACE
+stop =
+next = >
+previous = <
+toggle_shuffle =
+toggle_repeat = l
+toggle_auto_next =
+toggle_mixer =
+go_url =
+
+# Volume control keys:
+volume_down_1 =
+volume_up_1 =
+volume_down_5 =
+volume_up_5 =
+volume_10 =
+volume_20 =
+volume_30 =
+volume_40 =
+volume_50 =
+volume_60 =
+volume_70 =
+volume_80 =
+volume_90 =
+
+# Directory navigation keys: defaults are Shift-number
+#                            (i.e., 'shift 1' -> '!' -> 'Fastdir1').
+go_to_a_directory = :
+go_to_music_directory =
+go_to_fast_dir1 =
+go_to_fast_dir2 =
+go_to_fast_dir3 =
+go_to_fast_dir4 =
+go_to_fast_dir5 =
+go_to_fast_dir6 =
+go_to_fast_dir7 =
+go_to_fast_dir8 =
+go_to_fast_dir9 =
+go_to_fast_dir10 =
+go_to_playing_file = b
+go_up = LEFT
+
+# Playlist specific keys:
+add_file =
+add_directory =
+plist_add_stream =
+delete_from_playlist =
+playlist_full_paths =
+plist_move_up =
+plist_move_down =
+save_playlist =
+remove_dead_entries =
+clear_playlist =
+
+# Queue manipulation keys:
+enqueue_file =
+clear_queue =
+
+# User interaction control:
+history_up = UP
+history_down = DOWN
+delete_to_start =
+delete_to_end =
+cancel = ESCAPE
+hide_message =
+
+# Softmixer specific keys:
+toggle_softmixer =
+toggle_make_mono =
+
+# Equalizer specific keys:
+toggle_equalizer =
+equalizer_refresh =
+equalizer_prev =
+equalizer_next =
+
+# External commands:
+mark_start =
+mark_end =
+exec_command1 =
+exec_command2 =
+exec_command3 =
+exec_command4 =
+exec_command5 =
+exec_command6 =
+exec_command7 =
+exec_command8 =
+exec_command9 =
+exec_command10 =
