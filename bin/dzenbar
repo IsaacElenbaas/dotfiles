@@ -46,7 +46,7 @@ updateMinClients() {
 		[ ${#class} -le 15 ] || class="${class::12}..."
 		minClients[$i]="${minClients[$i]}^ca(1,herbstclient chain , set_attr clients.$winid.minimized false , emit_hook misc)$class^ca()   "
 	done < <(
-		herbstclient foreach CLIENT clients. \
+		herbstclient foreach CLIENT clients. --unique \
 		sprintf CMIN "%c.minimized" CLIENT \
 		sprintf CTAG "%c.tag" CLIENT substitute CTAG CTAG \
 		sprintf CCLASS "%c.class" CLIENT substitute CCLASS CCLASS \

@@ -44,7 +44,7 @@ Mod=Mod4 # Use the super key as the main modifier
 hc set auto_detect_monitors false
 #xsetroot
 #pacwall.sh -b "#232831" -d "#e5e9f080" -e "#88c0d0" -s "#c5c8c626"
-rollbg
+#rollbg
 xrdb ~/.Xresources
 #}}}
 
@@ -102,8 +102,64 @@ hc keybind $Mod-c focus up
 hc keybind $Mod-n focus right
 hc keybind $Mod-apostrophe cycle -1
 hc keybind $Mod-comma cycle 1
-hc keybind $Mod-g \
-	chain , lock , set_attr theme.border_width 8 , spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec /usr/share/doc/herbstluftwm/examples/maximize.sh grid" , keybind Left focus left , keybind Down focus down , keybind Up focus up , keybind Right focus right , keybind Return chain . lock . set_attr theme.border_width 3 . spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec /usr/share/doc/herbstluftwm/examples/maximize.sh grid" . keyunbind Left . keyunbind Down . keyunbind Up . keyunbind Right . keyunbind Return . unlock , unlock
+
+		#{{{ $Mod-g
+hc keybind $Mod-g chain \
+	, lock \
+	, set_attr theme.border_width 8 \
+	, spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec /usr/share/doc/herbstluftwm/examples/maximize.sh grid" \
+	, keybind Left focus left , keybind Down focus down , keybind Up focus up , keybind Right focus right , keybind Return chain \
+		. lock \
+		. set_attr theme.border_width 3 \
+		. spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec /usr/share/doc/herbstluftwm/examples/maximize.sh grid" \
+		. keyunbind Left . keyunbind Down . keyunbind Up . keyunbind Right . keyunbind Return \
+		. unlock \
+	, unlock
+		#}}}
+
+		#{{{ $Mod-r
+# don't worry about it
+hc keybind $Mod-r chain \
+	, lock \
+	, foreach MONITOR monitors. --filter-name='^[0-9]+$' \
+		sprintf MTAG "%c.tag" MONITOR substitute MTAG MTAG \
+		chain \
+			. sprintf COMMAND "herbstclient chain , new_attr string tags.%c.my_rollbg_layout , set_attr tags.%c.my_rollbg_layout \"\$(herbstclient dump %c)\" , load %c \"(clients max:0 )\"" MTAG MTAG MTAG MTAG \
+			  spawn bash -c COMMAND \
+			. foreach CLIENT clients. --unique \
+				sprintf CTAG "%c.tag" CLIENT \
+				sprintf CMYMIN "%c.my_rollbg_minimized" CLIENT \
+				and \
+					: compare CTAG = MTAG \
+					: new_attr bool CMYMIN false \
+					: sprintf CMIN "%c.minimized" CLIENT \
+					  or \
+					  	/ and \
+					  		_ compare CMIN = false \
+					  		_ set_attr CMIN true \
+					  	/ set_attr CMYMIN true \
+	, keybind space spawn systemctl --user restart rollbg , keybind Return chain \
+		. lock \
+		. foreach MONITOR monitors. --filter-name='^[0-9]+$' \
+			sprintf MTAG "%c.tag" MONITOR substitute MTAG MTAG \
+			chain \
+				: foreach CLIENT clients. --unique \
+					sprintf CTAG "%c.tag" CLIENT \
+					sprintf CMYMIN "%c.my_rollbg_minimized" CLIENT \
+					and \
+						/ compare CTAG = MTAG \
+						/ chain \
+							_ and \
+								+ compare CMYMIN = false \
+								+ sprintf CMIN "%c.minimized" CLIENT \
+								  set_attr CMIN false \
+							_ remove_attr CMYMIN \
+				: sprintf COMMAND "herbstclient chain , load %c \"\$(herbstclient get_attr tags.%c.my_rollbg_layout)\" , remove_attr tags.%c.my_rollbg_layout" MTAG MTAG MTAG \
+				  spawn bash -c COMMAND \
+		. keyunbind space . keyunbind Return \
+		. unlock \
+	, unlock
+		#}}}
 
 		#{{{ tags
 hc keybind $Mod-l use_index -$m
@@ -113,18 +169,26 @@ hc keybind $Mod-BackSpace use_index +$m
 
 	#{{{ layouts
 hc keybind $Mod-f spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen"
-hc keybind $Mod-Shift-f chain , or . and : compare clients.focus.fullscreen = false : spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen full" . spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen" , fullscreen toggle
+hc keybind $Mod-Shift-f chain \
+	, or \
+		. and \
+			: compare clients.focus.fullscreen = false \
+			: spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen full" \
+		. spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen" \
+	, fullscreen toggle
 hc keybind $Mod-Escape cycle_layout 1 horizontal vertical max
 hc keybind $Mod-space cycle_layout 1 horizontal vertical max
 	#}}}
 
 	#{{{ clients
-hc keybind $Mod-Shift-h or / shift left / \
-	chain , lock , shift_to_monitor -l , focus_monitor -l , unlock
+hc keybind $Mod-Shift-h or \
+	, shift left \
+	, chain . lock . shift_to_monitor -l . focus_monitor -l . unlock
 hc keybind $Mod-Shift-t shift down
 hc keybind $Mod-Shift-c shift up
-hc keybind $Mod-Shift-n or / shift right / \
-	chain , lock , shift_to_monitor -r , focus_monitor -r , unlock
+hc keybind $Mod-Shift-n or \
+	, shift right \
+	, chain . lock . shift_to_monitor -r . focus_monitor -r . unlock
 hc keybind $Mod-y spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec herbstclient setenv clip \$(herbstclient get_attr clients.focus.winid)"
 hc keybind $Mod-i spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec herbstclient bring \$(herbstclient getenv clip)"
 hc keybind $Mod-Shift-m set_attr clients.focus.minimized true

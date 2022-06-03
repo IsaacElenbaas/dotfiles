@@ -6,7 +6,7 @@ default=0
 [ -f "$theme" ] && [ -r "$theme" ] || { printf "Cannot read file or it does not exist!\n" >&2; exit 1; }
 [ -z "$2" ] && printf "%s\n" "$(realpath "$theme")" > "/var/tmp/$USER-theme"
 if [ ${2:-1} -eq 1 ]; then
-	timeout 1 printf "\n" >> "/var/tmp/$USER-update-theme" || { printf "No receiver!\n" >&2; exit 1; }
+	timeout 1 bash -c "printf \"\n\" >> \"/var/tmp/$USER-update-theme\"" || { printf "No receiver!\n" >&2; exit 1; }
 fi
 if [ -n "$2" ]; then
 	cBG=;cFG=;cCU=;c00=;c08=;c01=;c09=;c02=;c10=;c03=;c11=;c04=;c12=;c05=;c13=;c06=;c14=;c07=;c15=
