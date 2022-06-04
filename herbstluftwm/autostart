@@ -124,20 +124,20 @@ hc keybind $Mod-r chain \
 	, foreach MONITOR monitors. --filter-name='^[0-9]+$' \
 		sprintf MTAG "%c.tag" MONITOR substitute MTAG MTAG \
 		chain \
-			. sprintf COMMAND "herbstclient chain , new_attr string tags.%c.my_rollbg_layout , set_attr tags.%c.my_rollbg_layout \"\$(herbstclient dump %c)\" , load %c \"(clients max:0 )\"" MTAG MTAG MTAG MTAG \
+			. sprintf COMMAND "{ timeout 1 herbstclient -i | grep -m 1 rollbg > /dev/null; } & herbstclient chain , silent new_attr string tags.%c.my_rollbg_layout , set_attr tags.%c.my_rollbg_layout \"\$(herbstclient dump %c)\"; wait; herbstclient chain , load %c \"(clients max:0 )\" , foreach CLIENT clients. --unique and . sprintf CTAG \"%%c.tag\" CLIENT compare CTAG = %c . sprintf CMYMIN \"%%c.my_rollbg_minimized\" CLIENT compare CMYMIN = false . sprintf CMIN \"%%c.minimized\" CLIENT set_attr CMIN true , unlock" MTAG MTAG MTAG MTAG MTAG \
 			  spawn bash -c COMMAND \
 			. foreach CLIENT clients. --unique \
 				sprintf CTAG "%c.tag" CLIENT \
 				sprintf CMYMIN "%c.my_rollbg_minimized" CLIENT \
 				and \
 					: compare CTAG = MTAG \
-					: new_attr bool CMYMIN false \
+					: silent new_attr bool CMYMIN false \
+					: set_attr CMYMIN false \
 					: sprintf CMIN "%c.minimized" CLIENT \
 					  or \
-					  	/ and \
-					  		_ compare CMIN = false \
-					  		_ set_attr CMIN true \
+					  	/ compare CMIN = false \
 					  	/ set_attr CMYMIN true \
+			. emit_hook rollbg \
 	, keybind space spawn systemctl --user restart rollbg , keybind Return chain \
 		. lock \
 		. foreach MONITOR monitors. --filter-name='^[0-9]+$' \
@@ -154,11 +154,9 @@ hc keybind $Mod-r chain \
 								+ sprintf CMIN "%c.minimized" CLIENT \
 								  set_attr CMIN false \
 							_ remove_attr CMYMIN \
-				: sprintf COMMAND "herbstclient chain , load %c \"\$(herbstclient get_attr tags.%c.my_rollbg_layout)\" , remove_attr tags.%c.my_rollbg_layout" MTAG MTAG MTAG \
+				: sprintf COMMAND "herbstclient chain , load %c \"\$(herbstclient get_attr tags.%c.my_rollbg_layout)\" , remove_attr tags.%c.my_rollbg_layout , unlock" MTAG MTAG MTAG \
 				  spawn bash -c COMMAND \
-		. keyunbind space . keyunbind Return \
-		. unlock \
-	, unlock
+		. keyunbind space . keyunbind Return
 		#}}}
 
 		#{{{ tags
@@ -202,6 +200,55 @@ hc keybind $Mod-o      resize left  +$resizestep
 hc keybind $Mod-e      resize down  +$resizestep
 hc keybind $Mod-period resize up    +$resizestep
 hc keybind $Mod-u      resize right +$resizestep
+hc keybind $Mod-b      remove
+
+		#{{{
+# don't worry about it
+hc keybind $Mod-Shift-b or \
+	, and \
+		. compare tags.focus.frame_count gt 1 \
+		. substitute MTAG monitors.focus.tag \
+		  chain \
+		  	: lock \
+		  	: silent new_attr string tags.focus.my_framemax_layout \
+		  	: substitute MFRAMEALG tags.focus.tiling.focused_frame.algorithm \
+		  	  sprintf COMMAND "{ timeout 1 herbstclient -i | grep -m 1 framemax > /dev/null; } & herbstclient set_attr tags.focus.my_framemax_layout \"\$(herbstclient dump)\"; wait; herbstclient chain , load \"(clients %c:0 )\" , foreach CLIENT clients. --unique and . sprintf CTAG \"%%c.tag\" CLIENT compare CTAG = %c . sprintf CMYMINMAX \"%%c.my_framemax_minimized_maxxed\" CLIENT compare CMYMINMAX = false . sprintf CMIN \"%%c.minimized\" CLIENT set_attr CMIN true , unlock" MFRAMEALG MTAG \
+		  	  spawn bash -c COMMAND \
+		  	: substitute MFRAME tags.focus.tiling.focused_frame.index \
+		  	  foreach CLIENT clients. --unique \
+		  	  	sprintf CTAG "%c.tag" CLIENT \
+		  	  	sprintf CMYMINMAX "%c.my_framemax_minimized_maxxed" CLIENT \
+		  	  	and \
+		  	  		/ compare CTAG = MTAG \
+		  	  		/ silent new_attr bool CMYMINMAX false \
+		  	  		/ set_attr CMYMINMAX false \
+		  	  		/ sprintf CMIN "%c.minimized" CLIENT \
+		  	  		  or \
+		  	  		  	_ and \
+		  	  		  		+ compare CMIN = false \
+		  	  		  		+ sprintf CFRAME "%c.parent_frame.index" CLIENT \
+		  	  		  		  compare CFRAME != MFRAME \
+		  	  		  	_ set_attr CMYMINMAX true \
+		  	: emit_hook framemax \
+	, and \
+		. silent attr_type tags.focus.my_framemax_layout \
+		. substitute MTAG monitors.focus.tag \
+		  chain \
+		  	: lock \
+		  	: foreach CLIENT clients. --unique \
+		  		sprintf CTAG "%c.tag" CLIENT \
+		  		sprintf CMYMINMAX "%c.my_framemax_minimized_maxxed" CLIENT \
+		  		and \
+		  			/ compare CTAG = MTAG \
+		  			/ chain \
+		  				_ and \
+		  					+ compare CMYMINMAX = false \
+		  					+ sprintf CMIN "%c.minimized" CLIENT \
+		  					  set_attr CMIN false \
+		  				_ remove_attr CMYMINMAX \
+		  	: sprintf COMMAND "herbstclient chain , load %c \"\$(herbstclient get_attr tags.%c.my_framemax_layout)\" , remove_attr tags.%c.my_framemax_layout , unlock" MTAG MTAG MTAG \
+		  	  spawn bash -c COMMAND
+		#}}}
 	#}}}
 #}}}
 
