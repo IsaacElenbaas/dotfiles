@@ -21,6 +21,6 @@
 			xset r 24
 			xset -r
 		fi
-		systemctl is-active --user --quiet xpra-server || break
+		systemctl --user is-active --quiet xpra-server || break
 	done
 }

@@ -45,7 +45,7 @@ kbdrate -d 150 &>/dev/null
 			done
 		}
 
-		systemctl is-active --user --quiet xpra-server || break
+		systemctl --user is-active --quiet xpra-server || break
 	done
 
 	[ -f "$HOME/dotfiles/bin/tabletsetup" ] && $HOME/dotfiles/bin/tabletsetup 2>/dev/null

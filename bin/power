@@ -1,55 +1,57 @@
 #!/bin/bash
 
 { [[ $- = *i* ]] || [ $EUID -eq 0 ]; } || { printf "Run as root or interactively for sudo\n" >&2; exit 1; }
+[ $EUID -eq 0 ] || exec sudo "$0" "$@"
 case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 	"1da09fe64b64478344b1b0ab7cf4f9fd")
 		# Enable runtime PM for all PCI devices
 		find /sys/bus/pci/devices/*/ -type f -path "*/power/control" -not -path "*usb*" | while IFS= read -r line; do
-			sudo tee "$line" <<< "auto" > /dev/null
+			tee "$line" <<< "auto" > /dev/null
 		done
 		# Enable runtime PM for all storage devices
 		find /sys/block/*/ /sys/block/*/device/ -type f -path "*/power/control" | while IFS= read -r line; do
-			sudo tee "$line" <<< "auto" > /dev/null
+			tee "$line" <<< "auto" > /dev/null
 		done
 		# Enable runtime PM for audio
-		sudo tee /sys/module/snd_hda_intel/parameters/power_save <<< 1 > /dev/null
-		sudo tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "Y" > /dev/null
+		tee /sys/module/snd_hda_intel/parameters/power_save <<< 1 > /dev/null
+		tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "Y" > /dev/null
 		# Enable runtime PM for WiFi
-		sudo iw dev wlan0 set power_save on
+		iw dev wlan0 set power_save on
 		# Enable autosuspend for ITE Devices (trackpad, keyboard)
-		sudo tee /sys/bus/usb/devices/1-6/power/control <<< "auto" > /dev/null
+		tee /sys/bus/usb/devices/1-6/power/control <<< "auto" > /dev/null
 
 		# GPU stuff is what stops drawing 40W
 		# Disable GPU HD Audio
-		[ ! -f /sys/bus/pci/devices/0000:01:00.1/remove ] || sudo tee /sys/bus/pci/devices/0000:01:00.1/remove <<< 1 > /dev/null
+		[ ! -f /sys/bus/pci/devices/0000:01:00.1/remove ] || tee /sys/bus/pci/devices/0000:01:00.1/remove <<< 1 > /dev/null
 		# Disable GPU USB 3.1 Host Controller
-		[ ! -f /sys/bus/pci/devices/0000:01:00.2/remove ] || sudo tee /sys/bus/pci/devices/0000:01:00.2/remove <<< 1 > /dev/null
+		[ ! -f /sys/bus/pci/devices/0000:01:00.2/remove ] || tee /sys/bus/pci/devices/0000:01:00.2/remove <<< 1 > /dev/null
 		# Disable GPU USB Type-C UCSI Controller
-		[ ! -f /sys/bus/pci/devices/0000:01:00.3/remove ] || sudo tee /sys/bus/pci/devices/0000:01:00.3/remove <<< 1 > /dev/null
+		[ ! -f /sys/bus/pci/devices/0000:01:00.3/remove ] || tee /sys/bus/pci/devices/0000:01:00.3/remove <<< 1 > /dev/null
 		# Disable interrupt which may or may not be a problem
-		[ $(cat /sys/firmware/acpi/interrupts/gpe43 | grep "masked" | wc -l) -ge 1 ] || sudo tee /sys/firmware/acpi/interrupts/gpe43 <<< "mask" > /dev/null
+		[ $(cat /sys/firmware/acpi/interrupts/gpe43 | grep "masked" | wc -l) -ge 1 ] || tee /sys/firmware/acpi/interrupts/gpe43 <<< "mask" > /dev/null
 		# Disable Ethernet port - DO NOT ENABLE! Prevents package sleep states
-		#[ -f /sys/bus/pci/devices/0000:00:1d.5/remove ] && sudo tee /sys/bus/pci/devices/0000:00:1d.5/remove <<< 1 > /dev/null
+		#[ -f /sys/bus/pci/devices/0000:00:1d.5/remove ] && tee /sys/bus/pci/devices/0000:00:1d.5/remove <<< 1 > /dev/null
 
 		# Not applied from configuration for some reason
-		sudo cpupower set -b 15
+		cpupower set -b 15
 
 		# GPU OC
 		modprobe --dry-run --first-time nvidia &>/dev/null && { printf "No GPU, skipping OC\n" >&2; exit; }
-		sudo nvidia-smi -i 0 -lgc 300,1850
+		nvidia-smi -i 0 -lgc 300,1850
 		# Only 2-light gaming mode
 		# 200 is very doable but has crashed before
+		# doesn't need to run as root
 		# nvidia-settings -q GPUPowerMizerMode
 		nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffset[3]=180"
 
 		# Disable runtime PM for sound devices
 		find /sys/bus/pci/devices/*/ -type f -path "*sound*/power/control" | while IFS= read -r line; do
-			sudo tee "$line" <<< "on" > /dev/null
+			tee "$line" <<< "on" > /dev/null
 		done
 		# Disable runtime PM for audio
-		sudo tee /sys/module/snd_hda_intel/parameters/power_save <<< 0 > /dev/null
-		sudo tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "N" > /dev/null
+		tee /sys/module/snd_hda_intel/parameters/power_save <<< 0 > /dev/null
+		tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "N" > /dev/null
 		# Disable runtime PM for WiFi
-		sudo iw dev wlan0 set power_save off
+		iw dev wlan0 set power_save off
 	;;
 esac

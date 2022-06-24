@@ -1,6 +1,6 @@
 #!/bin/bash
 
-systemctl is-active --user --quiet xpra-server || { printf "xpra-server is not running!\n" >&2; exit 1; }
+systemctl --user is-active --quiet xpra-server || { printf "xpra-server is not running!\n" >&2; exit 1; }
 
 while true; do
 	read -p "Enable GPU? (y/n): "
@@ -13,7 +13,7 @@ journalctl _SYSTEMD_INVOCATION_ID="$(systemctl --user show --value -p Invocation
 trap "" SIGINT
 touch /tmp/xpra-restartx
 while true; do
-	systemctl is-active --user --quiet xpra-server || { printf "xpra-server failed!\n" >&2; exit 1; }
+	systemctl --user is-active --quiet xpra-server || { printf "xpra-server failed!\n" >&2; exit 1; }
 	[ -f /tmp/xpra-restartx ] || break
 	kill -0 $p_sudo &>/dev/null || {
 		sudo -v || exit 1

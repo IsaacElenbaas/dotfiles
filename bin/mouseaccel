@@ -15,5 +15,5 @@ for DISPLAY in "${REAL_DISPLAY:-"$DISPLAY"}" ":10"; do
 	done | while IFS= read -r pointer; do
 		[ -n "$(xinput --list-props "$pointer" | grep "libinput Accel Profile Enabled")" ] && xinput --set-prop "$pointer" "libinput Accel Profile Enabled" 1 0
 	done
-	systemctl is-active --user --quiet xpra-server || break
+	systemctl --user is-active --quiet xpra-server || break
 done

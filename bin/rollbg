@@ -1,7 +1,12 @@
 #!/bin/bash
 
 command -v display &>/dev/null || { printf "display command not present!\n" >&2; exit 1; }
-desc="2x2 0,1 0,1@622,1080:1920x1080 0,0@0,0:1920x1080 1,0@1920,0:1920x1080"
+case "$(xrandr --query | grep -e "[[:space:]]connected[[:space:]]primary[[:space:]][[:digit:]]" -e "[[:space:]]connected[[:space:]][[:digit:]]" | wc -l)" in
+	1) desc="1x1 0,0 0,0@0,0:1920x1080" ;;
+	3) desc="3x1 1,0 0,0@0,0:1920x1080 1,0@1920,0:1920x1080 2,0@3840,0:1920x1080" ;;
+	#3) desc="2x2 0,1 0,1@622,1080:1920x1080 0,0@0,0:1920x1080 1,0@1920,0:1920x1080" ;;
+	*) exit 1 ;;
+esac
 if [ -x "$HOME/Projects/RWBG/main" ]; then
 	cd ~/Projects/RWBG
 	./main $desc
@@ -9,6 +14,7 @@ else
 	cd /tmp
 	curl "http://isaacelenbaas.us.to/RWBG/${desc//[[:space:]]/%20}" 2>/dev/null > ./background.png
 fi && {
+	[ ! -f "./blacklist/$(cksum ./background.png | cut -d " " -f 1).png" ] || { cd - &>/dev/null; exec "$0"; }
 	screen="$(xrandr -q | grep "[Ss]creen" | head -n 1)"
 	screen="${screen##*current}"
 	screen="${screen%%,*}"
