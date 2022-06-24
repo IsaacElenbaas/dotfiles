@@ -1,0 +1,15 @@
+#!/bin/bash
+
+{ [[ $- = *i* ]] || [ $EUID -eq 0 ]; } || { printf "Run as root or interactively for sudo\n" >&2; exit 1; }
+[ $EUID -eq 0 ] || exec sudo "$0" "$@"
+zpool list -H -o health,name | while IFS= read -r pool; do
+	pool="${pool#${pool%%[![:space:]]*}}"
+	pool="${pool%${pool##*[![:space:]]}}"
+	[ "${pool%%[[:space:]]*}" = "ONLINE" ] || continue
+	pool="${pool##*[[:space:]]}"
+	printf "Scrubbing %s. . .\n" "$pool"
+	zpool scrub -w "$pool"
+	printf "Trimming %s. . .\n" "$pool"
+	zpool trim -w "$pool"
+	zpool status "$pool"
+done

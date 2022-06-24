@@ -47,8 +47,15 @@ mkdir -p ~/.xpra
 ln -sf ~/dotfiles/xpra.conf                ~/.xpra/
 
 sudo chown root:root ~/dotfiles/bin/power
+sudo chown root:root ~/dotfiles/systemd/power.service
 sudo ln -sf ~/dotfiles/systemd/power.service /etc/systemd/system/
 sudo systemctl enable power
+sudo chown root:root ~/dotfiles/bin/{zscrub,zstatus}
+sudo chown root:root ~/dotfiles/systemd/zscrub.*
+command -v zfs &>/dev/null && {
+	sudo ln -sf ~/dotfiles/systemd/zscrub.* /etc/systemd/system/
+	sudo systemctl enable zscrub.timer
+}
 
 # git config here so I don't have to worry about accidentally pushing .gitconfig sensitive info
 git config --global core.editor "vim"

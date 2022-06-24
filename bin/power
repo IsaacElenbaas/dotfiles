@@ -3,18 +3,23 @@
 { [[ $- = *i* ]] || [ $EUID -eq 0 ]; } || { printf "Run as root or interactively for sudo\n" >&2; exit 1; }
 [ $EUID -eq 0 ] || exec sudo "$0" "$@"
 case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
-	"1da09fe64b64478344b1b0ab7cf4f9fd")
+	*)
 		# Enable runtime PM for all PCI devices
 		find /sys/bus/pci/devices/*/ -type f -path "*/power/control" -not -path "*usb*" | while IFS= read -r line; do
-			tee "$line" <<< "auto" > /dev/null
-		done
-		# Enable runtime PM for all storage devices
-		find /sys/block/*/ /sys/block/*/device/ -type f -path "*/power/control" | while IFS= read -r line; do
 			tee "$line" <<< "auto" > /dev/null
 		done
 		# Enable runtime PM for audio
 		tee /sys/module/snd_hda_intel/parameters/power_save <<< 1 > /dev/null
 		tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "Y" > /dev/null
+	;;&
+	"817993f505bfef073221158a4820c1b9")
+		cpupower frequency-set -g conservative
+	;;
+	"1da09fe64b64478344b1b0ab7cf4f9fd")
+		# Enable runtime PM for all storage devices
+		find /sys/block/*/ /sys/block/*/device/ -type f -path "*/power/control" | while IFS= read -r line; do
+			tee "$line" <<< "auto" > /dev/null
+		done
 		# Enable runtime PM for WiFi
 		iw dev wlan0 set power_save on
 		# Enable autosuspend for ITE Devices (trackpad, keyboard)

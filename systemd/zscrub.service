@@ -1,0 +1,8 @@
+[Unit]
+Description=Scrub and trim all zpools
+
+[Service]
+ExecStart=bash -c '\
+x="$$(realpath /etc/systemd/system/zscrub.service)"; \
+source "$${x%%/*}/../bin/zscrub" \
+'

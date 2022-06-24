@@ -1,0 +1,10 @@
+[Unit]
+Description=Monthly zpool scrub and trim
+
+[Timer]
+OnCalendar=*-*-01 02:00:00
+AccuracySec=2h
+Persistent=true
+
+[Install]
+WantedBy=default.target

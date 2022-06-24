@@ -1,0 +1,45 @@
+#!/bin/bash
+
+show="scan config"
+
+show=" $show "
+headerLength=0
+zpool list -H -o health,name | while IFS= read -r pool; do
+	pool="${pool#${pool%%[![:space:]]*}}"
+	pool="${pool%${pool##*[![:space:]]}}"
+	[ "${pool%%[[:space:]]*}" = "ONLINE" ] || continue
+	pool="${pool##*[[:space:]]}"
+	printf "%s:\n" "$pool"
+	zpool status "$pool" | { IFS= read -r line; while true; do
+		header="${line%%:*}"
+		[ $headerLength -ne 0 ] || [ "${header#*[![:space:]]}" = "$header" ] || headerLength=$((${#header}+1))
+		[ $headerLength -ne 0 ] || { IFS= read -r line; continue; }
+		header="${header#${header%%[![:space:]]*}}"
+		header="${header%${header##*[![:space:]]}}"
+		join="${line#*:}"
+		[ "${join#*[![:space:]]}" != "$join" ] && join="%s " || join="\t%s\n"
+		while true; do
+			[[ "$show" =~ [[:space:]]$header[[:space:]] ]] && {
+				[ "${line#*[![:space:]]}" != "$line" ] && {
+					[ "${line:$headerLength}" != "${line#*:}" ] || \
+					[ "${line#*:*[![:space:]]}" != "$line" ]
+				}
+			} && {
+				if [ "${line::1}" = $'\t' ]; then
+					printf "$join" "${line#$'\t'}"
+				else
+					[ "${line:$headerLength}" = "${line#*:}" ] && printf "\t"
+					line="${line:$headerLength}"
+					printf "$join" "${line#${line%%[![:space:]]*}}"
+				fi
+			}
+			IFS= read -r line || { line=""; break; }
+			[ "${line::1}" = $'\t' ] || {
+				ws="${line::$headerLength}"
+				[ "${ws#*[![:space:]]}" = "$ws" ] || break
+			}
+		done
+		[[ "$show" =~ [[:space:]]$header[[:space:]] ]] && { [[ "$join" =~ "\t" ]] || printf "\n"; }
+		[ -n "$line" ] || break
+	done; }
+done
