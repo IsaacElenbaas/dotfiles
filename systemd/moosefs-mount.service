@@ -1,0 +1,12 @@
+[Unit]
+Description=Mounts MooseFS
+
+[Service]
+ExecStart=bash -c '[ -f /etc/systemd/system/moosefs.service ] && while ! systemctl is-active moosefs.service; do sleep 1m; done &>/dev/null; mfsmount /media/herd -H 192.168.0.185'
+ExecStop=fusermount -u /media/herd
+Type=oneshot
+TimeoutStartSec=0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
