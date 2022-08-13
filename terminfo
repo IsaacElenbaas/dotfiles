@@ -1,0 +1,21 @@
+#!/bin/bash
+
+rm -f "$HOME/.terminfo/x/xterm-256color" "$HOME/.terminfo/xterm-256color"
+infoSwap() {
+	if [ "${line#*[[:space:]]$1=}" != "$line" ]; then
+		line="${line%%$1=*}$1=$2, ${line#*$1=*,}"
+		line="${line%[[:space:]]}"
+	fi
+}
+tic <(
+	infocmp -A /usr/share/terminfo xterm-256color | while IFS= read -r line; do
+		infoSwap "kbs" "^H"
+		infoSwap "kcuu1" "\\E[A"
+		infoSwap "kcud1" "\\E[B"
+		infoSwap "kcuf1" "\\E[C"
+		infoSwap "kcub1" "\\E[D"
+		printf "%s\n" "$line"
+	done
+)
+# for GNU screen
+cp "$HOME/.terminfo/x/xterm-256color" "$HOME/.terminfo/"

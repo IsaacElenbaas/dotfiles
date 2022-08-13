@@ -1,21 +1,21 @@
 #!/usr/bin/bash
 
-ln -sf ~/dotfiles/Xresources               ~/.Xresources
-ln -sf ~/dotfiles/bash_profile             ~/.bash_profile
-ln -sf ~/dotfiles/bashrc                   ~/.bashrc
-ln -sf ~/dotfiles/fff                      ~/.fff
-ln -sf ~/dotfiles/inputrc                  ~/.inputrc
-ln -sf ~/dotfiles/mutt/muttrc              ~/.muttrc
-ln -sf ~/dotfiles/profile                  ~/.profile
-ln -sf ~/dotfiles/screenrc                 ~/.screenrc
-ln -sf ~/dotfiles/screenrcunbind           ~/.screenrcunbind
-ln -sf ~/dotfiles/tmux.conf                ~/.tmux.conf
-ln -sf ~/dotfiles/vim                      ~/.vim
-ln -sf ~/dotfiles/vimrc                    ~/.vimrc
-ln -sf ~/dotfiles/xbindkeysrc              ~/.xbindkeysrc
-ln -sf ~/dotfiles/xinitrc                  ~/.xinitrc
-ln -sf ~/dotfiles/zsh                      ~/.zsh
-ln -sf ~/dotfiles/zshrc                    ~/.zshrc
+ln -sf  ~/dotfiles/Xresources              ~/.Xresources
+ln -sf  ~/dotfiles/bash_profile            ~/.bash_profile
+ln -sf  ~/dotfiles/bashrc                  ~/.bashrc
+ln -sf  ~/dotfiles/fff                     ~/.fff
+ln -sf  ~/dotfiles/inputrc                 ~/.inputrc
+ln -sf  ~/dotfiles/mutt/muttrc             ~/.muttrc
+ln -sf  ~/dotfiles/profile                 ~/.profile
+ln -sf  ~/dotfiles/screenrc                ~/.screenrc
+ln -sf  ~/dotfiles/screenrcunbind          ~/.screenrcunbind
+ln -sf  ~/dotfiles/tmux.conf               ~/.tmux.conf
+ln -sfT ~/dotfiles/vim                     ~/.vim
+ln -sf  ~/dotfiles/vimrc                   ~/.vimrc
+ln -sf  ~/dotfiles/xbindkeysrc             ~/.xbindkeysrc
+ln -sf  ~/dotfiles/xinitrc                 ~/.xinitrc
+ln -sfT ~/dotfiles/zsh                     ~/.zsh
+ln -sf  ~/dotfiles/zshrc                   ~/.zshrc
 
 mkdir -p ~/.config
 ln -sf ~/dotfiles/cleanup                  ~/.config/
@@ -33,7 +33,7 @@ ln -sf ~/dotfiles/pipewire-pulse.conf      ~/.config/pipewire/
 mkdir -p ~/.config/qutebrowser
 ln -sf ~/dotfiles/qutebrowser/config.py    ~/.config/qutebrowser/
 mkdir -p ~/.config/systemd
-ln -sf ~/dotfiles/systemd                  ~/.config/systemd/user
+ln -sfT ~/dotfiles/systemd                 ~/.config/systemd/user
 
 mkdir -p ~/.local/share
 ln -sf ~/dotfiles/icons                    ~/.local/share/
@@ -64,6 +64,8 @@ git config --global init.defaultbranch "master"
 git config --global pull.rebase true
 git config --global user.email "isaacelenbaas@gmail.com"
 git config --global user.name "IsaacElenbaas"
+
+~/dotfiles/terminfo
 
 sudo bash -c 'for i in /usr/lib/python3*/site-packages/qutebrowser; do
 	cd "$i" &>/dev/null
