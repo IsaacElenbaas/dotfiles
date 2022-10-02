@@ -9,11 +9,12 @@ xterm*faceSize5: 15
 xterm*faceSize6: 18
 xterm*ScrollBar: false
 xterm*charClass: 33:48,36-47:48,58-59:48,61:48,63-64:48,95:48,126:48
-xterm.waitForMap: true
-xterm.omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift-fonts
+xterm*waitForMap: true
+xterm*omitTranslation: fullscreen, paging, popup-menu, reset, scroll-lock, shift-fonts
+xterm*decTerminalID: vt340
 ! https://cgit.freedesktop.org/xorg/proto/x11proto/tree/keysymdef.h
 ! showkey -a
-*VT100*translations: #override \n\
+xterm*VT100*translations: #override \n\
     Ctrl <Key>Escape: string(0x0b) \n\
     Ctrl Shift <Key>Q: string(0x3) \n\
     Ctrl Shift <Key>R: redraw() \n\

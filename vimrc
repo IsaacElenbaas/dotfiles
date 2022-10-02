@@ -1,5 +1,5 @@
 "{{{ fix terminal colors 7 and 8
-if $VIM_TERMINAL == "" && $SSH_TTY == ""
+if !has("patch-9.0.4982") && $VIM_TERMINAL == "" && $SSH_TTY == ""
 	let g:wasTerm=0
 	function FixColors()
 		call histdel(":", -1)
@@ -355,6 +355,7 @@ Plug 'IsaacElenbaas/true-vim-terminal'
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'kshenoy/vim-signature'
+Plug 'markonm/traces.vim'
 Plug 'mbbill/undotree'
 Plug 'sirtaj/vim-openscad'
 Plug 'kana/vim-textobj-user' | Plug 'kana/vim-textobj-line' | Plug 'terryma/vim-expand-region'
@@ -392,6 +393,8 @@ let g:lightline = {
 		"{{{ vim-easy-align
 nmap a <Plug>(EasyAlign)
 xmap a <Plug>(EasyAlign)
+nmap a/ <Plug>(EasyAlign)<c-x>
+xmap a/ <Plug>(EasyAlign)<c-x>
 		"}}}
 
 autocmd ColorScheme * hi SignatureMarkText cterm=bold ctermfg=255 ctermbg=0
@@ -970,7 +973,7 @@ endif
 
 	"{{{ TrueVimTerm_Start_User(buf, new)
 function TrueVimTerm_Start_User(buf, new)
-	" for fixing terminal colors, can be removed when #7227 is closed
+	" for fixing terminal colors without patch 4982
 	let g:wasTerm=1
 	setlocal laststatus=0
 	setlocal noshowcmd
@@ -1088,6 +1091,10 @@ function Tapi_TVT_Rename(bufnum, arglist)
 	endif
 endfunc
 	"}}}
+
+function Tapi_Ping(bufnum, arglist)
+	call term_sendkeys(a:bufnum, "\006")
+endfunc
 "}}}
 
 let g:resource=1

@@ -2,7 +2,7 @@
 
 OLDIFS=$IFS
 IFS=$'\n'
-for file in $(find . -type f -name "$1" | sort -V); do
+for file in $(find . -maxdepth 1 -type f -name "$1" | sort -V); do
 	i=$((i+1))
 	mv -n "$file" "$2$(printf %0$3d $i).${file##*.}"
 done

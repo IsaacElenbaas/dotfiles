@@ -10,10 +10,10 @@ infoSwap() {
 tic <(
 	infocmp -A /usr/share/terminfo xterm-256color | while IFS= read -r line; do
 		infoSwap "kbs" "^H"
-		infoSwap "kcuu1" "\\E[A"
-		infoSwap "kcud1" "\\E[B"
-		infoSwap "kcuf1" "\\E[C"
-		infoSwap "kcub1" "\\E[D"
+		#infoSwap "kcuu1" "\\E[A"
+		#infoSwap "kcud1" "\\E[B"
+		#infoSwap "kcuf1" "\\E[C"
+		#infoSwap "kcub1" "\\E[D"
 		printf "%s\n" "$line"
 	done
 )

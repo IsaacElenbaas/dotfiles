@@ -6,8 +6,8 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 	*)
 		# Enable runtime PM for all PCI devices
 		find /sys/bus/pci/devices/*/ -type f -path "*/power/control" -not -path "*usb*" | while IFS= read -r line; do
-			tee "$line" <<< "auto" > /dev/null
-		done
+			tee "$line" <<< "auto"
+		done > /dev/null
 		# Enable runtime PM for audio
 		tee /sys/module/snd_hda_intel/parameters/power_save <<< 1 > /dev/null
 		tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "Y" > /dev/null
@@ -18,8 +18,8 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 	"1da09fe64b64478344b1b0ab7cf4f9fd")
 		# Enable runtime PM for all storage devices
 		find /sys/block/*/ /sys/block/*/device/ -type f -path "*/power/control" | while IFS= read -r line; do
-			tee "$line" <<< "auto" > /dev/null
-		done
+			tee "$line" <<< "auto"
+		done > /dev/null
 		# Enable runtime PM for WiFi
 		iw dev wlan0 set power_save on
 		# Enable autosuspend for ITE Devices (trackpad, keyboard)
@@ -51,8 +51,8 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 
 		# Disable runtime PM for sound devices
 		find /sys/bus/pci/devices/*/ -type f -path "*sound*/power/control" | while IFS= read -r line; do
-			tee "$line" <<< "on" > /dev/null
-		done
+			tee "$line" <<< "on"
+		done > /dev/null
 		# Disable runtime PM for audio
 		tee /sys/module/snd_hda_intel/parameters/power_save <<< 0 > /dev/null
 		tee /sys/module/snd_hda_intel/parameters/power_save_controller <<< "N" > /dev/null

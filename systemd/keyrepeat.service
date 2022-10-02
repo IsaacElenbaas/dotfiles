@@ -3,6 +3,3 @@ Description=Applies keyrepeat settings
 
 [Service]
 ExecStart=bash -c 'while %h/dotfiles/bin/keyrepeat; inotifywait -q -e create -e delete /dev/input; do sleep 1; done'
-
-[Install]
-WantedBy=default.target

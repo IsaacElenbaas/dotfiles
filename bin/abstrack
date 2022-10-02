@@ -99,7 +99,7 @@ else
 				[ "${line%%[[:space:]\(]*}" != "build" ] || {
 					# patches are lame we die like men x2 but it's worse this time
 					cat <<- '__EOF__'
-					  tar -xJf libinput-$pkgver.tar.xz
+					  tar -xjf libinput-$pkgver.tar.bz2
 
 					  mv libinput-$pkgver/src/evdev-tablet.c libinput-$pkgver/src/evdev-tablet.c.old
 					  while IFS= read -r line; do
@@ -145,8 +145,8 @@ else
 					    fi
 					  done < libinput-$pkgver/src/evdev-mt-touchpad.c.old > libinput-$pkgver/src/evdev-mt-touchpad.c
 
-					  rm libinput-$pkgver.tar.xz
-					  tar -cJf libinput-$pkgver.tar.xz libinput-$pkgver
+					  rm libinput-$pkgver.tar.bz2
+					  tar -cjf libinput-$pkgver.tar.bz2 libinput-$pkgver
 
 					__EOF__
 					break

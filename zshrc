@@ -1,4 +1,4 @@
-source ~/.profile
+source ~/dotfiles/aliases
 
 #{{{ plugins
 source ${ZDOTDIR:-$HOME/.zsh}/plugins/manydots.plugin.zsh
@@ -40,101 +40,33 @@ autoload -Uz compinit && compinit
 setopt autocd
 setopt cdsilent
 CDPATH=".:$HOME"
-WORDCHARS=
+WORDCHARS=""
 unsetopt beep
 #}}}
 
 #{{{ functions
 	#{{{ f
 f() {
-	\fff "$@"
+	command fff "$@"
 	cd "$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d" 2>/dev/null)"
 	rm "${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d" 2>/dev/null
 }
-sc() { command sc "$@" || exit; }
 	#}}}
 
-	#{{{ Paste
+sc() { command sc "$@" || exit; }
+
+	#{{{ (No)Paste
 Paste() { printf '\033]51;["call","Tapi_TVT_Paste",[]]\007' }
 Nopaste() { printf '\033]51;["call","Tapi_TVT_NoPaste",[]]\007' }
 	#}}}
 #}}}
 
-#{{{ aliases
-alias CAPSLOCK='xdotool key Caps_Lock'
-alias c='clear'
-alias cp='cp -ri'
-alias ctl='systemctl'
-alias detach='[ -n "$STY" ] && screen -X -S "${STY%%.*}" detach'
-alias dirsize='du -sh -- .'
-alias fff='f'
-alias fpg='ffmpeg'
-alias fpr='ffprobe'
-alias g='git'
-alias ga='git add'
-alias gc='git checkout'
-alias gd='git diff'
-alias gp='git push'
-alias gsp='git stash pop'
-alias gss='git stash save'
-alias keysounds='systemctl --user restart osu-keysounds'
-alias lapkeys='xinput enable "AT Translated Set 2 keyboard"; nokeyrepeat; { sudo tee /sys/class/leds/*::kbd_backlight/color <<< "2288ff" && sudo tee /sys/class/leds/*::kbd_backlight/brightness <<< "$(($(cat /sys/class/leds/*::kbd_backlight/max_brightness)*2/5))"; } > /dev/null'
-alias less='less -x2'
-alias ln='ln -s'
-alias ls='ls -hl --color=auto'
-alias m='neomutt'
-alias mkdir='mkdir -p'
-alias mocp='mocp -T ~/dotfiles/mocptheme -O "Keymap=$HOME/dotfiles/mocpbinds" 2>/dev/null'
-alias mpv='mpv --wid=$WINDOWID'
-alias mutt='neomutt'
-alias mv='mv -i'
-alias nokeysounds='systemctl --user stop osu-keysounds'
-alias nolapkeys='xinput disable "AT Translated Set 2 keyboard"; sudo tee /sys/class/leds/*::kbd_backlight/brightness <<< "0" > /dev/null'
-alias noxpra='export DISPLAY="${REAL_DISPLAY:-"$DISPLAY"}";'
-alias pa='yay'
-alias ping='ping -c 5'
-alias pm='pacman'
-alias q='exit'
-alias qq='exit'
-alias rm='rm -d'
-alias rollbg='systemctl --user restart rollbg'
-alias stopx='rm -f /tmp/xpra-restartx && \stopx; exit'
-alias suod='sudo'
-alias switchx='touch /tmp/xpra-restartx && \stopx; exit'
-alias v='vim'
-
-	#{{{ mocp
-alias mocp-add='mocp --append'
-alias mocp-ash='mocp-only "$HOME/Music/A Short Hike"'
-alias mocp-celeste='mocp-only "$HOME/Music/Celeste"'
-alias mocp-crashlands='mocp-only "$HOME/Music/Crashlands"'
-alias mocp-default='mocp-only "$HOME/Music/Default"'
-alias mocp-hk='mocp-only "$HOME/Music/Hollow Knight"'
-alias mocp-httyd1='mocp-only "$HOME/Music/HTTYD/1"'
-alias mocp-httyd2='mocp-only "$HOME/Music/HTTYD/2"'
-alias mocp-httyd3='mocp-only "$HOME/Music/HTTYD/3"'
-alias mocp-httyd='mocp-only "$HOME/Music/HTTYD"'
-alias mocp-maquia='mocp-only "$HOME/Music/Maquia"'
-alias mocp-mm='mocp-only "$HOME/Music/Puella Magi Madoka Magica"'
-alias mocp-opus='mocp-only "$HOME/Music/Opus Magnum"'
-alias mocp-ori-bf='mocp-only "$HOME/Music/Ori/BF Original" "$HOME/Music/Ori/BF Additional"'
-alias mocp-ori-wotw='mocp-only "$HOME/Music/Ori/WotW"'
-alias mocp-ori='mocp-only "$HOME/Music/Ori"'
-alias mocp-poly1='mocp-only "$HOME/Music/Poly Bridge/1"'
-alias mocp-poly2='mocp-only "$HOME/Music/Poly Bridge/2"'
-alias mocp-poly='mocp-only "$HOME/Music/Poly Bridge"'
-alias mocp-ror1='mocp-only "$HOME/Music/Risk of Rain/1"'
-alias mocp-ror2='mocp-only "$HOME/Music/Risk of Rain/2"'
-alias mocp-ror='mocp-only "$HOME/Music/Risk of Rain"'
-	#}}}
-
-	#{{{ files
+#{{{ file aliases
 alias -s mkv='mpv'
 alias -s mp3='mpv'
 alias -s mp4='mpv'
 alias -s mpeg='mpv'
 alias -s ogg='mpv'
-	#}}}
 #}}}
 
 #{{{ PROMPT
@@ -158,6 +90,7 @@ prompt-git() {
 	#}}}
 
 	#{{{ PROMPT definition
+RETVAL=0
 promptfgs=(
 	""
 	"black"
@@ -168,7 +101,7 @@ promptfgs=(
 	""
 )
 promptbgs=(
-	"\$([ \$? = 0 ] && printf \"15\" || { printf \"red\"; false; })"
+	"\$([ \$RETVAL -eq 0 ] && printf \"15\" || { printf \"red\"; false; })"
 	"15"
 	"32"
 	"\$(git rev-parse --is-inside-work-tree &>/dev/null && printf \"34\" || printf \"%s\" \"$nlb\")"
@@ -177,7 +110,7 @@ promptbgs=(
 	"$nlb"
 )
 promptsections=(
-	"\$([ \$? = 0 ] || { for (( i=0; i<\$COLUMNS; i++ )); do printf \" \"; done; printf \"%s\" \"$nl\"; })"
+	"\$([ \$RETVAL -eq 0 ] || { for (( i=0; i<\$COLUMNS; i++ )); do printf \" \"; done; printf \"%s\" \"$nl\"; })"
 	" %n$([ "$USER" != "isaacelenbaas" ] && printf "%s" "@%M") $c"
 	" %~ $c"
 	"\$(prompt-git %cb %cnb %cnf)"
@@ -223,34 +156,54 @@ for (( i = 1; i <= $#oldpromptsections; i++ )); do
 done
 OLDPROMPT="%B${OLDPROMPT}%b%u%s%f%k %{"$'\033[?7h'"%}"
 	#}}}
+
+unset c c2 nl nlb promptfgs promptbgs promptsections oldpromptfgs oldpromptbgs oldpromptsections
 #}}}
 
 #{{{ zsh hooks
 # http://zsh.sourceforge.net/Doc/Release/Functions.html#Hook-Functions
+
 	#{{{ preexec
+# TODO: variable names in here should be prefixed or something
+first=1
+# wait for vim to be ready
+printf '\033]51;["call","Tapi_Ping",[]]\007'
+read -s -d $'\006'
+sleep 1
+PROMPT="\$(weather -p | sed 's/\([%)]\)/%\1/g')"$'\n'"$PROMPT"
 preexec() {
+
 		#{{{ OLDPROMPT
-	plines=$(($(printf "%b" "$PROMPT\n" | wc -l)-1))
-	for (( i = 1; i <= $plines; i++ )); do
-		printf "\033[A\033[K"
-	done
+	if [ $first -eq 1 ]; then
+		first=0
+		PROMPT="${PROMPT#*$'\n'}"
+		clear
+	else
+		plines=$(print -nP -- "$PROMPT\n" | wc -l)
+		[ $RETVAL -eq 0 ] || plines=$(($plines-1))
+		for (( i = 0; i < $plines; i++ )); do
+			printf "\033[A\033[K"
+		done
+	fi
 	print -nP -- "$OLDPROMPT"
 	printf "%s\n" "$1"
 		#}}}
 
-	start="${1#${1%%[![:space:]]*}}"
+	local start="${1#${1%%[![:space:]]*}}"
 	start="${start%%[[:space:]]*}"
-	end="${1##*|}"
+	local end="${1##*|}"
 	end="${end#${end%%[![:space:]]*}}"
 	end="${end%%[[:space:]]*}"
+	# TODO: expand aliases if sudo?
+	# maybe better in a function called sudo
 
 		#{{{ undistract-me
 	case "$start" in
-		"" | "bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mpv" | "mutt" | "sc" | "ssh" | "termdown" | "v" | "vim") starttime=0 ;;
+		"" | "bash" | "bluetoothctl" | "colorpicker" | "f" | "fff" | "m" | "man" | "mocp" | "mpv" | "mutt" | "sc" | "ssh" | "termdown" | "v" | "vim") STARTTIME=0 ;;
 		*)
 			case "${end%%[[:space:]]*}" in
-				"less") starttime=0 ;;
-				*) starttime=$SECONDS ;;
+				"less") STARTTIME=0 ;;
+				*) STARTTIME=$SECONDS ;;
 			esac
 		;;
 	esac
@@ -265,12 +218,13 @@ preexec() {
 
 	#{{{ precmd
 precmd() {
+	RETVAL=$?
 	# undistract-me
-	[ ${starttime:-0} -gt 0 ] && {
-		starttime=$(($SECONDS-$starttime))
-		[ $starttime -gt 10 ] && {
+	[ ${STARTTIME:-0} -gt 0 ] && {
+		STARTTIME=$(($SECONDS-$STARTTIME))
+		[ $STARTTIME -gt 10 ] && {
 			( notify-send "Process Finished"; paplay /usr/share/sounds/freedesktop/stereo/message.oga --volume=65536 & ) &>/dev/null
-			printf "${starttime}s\n"
+			printf "${STARTTIME}s\n"
 		}
 	}
 	tput cnorm # vim can't handle guis run in it run in a screen lol https://groups.google.com/forum/#!topic/vim_dev/HhczoxAdcWE
@@ -290,7 +244,7 @@ chpwd() {
 zshaddhistory() {
 	[ -n "${1%%[![:space:]]*}" ] && return 1
 	[ -d "${@%$'\n'}" ] && return 1
-	start="${1%$'\n'}"
+	local start="${1%$'\n'}"
 	start="${start#${start%%[![:space:]]*}}"
 	start="${start%%[[:space:]]*}"
 	[ -x "${start%[;&|]}" ] && return 1
@@ -407,7 +361,7 @@ _enter() {
 	BUFFER="${BUFFER%${BUFFER##*[![:space:]]}}"
 
 		#{{{ navi
-	start="${BUFFER%%[![:space:]]*}"
+	local start="${BUFFER%%[![:space:]]*}"
 	BUFFER="${BUFFER#${BUFFER%%[![:space:]]*}} "
 	if [ "${BUFFER%%[[:space:]]*}" = "n" ] || [ "${BUFFER%%[[:space:]]*}" = "navi" ]; then
 		navi="$(navi --print)"
@@ -418,7 +372,7 @@ _enter() {
 		[ -z "${BUFFER#*[[:space:]]}" ] && start=" "
 		BUFFER="$start${navi%$'\n'} ${BUFFER#*[[:space:]]}"
 		BUFFER="${BUFFER%[[:space:]]}"
-		starttime=$SECONDS
+		STARTTIME=$SECONDS
 		zle accept-line
 		return
 	fi
@@ -426,7 +380,7 @@ _enter() {
 		#}}}
 
 		#{{{ prompt to expand currently typing path on enter
-	checkpath=$LBUFFER
+	local checkpath=$LBUFFER
 	[[ "$RBUFFER" =~ ^([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
 	if [[ "$checkpath" =~ ([^[:space:]\/\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*\/([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]; then
 		[[ -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/((^|[^\\])(\\\\)*)\\~/\1~/' | sed -E 's/((^|[^\\])(\\\\)*)\\{3}\(/\1\\(/g' | sed -E 's/((^|[^\\])(\\\\)*)\\{3}\)/\1\\)/g')) ]] && { zle accept-line; return; }
@@ -454,7 +408,7 @@ _enter() {
 	fi
 		#}}}
 
-	zle accept-line
+	[ -n "$BUFFER" ] && zle accept-line
 }
 zle -N _enter
 bindkey "^M" _enter
@@ -466,18 +420,22 @@ _autocommand-eval() {
 	BUFFER="$1"
 	zle redisplay
 	printf "\n"
+	local OLD_RETVAL=$RETVAL
 	local OLD_YSU_MESSAGE_POSITION="$YSU_MESSAGE_POSITION"
 	YSU_MESSAGE_POSITION="after"
 	preexec "$BUFFER" "${*:2}" "${*:2}"
 	for (( i=1; i <= ${#preexec_functions[@]}; i++ )); do "${preexec_functions[$i]}" "$BUFFER" "${*:2}" "${*:2}"; done
 	"$2" "${@:3}"
+	RETVAL=$?
 	BUFFER=""
 	_YSU_BUFFER=""
 	precmd
 	for (( i=1; i <= ${#precmd_functions[@]}; i++ )); do "${precmd_functions[$i]}"; done
-	plines=$(($(printf "%b" "$PROMPT\n" | wc -l)-1))
 	YSU_MESSAGE_POSITION="$OLD_YSU_MESSAGE_POSITION"
-	for (( i = 1; i <= $plines; i++ )); do
+	# prevent zsh from clearing old output
+	plines=$(print -nP -- "$PROMPT\n" | wc -l)
+	[ $OLD_RETVAL -eq 0 ] || plines=$(($plines+2))
+	for (( i = 0; i < $plines; i++ )); do
 		printf "\n"
 	done
 	zle reset-prompt
@@ -553,6 +511,22 @@ zle -N _autocommand-n
 bindkey "n" _autocommand-n
 bindkey -s -M isearch "n" "\026n"
 		#}}}
+
+		#{{{ w
+_autocommand-w() {
+	if [ "$LBUFFER" = "w" ] && [ -z "$RBUFFER" ]; then
+		typeset -g first=1
+		PROMPT="\$(weather -p | sed 's/\([%)]\)/%\1/g')"$'\n'"$PROMPT"
+		BUFFER=""
+		zle reset-prompt
+	else
+		zle self-insert
+	fi
+}
+zle -N _autocommand-w
+bindkey "w" _autocommand-w
+bindkey -s -M isearch "w" "\026n"
+		#}}}
 	#}}}
 
 bindkey -s "^[" ""
@@ -571,7 +545,7 @@ fi
 # global theme - not above as difficult to recreate in vimrc
 [ -f "/var/tmp/$USER-theme" ] && {
 	# to not interfere with vim terminal fixing broken colors
-	sleep 1
+	#sleep 1
 	theme "$(cat "/var/tmp/$USER-theme")" 0
 }
 exec 3<> <(:)
