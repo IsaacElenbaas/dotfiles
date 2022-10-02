@@ -1,0 +1,308 @@
+#!/bin/bash
+
+#{{{ init
+hc () {
+	DISPLAY="${REAL_DISPLAY:-"$DISPLAY"}" herbstclient "$@"
+}
+hc emit_hook reload
+hc keyunbind --all
+hc unrule -F
+hc set_attr theme.tiling.reset 1
+
+#{{{ monitor/tag setup
+hc silent new_attr string my_randr
+randr="$(xrandr --query | grep "[[:space:]]connected")"
+m=$(hc get_attr monitors.count)
+if [ "$randr" != "$(hc get_attr my_randr)" ]; then
+	hc set_attr my_randr "$randr"
+	hc focus_monitor 0
+	for (( i=1; i<$m; i++ )); do
+		hc remove_monitor 1
+	done
+	t=$(hc get_attr tags.count)
+	hc use_index 0
+	for (( i=1; i<$t; i++ )); do
+		hc merge_tag "$(hc get_attr tags.1.name)" 0
+	done
+	hc silent rename "$(hc get_attr tags.0.name)" 0
+	m=$(xrandr --query | grep -e "[[:space:]]connected[[:space:]]primary[[:space:]][[:digit:]]" -e "[[:space:]]connected[[:space:]][[:digit:]]" | wc -l)
+	for (( i=1; i<6*$m; i++ )); do
+		hc add "$i"
+	done
+	hc detect_monitors
+	for (( i=1; i<$m; i++ )); do
+		hc chain , focus_monitor $i , use_index $i
+	done
+fi
+#}}}
+
+h=20
+Mod=Mod4 # Use the super key as the main modifier
+#}}}
+
+#{{{ autostart
+hc set auto_detect_monitors false
+#xsetroot
+#pacwall.sh -b "#232831" -d "#e5e9f080" -e "#88c0d0" -s "#c5c8c626"
+#rollbg
+xrdb ~/.Xresources
+#}}}
+
+#{{{ DISPLAY variables for xpra
+export DISPLAY="${REAL_DISPLAY:-"$DISPLAY"}" # for restarting
+if systemctl is-active --user --quiet xpra-server; then
+	export REAL_DISPLAY="$DISPLAY"
+	export XPRA_DISPLAY=":10"
+	export DISPLAY="$XPRA_DISPLAY"
+else
+	export REAL_DISPLAY=
+	export XPRA_DISPLAY=
+fi
+hc export REAL_DISPLAY="$REAL_DISPLAY"
+hc export XPRA_DISPLAY="$XPRA_DISPLAY"
+hc export DISPLAY="$DISPLAY"
+#}}}
+
+#{{{ keybindings
+hc keybind $Mod-Shift-r reload
+hc keybind $Mod-a spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec '$HOME/Projects/Launcher/launcher.py'"
+hc keybind $Mod-d spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; [ \$(herbstclient get_attr tags.focus.curframe_wcount) -gt 0 ] && saveclose $h || herbstclient remove"
+
+	#{{{ launching commonly used
+		#{{{ no vim terminal
+# if reactivating this remember to change shell in screenrc
+#hc keybind $Mod-Return spawn xterm -e "screen"
+#hc keybind $Mod-Control-Return spawn xterm -T "max" -e "screen"
+#hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
+#hc keybind $Mod-Control-Shift-Return spawn xterm -T "max" -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
+#hc keybind $Mod-Shift-v spawn xterm -e "screen bash -c 'vim; exec zsh -l'"
+#hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "screen bash -c 'vim; exec zsh -l'"
+		#}}}
+
+		#{{{ vim terminal
+# unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons)
+hc keybind $Mod-Return spawn xterm -e "screen shell"
+hc keybind $Mod-Control-Return spawn xterm -T "max" -e "shell"
+hc keybind $Mod-Shift-Return spawn xterm -e "screen shell -c 'fff; cd \"\$(cat '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d' 2>/dev/null; rm -f '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d')\"; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$PWD\"; exec zsh -l'"
+hc keybind $Mod-Control-Shift-Return spawn xterm -T "max" -e "fff"
+# sleep is so that Tapi_TVT_Paste print doesn't interfere with terminal color fixing
+hc keybind $Mod-Shift-v spawn xterm -e "screen shell -c 'sleep 0.1; vim; exec zsh -l'"
+hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "vim"
+		#}}}
+
+# this won't save layout but prevents breaking due to resize
+hc keybind $Mod-Control-m spawn xterm -T "max" -e "mocp -T ~/dotfiles/dest/mocp/theme -O \"Keymap=$HOME/dotfiles/dest/mocp/binds\""
+hc keybind $Mod-Control-Shift-m spawn xterm -T "max" -e "neomutt"
+	#}}}
+
+	#{{{ navigation
+hc keybind $Mod-h focus left
+hc keybind $Mod-t focus down
+hc keybind $Mod-c focus up
+hc keybind $Mod-n focus right
+hc keybind $Mod-apostrophe cycle -1
+hc keybind $Mod-comma cycle 1
+
+		#{{{ $Mod-g
+hc keybind $Mod-g chain \
+	, lock \
+	, set_attr theme.border_width 8 \
+	, spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec /usr/share/doc/herbstluftwm/examples/maximize.sh grid" \
+	, keybind Left focus left , keybind Down focus down , keybind Up focus up , keybind Right focus right , keybind Return chain \
+		. lock \
+		. set_attr theme.border_width 3 \
+		. spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec /usr/share/doc/herbstluftwm/examples/maximize.sh grid" \
+		. keyunbind Left . keyunbind Down . keyunbind Up . keyunbind Right . keyunbind Return \
+		. unlock \
+	, unlock
+		#}}}
+
+		#{{{ $Mod-r
+# don't worry about it
+hc keybind $Mod-r chain \
+	, lock \
+	, foreach MONITOR monitors. --filter-name='^[0-9]+$' \
+		sprintf MTAG "%c.tag" MONITOR substitute MTAG MTAG \
+		chain \
+			. sprintf COMMAND "{ timeout 1 herbstclient -i | grep -m 1 rollbg > /dev/null; } & herbstclient chain , silent new_attr string tags.%c.my_rollbg_layout , set_attr tags.%c.my_rollbg_layout \"\$(herbstclient dump %c)\"; wait; herbstclient chain , load %c \"(clients max:0 )\" , foreach CLIENT clients. --unique and . sprintf CTAG \"%%c.tag\" CLIENT compare CTAG = %c . sprintf CMYMIN \"%%c.my_rollbg_minimized\" CLIENT compare CMYMIN = false . sprintf CMIN \"%%c.minimized\" CLIENT set_attr CMIN true , unlock" MTAG MTAG MTAG MTAG MTAG \
+			  spawn bash -c COMMAND \
+			. foreach CLIENT clients. --unique \
+				sprintf CTAG "%c.tag" CLIENT \
+				sprintf CMYMIN "%c.my_rollbg_minimized" CLIENT \
+				and \
+					: compare CTAG = MTAG \
+					: silent new_attr bool CMYMIN false \
+					: set_attr CMYMIN false \
+					: sprintf CMIN "%c.minimized" CLIENT \
+					  or \
+					  	/ compare CMIN = false \
+					  	/ set_attr CMYMIN true \
+			. emit_hook rollbg \
+	, keybind space spawn systemctl --user restart rollbg , keybind Return chain \
+		. lock \
+		. foreach MONITOR monitors. --filter-name='^[0-9]+$' \
+			sprintf MTAG "%c.tag" MONITOR substitute MTAG MTAG \
+			chain \
+				: foreach CLIENT clients. --unique \
+					sprintf CTAG "%c.tag" CLIENT \
+					sprintf CMYMIN "%c.my_rollbg_minimized" CLIENT \
+					and \
+						/ compare CTAG = MTAG \
+						/ chain \
+							_ and \
+								+ compare CMYMIN = false \
+								+ sprintf CMIN "%c.minimized" CLIENT \
+								  set_attr CMIN false \
+							_ remove_attr CMYMIN \
+				: sprintf COMMAND "herbstclient chain , load %c \"\$(herbstclient get_attr tags.%c.my_rollbg_layout)\" , remove_attr tags.%c.my_rollbg_layout , unlock" MTAG MTAG MTAG \
+				  spawn bash -c COMMAND \
+		. keyunbind space . keyunbind Return
+		#}}}
+
+		#{{{ tags
+hc keybind $Mod-l use_index -$m
+hc keybind $Mod-BackSpace use_index +$m
+		#}}}
+	#}}}
+
+	#{{{ layouts
+hc keybind $Mod-f spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen"
+hc keybind $Mod-Shift-f chain \
+	, or \
+		. and \
+			: compare clients.focus.fullscreen = false \
+			: spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen full" \
+		. spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec fullscreen" \
+	, fullscreen toggle
+hc keybind $Mod-Escape cycle_layout 1 horizontal vertical max
+hc keybind $Mod-space cycle_layout 1 horizontal vertical max
+	#}}}
+
+	#{{{ clients
+hc keybind $Mod-Shift-h or \
+	, shift left \
+	, chain . lock . shift_to_monitor -l . focus_monitor -l . unlock
+hc keybind $Mod-Shift-t shift down
+hc keybind $Mod-Shift-c shift up
+hc keybind $Mod-Shift-n or \
+	, shift right \
+	, chain . lock . shift_to_monitor -r . focus_monitor -r . unlock
+hc keybind $Mod-y spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec herbstclient setenv clip \$(herbstclient get_attr clients.focus.winid)"
+hc keybind $Mod-i spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec herbstclient bring \$(herbstclient getenv clip)"
+hc keybind $Mod-Shift-m set_attr clients.focus.minimized true
+	#}}}
+
+	#{{{ frames
+hc keybind $Mod-m chain , split bottom 0.5 , focus down
+hc keybind $Mod-s chain , split right  0.5 , focus right
+resizestep=0.05
+hc keybind $Mod-o      resize left  +$resizestep
+hc keybind $Mod-e      resize down  +$resizestep
+hc keybind $Mod-period resize up    +$resizestep
+hc keybind $Mod-u      resize right +$resizestep
+hc keybind $Mod-b      remove
+
+		#{{{
+# don't worry about it
+hc keybind $Mod-Shift-b or \
+	, and \
+		. compare tags.focus.frame_count gt 1 \
+		. substitute MTAG monitors.focus.tag \
+		  chain \
+		  	: lock \
+		  	: silent new_attr string tags.focus.my_framemax_layout \
+		  	: substitute MFRAMEALG tags.focus.tiling.focused_frame.algorithm \
+		  	  sprintf COMMAND "{ timeout 1 herbstclient -i | grep -m 1 framemax > /dev/null; } & herbstclient set_attr tags.focus.my_framemax_layout \"\$(herbstclient dump)\"; wait; herbstclient chain , load \"(clients %c:0 )\" , foreach CLIENT clients. --unique and . sprintf CTAG \"%%c.tag\" CLIENT compare CTAG = %c . sprintf CMYMINMAX \"%%c.my_framemax_minimized_maxxed\" CLIENT compare CMYMINMAX = false . sprintf CMIN \"%%c.minimized\" CLIENT set_attr CMIN true , unlock" MFRAMEALG MTAG \
+		  	  spawn bash -c COMMAND \
+		  	: substitute MFRAME tags.focus.tiling.focused_frame.index \
+		  	  foreach CLIENT clients. --unique \
+		  	  	sprintf CTAG "%c.tag" CLIENT \
+		  	  	sprintf CMYMINMAX "%c.my_framemax_minimized_maxxed" CLIENT \
+		  	  	and \
+		  	  		/ compare CTAG = MTAG \
+		  	  		/ silent new_attr bool CMYMINMAX false \
+		  	  		/ set_attr CMYMINMAX false \
+		  	  		/ sprintf CMIN "%c.minimized" CLIENT \
+		  	  		  or \
+		  	  		  	_ and \
+		  	  		  		+ compare CMIN = false \
+		  	  		  		+ sprintf CFRAME "%c.parent_frame.index" CLIENT \
+		  	  		  		  compare CFRAME != MFRAME \
+		  	  		  	_ set_attr CMYMINMAX true \
+		  	: emit_hook framemax \
+	, and \
+		. silent attr_type tags.focus.my_framemax_layout \
+		. substitute MTAG monitors.focus.tag \
+		  chain \
+		  	: lock \
+		  	: foreach CLIENT clients. --unique \
+		  		sprintf CTAG "%c.tag" CLIENT \
+		  		sprintf CMYMINMAX "%c.my_framemax_minimized_maxxed" CLIENT \
+		  		and \
+		  			/ compare CTAG = MTAG \
+		  			/ chain \
+		  				_ and \
+		  					+ compare CMYMINMAX = false \
+		  					+ sprintf CMIN "%c.minimized" CLIENT \
+		  					  set_attr CMIN false \
+		  				_ remove_attr CMYMINMAX \
+		  	: sprintf COMMAND "herbstclient chain , load %c \"\$(herbstclient get_attr tags.%c.my_framemax_layout)\" , remove_attr tags.%c.my_framemax_layout , unlock" MTAG MTAG MTAG \
+		  	  spawn bash -c COMMAND
+		#}}}
+	#}}}
+#}}}
+
+#{{{ theme
+	#{{{ colors
+hc set frame_border_active_color "#383838"
+hc set frame_border_normal_color "#2C2C2C"
+hc set_attr theme.inner_color black # between border and window
+hc set_attr theme.title_color white
+# must be after general colors
+hc set_attr theme.active.color "#009fbc"
+hc set_attr theme.active.title_color black
+hc set_attr theme.active.title_font $(hc get_attr theme.title_font):bold
+hc set_attr theme.normal.color "#454545"
+hc set_attr theme.urgent.color "#EF9C00"
+	#}}}
+
+	#{{{ sizes
+hc set frame_border_width 3
+hc set frame_padding 0 # between inner and window
+hc set window_gap 3
+hc set_attr theme.border_width 3
+hc set_attr theme.inner_width 1 # between border and window
+hc set_attr theme.title_depth $(($h/5))
+hc set_attr theme.title_height $(($h-$h/5))
+	#}}}
+
+hc set always_show_frame 1
+hc set frame_bg_transparent 1 # solid vs border frame
+hc set mouse_recenter_gap 99999
+hc set smart_frame_surroundings true
+hc set_attr theme.title_when multiple_tabs
+#}}}
+
+#{{{ rules
+hc rule focus=on ewmhrequests=off ewmhnotify=off fullscreen=off # normally focus new clients, don"t allow them to control their fullscreen or "needs attention" state, and don't tell them what's going on
+hc rule windowtype~"_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)" pseudotile=on
+hc rule windowtype~"_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)" manage=off
+hc rule class="discord" tag=2
+hc rule class="Steam" tag=3
+hc rule title="Steam" tag=3
+hc rule class="Steam" not title="Steam" focus=off
+hc rule class="mpv" title="min" focus=off index="/"
+hc rule title="max" floating=true fullscreen=true
+hc rule title="Origin" manage=off
+#}}}
+
+#{{{ misc/bar startup
+hc set swap_monitors_to_get_tag false
+hc set focus_stealing_prevention true
+hc set tree_style "╾│ ├└╼─┐" # For printing window list
+hc set default_frame_layout horizontal
+hc focus_monitor 0
+hc unlock
+ps -o pgid,cmd -U "$USER" | grep "[d]zenbar" | while IFS= read -r line; do line="${line#${line%%[![:space:]]*}}" && pkill -g "${line%%[[:space:]]*}"; done
+bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec dzenbar $h" &
+#}}}

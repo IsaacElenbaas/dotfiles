@@ -1,3 +1,6 @@
 **/.netrwhist
-/icons/hicolor
-/vim/undo
+/dest/cleanup/per-system
+/dest/fonts/.uuid
+/dest/icons/hicolor
+/dest/vim/plugged
+/dest/vim/undo

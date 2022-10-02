@@ -1,50 +1,35 @@
 #!/usr/bin/bash
 
-ln -sf  ~/dotfiles/Xresources              ~/.Xresources
-ln -sf  ~/dotfiles/bash_profile            ~/.bash_profile
-ln -sf  ~/dotfiles/bashrc                  ~/.bashrc
-ln -sf  ~/dotfiles/fff                     ~/.fff
-ln -sf  ~/dotfiles/inputrc                 ~/.inputrc
-ln -sf  ~/dotfiles/mutt/muttrc             ~/.muttrc
-ln -sf  ~/dotfiles/profile                 ~/.profile
-ln -sf  ~/dotfiles/screenrc                ~/.screenrc
-ln -sf  ~/dotfiles/screenrcunbind          ~/.screenrcunbind
-ln -sf  ~/dotfiles/tmux.conf               ~/.tmux.conf
-ln -sfT ~/dotfiles/vim                     ~/.vim
-ln -sf  ~/dotfiles/vimrc                   ~/.vimrc
-ln -sf  ~/dotfiles/xbindkeysrc             ~/.xbindkeysrc
-ln -sf  ~/dotfiles/xinitrc                 ~/.xinitrc
-ln -sfT ~/dotfiles/zsh                     ~/.zsh
-ln -sf  ~/dotfiles/zshrc                   ~/.zshrc
+set -e
 
-mkdir -p ~/.config
-ln -sf ~/dotfiles/cleanup                  ~/.config/
-ln -sf ~/dotfiles/herbstluftwm             ~/.config/
-ln -sf ~/dotfiles/navi                     ~/.config/
-mkdir -p ~/.config/dunst
-ln -sf ~/dotfiles/dunstrc                  ~/.config/dunst/
-mkdir -p ~/.config/mpv
-ln -sf ~/dotfiles/mpv.conf                 ~/.config/mpv/
-ln -sf ~/dotfiles/mpvbinds.conf            ~/.config/mpv/input.conf
-mkdir -p ~/.config/neofetch
-ln -sf ~/dotfiles/neofetch.conf            ~/.config/neofetch/config.conf
-mkdir -p ~/.config/pipewire
-ln -sf ~/dotfiles/pipewire-pulse.conf      ~/.config/pipewire/
-mkdir -p ~/.config/qutebrowser
-ln -sf ~/dotfiles/qutebrowser/config.py    ~/.config/qutebrowser/
-mkdir -p ~/.config/systemd
-ln -sfT ~/dotfiles/systemd                 ~/.config/systemd/user
+# done like this so I can redo folder structure without having to modify link destinations
+link() {
+	[ "${2%/*}" != "$2" ] && mkdir -p "${2%/*}"
+	if [ "${2%/}" = "$2" ]; then
+		ln -sfT "$HOME/dotfiles/dest/$1" "$HOME/$2"
+	else
+		ln -sfT "$HOME/dotfiles/dest/$1" "$HOME/$2${1##*/}"
+	fi
+}
 
-mkdir -p ~/.local/share
-ln -sf ~/dotfiles/icons                    ~/.local/share/
-ln -sf ~/dotfiles/fonts                    ~/.local/share/
-ln -sf ~/dotfiles/navi                     ~/.local/share/
-mkdir -p ~/.local/share/qutebrowser
-ln -sf ~/dotfiles/qutebrowser/greasemonkey ~/.local/share/qutebrowser/
-ln -sf ~/dotfiles/qutebrowser/userscripts  ~/.local/share/qutebrowser/
+for i in Xresources bash_profile bashrc fff inputrc profile screenrc screenrcunbind tmux.conf vim vimrc xbindkeysrc xinitrc zsh zshrc; do
+	link "$i" ".$i"
+done
+link mutt/muttrc              .muttrc
 
-mkdir -p ~/.xpra
-ln -sf ~/dotfiles/xpra.conf                ~/.xpra/
+for i in cleanup dunst herbstluftwm navi mpv neofetch pipewire; do
+	link "$i" .config/
+done
+link qutebrowser/config.py    .config/qutebrowser/
+link systemd                  .config/systemd/user
+
+link icons                    .local/share/
+link fonts                    .local/share/
+link navi                     .local/share/
+link qutebrowser/greasemonkey .local/share/qutebrowser/
+link qutebrowser/userscripts  .local/share/qutebrowser/
+
+link xpra                     .xpra
 
 sudo chown root:root ~/dotfiles/bin/power
 sudo chown root:root ~/dotfiles/systemd/power.service
@@ -65,7 +50,7 @@ git config --global pull.rebase true
 git config --global user.email "isaacelenbaas@gmail.com"
 git config --global user.name "IsaacElenbaas"
 
-~/dotfiles/terminfo
+~/dotfiles/terminal/terminfo
 
 sudo bash -c 'for i in /usr/lib/python3*/site-packages/qutebrowser; do
 	cd "$i" &>/dev/null
