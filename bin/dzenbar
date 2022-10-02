@@ -18,7 +18,7 @@ tagText() {
 		if [ "$i" = "${tags[$1]}" ]; then
 			text="$text^p(-$ts1;-$ts1)^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^p($h)^fg()"
 		else
-			text="$text^r(${ts2}x$ts2)^p($ts3_t;$ts3_t)^fg(black)^r(${ts3}x$ts3)^p(-$ts3_t;-$ts3_t)^p($h)^fg()"
+			text="$text^ca(1,herbstclient chain . focus_monitor $1 . use_index $i)^r(${ts2}x$ts2)^p($ts3_t;$ts3_t)^fg(black)^r(${ts3}x$ts3)^p(-$ts3_t;-$ts3_t)^p($h)^fg()^ca()"
 		fi
 	done
 	printf "$text^p(-$ts1;-$ts1)^p(_UNLOCK_X)"
@@ -103,6 +103,8 @@ exec 2>&3 3>&-
 	#{{{ available commands
 command -v pactl &>/dev/null && pactl=1 || pactl=0
 	#}}}
+
+[ $pactl -eq 1 ] && sink=$(pactl list sinks | tr -d "\n" | grep -o "Sink[[:space:]]*#[^#]*Built-in" | tr "\t" " " | cut -d "#" -f 2 | cut -d " " -f 1)
 #}}}
 
 #{{{ timers
@@ -165,9 +167,21 @@ while IFS= read -r line; do
 	#}}}
 
 	#{{{ volume
-		"volume")
+		"volume-down")
+			pactl set-sink-volume $sink -5%
+		;;&
+		"volume-up")
+			pactl set-sink-volume $sink +5%
+		;;&
+		"volume-switch")
+			sink="$({ pactl list sinks; pactl list sinks; } | grep -o "^Sink[[:space:]]*#[0-9]*" | grep -m 1 -A 1 "#$sink$")"
+			sink="${sink##*#}"
+		;;&
+		"volume"*)
 			if [ $pactl -eq 1 ]; then
-				dzvol="$(pactl get-sink-volume @DEFAULT_SINK@ | grep -o "[[:digit:]]*%" | head -n 1)"
+				dzvol="$(pactl list sinks | grep -o "^Sink[[:space:]]*#[0-9]*")"
+				dzvol="$(wc -l <<< "${dzvol%#$sink$'\n'*}")/$(wc -l <<< "$dzvol")"
+				dzvol="$dzvol $(pactl get-sink-volume $sink | grep -o "[[:digit:]]*%" | head -n 1)"
 			else
 				dzvol="$(amixer sget Master | grep -m 1 '][[:space:]]*\[on\]')"
 				dzvol="${dzvol%][[:space:]]*\[on\]}"
@@ -206,9 +220,9 @@ while IFS= read -r line; do
 	esac
 	[ $update -ne 0 ] || continue
 	[ $update = 2 ] && monitor=0 || monitor="${monitor:-$primary}"
-	while [ $monitor -lt $m ]; do
+	while [ ${monitor:=0} -lt $m ]; do
 		printf "%s" "${tagTexts[$monitor]}${minClients[$monitor]}" >&"${monProcs[$monitor]}"
-		if [ $monitor = $primary ]; then
+		if [ $monitor = ${primary:-1} ]; then
 			printf "%s" "^pa(0;0)^ba($primaryW,_RIGHT)$div$dzsong$div$dzupdates update$updateplural$div$dzstatus$div$dzvol$div$dzdate$div" >&"${monProcs[$primary]}"
 		fi
 		printf "\n" >&"${monProcs[$monitor]}"

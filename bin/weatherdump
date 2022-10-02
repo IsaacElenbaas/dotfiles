@@ -1,0 +1,19 @@
+#!/bin/bash
+
+{
+	IFS= read -r success
+	[ "$success" = "success" ] || { rm -f "/tmp/$USER-weather-dump"; exit 1; }
+	IFS= read -r lat
+	IFS= read -r lon
+} < <(curl -s "http://ip-api.com/line/?fields=status,lat,lon"; printf "fail\n")
+url="https://api.openweathermap.org/data/3.0/onecall
+	?lat=$lat
+	&lon=$lon
+	&lang=en
+	&units=imperial
+	&exclude=minutely
+	&appid=$(gpg -dq ~/.gnupg/weatherkey.gpg)
+"
+# sometimes sends null bytes at the end instead of a newline?
+# no newlines anyway so delete possible last one and readd
+curl -s "${url//[$'\n\t']/}" | tr -d "\0" | { tr -d "\n"; printf "\n"; } > "/tmp/$USER-weather-dump" || { rm -f "/tmp/$USER-weather-dump"; exit 1; }

@@ -1,0 +1,292 @@
+#!/bin/python3
+
+# TODO: option to show tomorrow's weather, swap datetime.now()s for next morning, increment daily/hourly where needed
+# TODO: maybe just do normal scrolling but jump to tomorrow
+import os
+import sys
+import subprocess
+import array, fcntl, termios
+import json
+from datetime import datetime
+import math
+
+#{{{ init
+try:
+	with open("/tmp/%s-weather-dump" % os.getlogin(), "r") as weather_dump:
+		weather = json.load(weather_dump)
+except FileNotFoundError:
+	exit(1)
+current = weather["current"]
+daily   = weather["daily"]
+hourly  = weather["hourly"]
+now = datetime.now()
+try:
+	cols, rows = os.get_terminal_size()
+except OSError:
+	try:
+		cols, rows = [int(os.environ["COLUMNS"]), int(os.environ["LINES"])]
+	except KeyError:
+		exit(1)
+subprocess.Popen(["clear"])
+#}}}
+
+def sign(n):
+	return 0 if n == 0 else math.copysign(1, n)
+
+#{{{ interpolate(progress, a, b, c, d)
+def interpolate(progress, a, b, c, d):
+	d1 = 0 if sign(b-a) != sign(c-b) else (c-a)/2
+	d2 = 0 if sign(c-b) != sign(d-c) else (d-b)/2
+	# height accounted for by transitioning between derivatives
+	#dx= v_0*t+1/2*a      *t^2
+	h1 = d1 *1+1/2*(d2-d1)*pow(1, 2)
+	# height not accounted for
+	h2 = c-b-h1
+	# don't use acceleration to make up for h2 because it must overshoot
+	if d2 == 0 and d1 != 0:
+		return b \
+		      +progress*d1 \
+		      +1/2*(d2-d1)*pow(progress, 2) \
+		      +progress*h2
+	# dx = v_0       *t  +1/2*a      *t^2
+	# h2 =                1/2*a      *0.5^2
+	#     +(d1+a*0.5)*0.5-1/2*a      *0.5^2
+	# solve for a
+	a1 = 4*h2-2*d1
+	return b \
+	      +progress*d1 \
+	      +1/2*(d2-d1)*pow(progress, 2) \
+	      +1/2*a1*pow(min(0.5, progress), 2) \
+	      +(d1+a1*0.5)*max(0, progress-0.5)-1/2*a1*pow(max(0, progress-0.5), 2)
+#}}}
+
+min_show = 6 # minimum number of hours to show, will roll over to next "key time" and overshoot (except for possibly in the hours before midnight) when under it
+height = round(2/3*rows)
+
+#dr=dl=ul=ur=h=v="."
+
+#dr="\u256D"
+#dl="\u256E"
+#ul="\u256F"
+#ur="\u2570"
+#h="\u2500"
+#v="\u2502"
+
+dr="\u250F"
+dl="\u2513"
+ul="\u251B"
+ur="\u2517"
+h="\u2501"
+v="\u2503"
+
+sunrises_hours = list(map(lambda i: i.days*24+i.seconds/60/60, map(lambda i: datetime.fromtimestamp(i["sunrise"])-now, daily)))
+sunsets_hours  = list(map(lambda i: i.days*24+i.seconds/60/60, map(lambda i: datetime.fromtimestamp(i["sunset"] )-now, daily)))
+
+#{{{ graph
+if "-p" in sys.argv[1:]:
+
+	#{{{ pick relevant amount of time to show
+	# sunrises are only used in calculations, not anchoring, but sunsets are
+	# remember sunrises/sets[0] flip to the next day at midnight
+	# we ignore twilight for anchoring
+	mid_day_hours = sunrises_hours[0]+(datetime.fromtimestamp(current["sunset"])-datetime.fromtimestamp(current["sunrise"])).seconds/60/60/2
+	if mid_day_hours < 0:
+		mid_day_hours = (datetime.fromtimestamp(daily[1]["sunrise"])-now).seconds/60/60+(datetime.fromtimestamp(daily[1]["sunset"])-datetime.fromtimestamp(daily[1]["sunrise"])).seconds/60/60/2
+	# gets lost at midnight because sunsets_hours[0] flips over and mid_day will always be used
+	mid_night_hours = sunsets_hours[0]+(datetime.fromtimestamp(daily[1]["sunrise"])-datetime.fromtimestamp(daily[0]["sunset"])).seconds/60/60/2
+	# ordered by what flips to the next day first
+	graph_time = mid_night_hours if sunsets_hours[0] < min_show else sunsets_hours[0] if mid_day_hours < min_show or mid_day_hours > sunsets_hours[0] else mid_day_hours
+	# position actual graph time between columns to always show sunrise/sunset marker
+	graph_time = graph_time*2/((cols-1)/cols+1)
+	#}}}
+
+else:
+	graph_time = 7*24
+# given 48 hours of data, index hour is now, average forward two hours, rain/snow are for the last hour so we look forward another
+graph_time = min(48-1-2-1, graph_time)
+
+#{{{ sunrise/set markers
+for i in range(cols):
+	x = now.minute/60+i*(graph_time-now.minute/60)/(cols-1)
+	last_x = x-(graph_time-now.minute/60)/(cols-1)
+	nearest_sunrise = sunrises_hours[min(range(len(sunrises_hours)), key=lambda i: abs((last_x+x)/2-sunrises_hours[i]))]
+	nearest_sunset  = sunsets_hours[ min(range(len(sunsets_hours)),  key=lambda i: abs((last_x+x)/2-sunsets_hours[i] ))]
+	if last_x < nearest_sunrise <= x or last_x < nearest_sunset <= x:
+		if last_x < nearest_sunrise <= x:
+			print("\033[38;5;220m", end="")
+		else:
+			print("\033[38;5;63m", end="")
+		print("\033[%d;%dH" % (rows, i), end="")
+		y = 0
+		while y <= height:
+			print("\033[D\033[A\u2575", end="")
+			y += 1
+		print("\033[0m", end="")
+#}}}
+
+labels = (height+1)*[""]
+
+	#{{{ def graph(component, center, min_fluctuation, color)
+end = math.floor(now.minute/60+graph_time)
+def graph(component, center, min_fluctuation, color, label):
+
+		#{{{ get and constrain data
+	# adding because we need to get the two hours after the end to average it
+	data = [component(i) for i in range(end+2+1)]
+	data_real_min, data_real_max = [min(data), max(data)]
+	data_min, data_max = [data_real_min, data_real_max]
+	if (data_max-data_min)/2 < min_fluctuation:
+		data_min, data_max = [
+			min(data_min, center-min_fluctuation+max(0, data_max-(center+min_fluctuation))),
+			max(data_max, center+min_fluctuation+min(0, data_min-(center-min_fluctuation)))
+		]
+		#}}}
+
+		#{{{ store label data
+	if label:
+		min_labels = max(2 if height < 20 else 3, math.ceil(height/15))
+		max_labels = math.floor(height/7)
+		if True or ((5-data_min%5)+data_max%5)/(data_max-data_min) <= 0.2:
+			if False and min_labels <= ((data_max-data_max%5)-(data_min+(5-data_min%5)))/10 <= max_labels:
+				pass
+			else:
+				for y in range(int(data_min+(5-data_min%5)), int(data_max-data_max%5+5), 5):
+					i = round(height*(y-data_min)/(data_max-data_min))
+					labels[i] = color(y) + (" %2d" % int(y)) + labels[i]
+		else:
+			pass
+		#}}}
+
+	def get_y(x):
+		return interpolate(x%1, data[max(0, math.floor(x)-1)], data[math.floor(x)], data[math.ceil(x)], data[math.ceil(x)+1])
+
+		#{{{ draw
+	last_color = ""
+	for i in range(cols):
+		x = now.minute/60+i*(graph_time-now.minute/60)/(cols-1)
+		y = get_y(x)
+		cur_color = color(y)
+		y = rows-1-height*((y-data_min)/(data_max-data_min))
+		print("\033[%d;%dH" % (round(y), i), end="")
+		if cur_color != last_color:
+			print(cur_color, end="")
+		next_x = x+(graph_time-now.minute/60)/(cols-1)
+		next_y = rows-1-height*((get_y(next_x)-data_min)/(data_max-data_min)) if next_x < end+1 else y
+		d = -(round(next_y)-round(y))
+		if d == 0:
+			print(h, end="")
+		elif d > 0:
+			print(ul + "\033[D\033[A", end="")
+			d -= 1
+			while d > 0:
+				print(v + "\033[D\033[A", end="")
+				d -= 1
+			print(dr, end="")
+		elif d < 0:
+			print(dl + "\033[D\033[B", end="")
+			d += 1
+			while d < 0:
+				print(v + "\033[D\033[B", end="")
+				d += 1
+			print(ur, end="")
+		print("\033[0m", end="")
+		#}}}
+	#}}}
+
+	#{{{ graph layers
+graph(lambda i: hourly[i]["humidity"], 50, 50, lambda h: "\033[38;5;68m", False)
+graph(lambda i: hourly[i]["wind_speed"], 6, 4, lambda t: "\033[38;5;255m", True)
+graph(lambda i: hourly[i]["clouds"], 50, 50, lambda c: "\033[38;5;231m\033[48;5;188m", False)
+graph(lambda i: hourly[i+1].get("rain", {"1h":0})["1h"]+hourly[i+1].get("snow", {"1h":0})["1h"], 0.5, 0.5, lambda p: "\033[38;5;81m", False) # TODO: in mm, not percentage
+color_temp = lambda t: "\033[38;5;%sm" % (
+	"111" if t <= 15 else #   <15
+	"147" if t <= 32 else # 15-32
+	"183" if t <= 40 else # 32-40
+	"217" if t <= 50 else # 40-50
+	"223" if t <= 65 else # 50-65
+	"220" if t <= 75 else # 65-75
+	"214" if t <= 80 else # 75-80
+	"202" if t <= 85 else # 80-85
+	"196"                #>85
+)
+#graph(lambda i: hourly[i]["feels_like"], 70, 10, color_temp)
+graph(lambda i: hourly[i]["temp"], 70, 10, color_temp, True)
+	#}}}
+
+	#{{{ labels
+for i in range(len(labels)):
+	if labels[i] != "":
+		print(("\033[%d;0H" % (rows-1-i)) + labels[i], end="")
+print("\033[0m", end="")
+	#}}}
+
+	#{{{ hour markers
+for i in range(cols):
+	x = now.minute/60+i*(graph_time-now.minute/60)/(cols-1)
+	last_x = x-(graph_time-now.minute/60)/(cols-1)
+	if last_x%1 > x%1:
+		print("\033[" + str(rows) + ";" + str(i) + "H", end="")
+		print(str((now.hour+math.floor(x)-1)%12+1), end="")
+	#}}}
+
+print("\033[0;0H", end="")
+#}}}
+
+print(now.strftime("%I:%M %p"), end="")
+print(" - ", end="")
+
+# \r prints are necessary when resizing terminal for some reason
+
+#{{{ line 1 - description, min/max, temp and feels like
+print(daily[0]["weather"][0]["description"].capitalize(), end="")
+print(" ", end="")
+print(str(round(daily[0]["temp"]["min"])) + "/" + str(round(daily[0]["temp"]["max"])), end="")
+print(", ", end="")
+print(round(interpolate(now.minute/60, hourly[0]["temp"], hourly[0]["temp"], hourly[1]["temp"], hourly[2]["temp"])), end="")
+print(" feels like ", end="")
+print(round(interpolate(now.minute/60, hourly[0]["feels_like"], hourly[0]["feels_like"], hourly[1]["feels_like"], hourly[2]["feels_like"])), end="")
+print("\r")
+#}}}
+
+#{{{ line 2 - wind and humidity
+	#{{{ wind
+		#{{{ wind direction
+if    360-45/2 < current["wind_deg"] or current["wind_deg"] <= 45/2: print("\u2193", end="") # south
+elif      45/2 < current["wind_deg"] <=   45+45/2: print("\u2199", end="") # southwest
+elif   45+45/2 < current["wind_deg"] <= 2*45+45/2: print("\u2190", end="") # west
+elif 2*45+45/2 < current["wind_deg"] <= 3*45+45/2: print("\u2196", end="") # northwest
+elif 3*45+45/2 < current["wind_deg"] <= 4*45+45/2: print("\u2191", end="") # north
+elif 4*45+45/2 < current["wind_deg"] <= 5*45+45/2: print("\u2197", end="") # northeast
+elif 5*45+45/2 < current["wind_deg"] <= 6*45+45/2: print("\u2192", end="") # east
+elif 6*45+45/2 < current["wind_deg"] <= 7*45+45/2: print("\u2198", end="") # southeast
+		#}}} print(" ", end="")
+
+print(" ", end="")
+print(round(current["wind_speed"], 1), end="")
+print("mph", end="")
+	#}}}
+
+print(", ", end="")
+
+	#{{{ humidity
+humidity = interpolate(now.minute/60, hourly[0]["humidity"], hourly[0]["humidity"], hourly[1]["humidity"], hourly[2]["humidity"])
+print(("+" + str(round(100*(humidity-45)/(100-45)))) if humidity > 45 else ("-" + str(round(100*(45-humidity)/45))), end="")
+print("% humidity", end="")
+	#}}}
+
+print("\r")
+#}}}
+
+#{{{ optional line 3 - hours of dew
+dew = 0
+for i in range(math.ceil((datetime.fromtimestamp(daily[1]["sunrise"])-now).seconds/60/60)):
+	if hourly[i]["temp"] < hourly[i]["dew_point"]:
+		dew += 1
+if dew != 0:
+	print(str(dew) + " hour" + ("s" if dew != 1 else "") + " of dew", end="")
+	print("\r")
+#}}}
+
+# TODO: rain, snow - sometimes available under (current,hourly).(rain,snow).1h - note are for *last* hour
+# TODO: horizontal scrolling if no -p
+sys.stdout.close()

@@ -23,10 +23,12 @@
 	b:9 + Release
 "herbstclient use_index +$(herbstclient get_attr monitors.count)"
 	b:8 + Release
-"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click 5 || { pactl set-sink-volume @DEFAULT_SINK@ -5%; herbstclient emit_hook volume; }"
+"herbstclient emit_hook volume-down"
 	m:0x0 + c:122
-"[ "$(herbstclient get_attr clients.focus.class)" == "mpv" ] && xdotool click 4 || { pactl set-sink-volume @DEFAULT_SINK@ +5%; herbstclient emit_hook volume; }"
+"herbstclient emit_hook volume-up"
 	m:0x0 + c:123
+"herbstclient emit_hook volume-switch"
+	m:0x0 + c:69 + Release
 "ffcast -s png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x40 + c:33 + Release
 "ffcast -# $(xdotool getactivewindow) png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
@@ -42,31 +44,36 @@
 "/home/$USER/dotfiles/bin/previous"
 	m:0x0 + c:173 + Release
 
-#{{{ hue lights
-"hue 1"
+"xset dpms force off"
 	m:0x0 + c:67 + Release
-"hue 15"
+"xset dpms force off; slock"
 	m:0x0 + c:68 + Release
-"hue 32"
-	m:0x0 + c:69 + Release
-"hue 55"
-	m:0x0 + c:70 + Release
-"hue 80"
-	m:0x0 + c:71 + Release
-"hue 111"
-	m:0x0 + c:72 + Release
-"hue 144"
-	m:0x0 + c:73 + Release
-"hue 174"
-	m:0x0 + c:74 + Release
-"hue 200"
-	m:0x0 + c:75 + Release
-"hue 222"
-	m:0x0 + c:76 + Release
-"hue 240"
-	m:0x0 + c:95 + Release
-"hue 255"
-	m:0x0 + c:96 + Release
+
+#{{{ hue lights
+#"hue 1"
+#	m:0x0 + c:67 + Release
+#"hue 15"
+#	m:0x0 + c:68 + Release
+#"hue 32"
+#	m:0x0 + c:69 + Release
+#"hue 55"
+#	m:0x0 + c:70 + Release
+#"hue 80"
+#	m:0x0 + c:71 + Release
+#"hue 111"
+#	m:0x0 + c:72 + Release
+#"hue 144"
+#	m:0x0 + c:73 + Release
+#"hue 174"
+#	m:0x0 + c:74 + Release
+#"hue 200"
+#	m:0x0 + c:75 + Release
+#"hue 222"
+#	m:0x0 + c:76 + Release
+#"hue 240"
+#	m:0x0 + c:95 + Release
+#"hue 255"
+#	m:0x0 + c:96 + Release
 #}}}
 
 #"[ "$(herbstclient get_attr monitors.count)" = "2" ] && monitorsoff || monitorson"

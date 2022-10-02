@@ -1,0 +1,6 @@
+[Unit]
+Description=Starts xsuspender
+
+[Service]
+ExecStart=xsuspender
+KillMode=process

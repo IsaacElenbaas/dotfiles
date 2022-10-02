@@ -1,0 +1,6 @@
+[Unit]
+Description=Dump local weather data to /tmp
+
+[Service]
+ExecStart=%h/dotfiles/bin/weatherdump
+Type=oneshot
