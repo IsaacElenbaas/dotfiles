@@ -51,24 +51,4 @@ git config --global user.email "isaacelenbaas@gmail.com"
 git config --global user.name "IsaacElenbaas"
 
 ~/dotfiles/terminal/terminfo
-
-sudo bash -c 'for i in /usr/lib/python3*/site-packages/qutebrowser; do
-	cd "$i" &>/dev/null
-	{ [ -d "./.git" ] && [ "$(git status -s | wc -l)" = 0 ]; } && exit
-	rm -rf .git
-	git init &>/dev/null
-	git checkout -b hint_escape_bind_fixes
-	git add -A &>/dev/null
-	git config user.email "isaacelenbaas@gmail.com"
-	git config user.name "IsaacElenbaas"
-	git commit -m "base" --no-gpg-sign &>/dev/null
-	git remote add upstream https://github.com/qutebrowser/qutebrowser.git &>/dev/null
-	git fetch upstream master pull/6821/head:pr/6821
-	git replace --graft "$(git log upstream/master..pr/6821 --reverse --format=format:%H | head -n 1)~1"
-	git checkout "$(git replace)" &>/dev/null
-	git switch -c pr/6821_trimmed &>/dev/null
-	git cherry-pick $(git log upstream/master..pr/6821 --reverse --format=format:%H) &>/dev/null
-	FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --subdirectory-filter qutebrowser &>/dev/null
-	git checkout hint_escape_bind_fixes &>/dev/null
-	git cherry-pick $(git log pr/6821_trimmed --reverse --format=format:%H | { IFS= read -r; cat; })
-done'
+sudo find ~/dotfiles/patches -type f -exec chown root:root {} + -exec {} \;

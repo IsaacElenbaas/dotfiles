@@ -10,8 +10,13 @@ if [ -d /etc/X11/xinit/xinitrc.d ]; then
 	unset f
 fi
 
-# restarting and not enabling because with my laptop I often restart X to turn on/off GPU
-# these ignore xpra and run on DISPLAY
+export QT_QPA_PLATFORMTHEME=gnome
+export QT_STYLE_OVERRIDE=kvantum
+export GTK_THEME=Arc-Dark # settings.ini isn't working
+systemctl --user import-environment QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE GTK_THEME
+
+# restarting here and not enabling because with my laptop I often restart X to turn on/off GPU
+# all systemd units ignore xpra and run on DISPLAY due to /etc/X11/xinit/xinitrc.d/50-systemd-user.sh called above
 [ -f "$HOME/.config/systemd/user/keyrepeat.service" ] && systemctl --user restart keyrepeat
 [ -f "$HOME/.config/systemd/user/mocp.service" ]      && systemctl --user restart mocp
 [ -f "$HOME/.config/systemd/user/unclutter.service" ] && systemctl --user restart unclutter

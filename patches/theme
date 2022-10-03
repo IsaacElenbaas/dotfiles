@@ -1,0 +1,28 @@
+#!/bin/bash
+
+pacman -T arc-gtk-theme kvantum-theme-arc &>/dev/null || exit 1
+mkdir -p ~/.config/Kvantum
+printf "theme=ArcDark\n" > ~/.config/Kvantum/kvantum.kvconfig
+
+swaps="\
+404552 232831
+2f343f 282e38
+353945 2e3440
+444a58 707880
+5294e2 0087d7
+1d99f3 81a1c1
+9b59b6 f0c674
+d3dae3 e5e9f0
+898d99 c5c8c6"
+swaps="${swaps// /\/\#}"
+swaps="${swaps//$'\n'/\/gI -e s/\#}"
+sudo find /usr/share/Kvantum/ArcDark -type f \( -name "*.kvconfig" -o -name "*.svg" \) -exec sed -is -e s/\#$swaps/g {} +
+pacman -Ql arc-gtk-theme | cut -d " " -f 2- | grep "Arc-Dark/" | grep -e ".css$" -e ".svg$" | sudo xargs sed -is -e s/\#$swaps/g
+pacman -Ql arc-gtk-theme | cut -d " " -f 2- | grep "Arc-Dark/" | grep ".css$" | while IFS= read -r style; do
+	[ $(head -n 2 "$style" | wc -l) -eq 1 ] || continue
+	link="$(cat "$style")"
+	[[ "$link" =~ ^@import\ url\([\"\']resource://[^\"\']*[\"\']\)\;$ ]] || continue
+	link="${link#*resource://}"
+	link="${link%?);}"
+	gresource extract "${style%/*}/gtk.gresource" "$link" | sed -e s/\#$swaps/g | sudo tee "$style" > /dev/null
+done
