@@ -189,10 +189,10 @@ preexec() {
 	printf "%s\n" "$1"
 		#}}}
 
-	local start="${1#${1%%[![:space:]]*}}"
+	local start="${1#${1%%[^[:space:]]*}}"
 	start="${start%%[[:space:]]*}"
 	local end="${1##*|}"
-	end="${end#${end%%[![:space:]]*}}"
+	end="${end#${end%%[^[:space:]]*}}"
 	end="${end%%[[:space:]]*}"
 	# TODO: expand aliases if sudo?
 	# maybe better in a function called sudo
@@ -242,10 +242,10 @@ chpwd() {
 
 	#{{{ zshaddhistory
 zshaddhistory() {
-	[ -n "${1%%[![:space:]]*}" ] && return 1
+	[ -n "${1%%[^[:space:]]*}" ] && return 1
 	[ -d "${@%$'\n'}" ] && return 1
 	local start="${1%$'\n'}"
-	start="${start#${start%%[![:space:]]*}}"
+	start="${start#${start%%[^[:space:]]*}}"
 	start="${start%%[[:space:]]*}"
 	[ -x "${start%[;&|]}" ] && return 1
 	case "${start%[;&|]}" in
@@ -356,17 +356,18 @@ bindkey "^[[1;2D" _tvt.tapi_feedkeys_s_Left
 		#}}}
 	#}}}
 
-#{{{ enter
+	#{{{ enter
 _enter() {
-	BUFFER="${BUFFER%${BUFFER##*[![:space:]]}}"
+	# assumed below
+	BUFFER="${BUFFER%${BUFFER##*[^[:space:]]}}"
 
 		#{{{ navi
-	local start="${BUFFER%%[![:space:]]*}"
-	BUFFER="${BUFFER#${BUFFER%%[![:space:]]*}} "
+	local start="${BUFFER%%[^[:space:]]*}"
+	BUFFER="${BUFFER#${BUFFER%%[^[:space:]]*}} "
 	if [ "${BUFFER%%[[:space:]]*}" = "n" ] || [ "${BUFFER%%[[:space:]]*}" = "navi" ]; then
 		navi="$(navi --print)"
 		if [ -z "${navi%$'\n'}" ]; then
-			[ -z "${BUFFER#*[[:space:]]}" ] && BUFFER="" || BUFFER="$start${BUFFER:0:-1}"
+			[ -z "${BUFFER#*[[:space:]]}" ] && BUFFER="" || BUFFER="$start${BUFFER%[[:space:]]}"
 			return
 		fi
 		[ -z "${BUFFER#*[[:space:]]}" ] && start=" "
@@ -376,35 +377,49 @@ _enter() {
 		zle accept-line
 		return
 	fi
-	BUFFER="$start${BUFFER:0:-1}"
+	BUFFER="$start${BUFFER%[[:space:]]}"
 		#}}}
 
 		#{{{ prompt to expand currently typing path on enter
-	local checkpath=$LBUFFER
-	[[ "$RBUFFER" =~ ^([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])* ]] && checkpath="$checkpath$MATCH"
-	if [[ "$checkpath" =~ ([^[:space:]\/\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*\/([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]; then
-		[[ -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/((^|[^\\])(\\\\)*)\\~/\1~/' | sed -E 's/((^|[^\\])(\\\\)*)\\{3}\(/\1\\(/g' | sed -E 's/((^|[^\\])(\\\\)*)\\{3}\)/\1\\)/g')) ]] && { zle accept-line; return; }
-		OLDBUF=$BUFFER
-		zle complete-word _files
+	local OLDBUF="$BUFFER"
+	local PASTBUFS="$BUFFER"
+	zle complete-word _files
+	# prevent completing to the single content of a fully-typed folder (unless intended) or completing a command (small aliases trigger this a lot)
+	# slash removal (from EXISTS) is important for -n check but folder check will prevent it if it gets past this check because a slash would have been added by the above complete-word
+	local EXISTS="${OLDBUF#"${LBUFFER%/*}/"}"
+	if [ -n "$OLDBUF" ] && { [ "$EXISTS" = "$OLDBUF" ] || [ -n "${EXISTS%"$RBUFFER"}" ]; } && ! command -v "${OLDBUF#${OLDBUF%%[^[:space:]]*}}" &>/dev/null; then
+		LBUFFER="${LBUFFER%[[:space:]]}"
+		local folder="${LBUFFER: -1}"
 		# select first if multiple matches
-		while [[ "${LBUFFER%${LBUFFER##*[![:space:]]}}" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]] && [[ ! -a $(eval printf $(printf '%q' "$MATCH" | sed -E 's/((^|[^\\])(\\\\)*)\\{3} /\1\\ /g' | sed -E 's/^\\~/~/')) ]]; do
+		while true; do
+			[ "$folder" != "/" ] || [ "${LBUFFER: -1}" = "/" ] || { BUFFER="${PASTBUFS##*$'\n'}"; break; }
+			PASTBUFS="$PASTBUFS$BUFFER"
 			zle complete-word _files
-			[ "$BUFFER" = "$LASTBUF" ] && break || LASTBUF=$BUFFER
+			# select first if multiple matches, next complete will do next level down as first level was filled in
+			# e.g. dotfiles and Downloads each have a folder starting with a b and expanding do/b
+			# without a set of some BUFFER variable it would bounce between dotfiles/b and Downloads/b and never complete the b, leading to expansion of dotfiles/b by this
+			# using the opportunity to trim trailing space which gets added if only result and causes inconsistenties
+			LBUFFER="${LBUFFER%[[:space:]]}"
+			[ "${PASTBUFS#*"$BUFFER"}" != "$PASTBUFS" ] && break
 		done
-		if [ "$BUFFER" != "$OLDBUF" ]; then
+		if [ "$BUFFER" != "$OLDBUF" ] && [ "${LBUFFER%/}$RBUFFER" != "$OLDBUF" ]; then
 			# save expansion
-			[[ "${LBUFFER%${LBUFFER##*[![:space:]]}}" =~ ([^[:space:]\\\;\$\`\&\|\<\>\!\'\"]|\\\\[^\\])*$ ]]
-			printf "\nzsh: expand to '$MATCH' [nye]? "
+			[[ "$LBUFFER" =~ (\\\\[^\\]|[^[:space:]\\\;\$\`\&\|\<\>\!\'\"])*$ ]]
+			printf "\nzsh: expand to %s [nye]? " "$MATCH"
 			while true; do
-				read -rs -k 1 key || { BUFFER=$OLDBUF; break; }
+				read -rs -k 1 key || { BUFFER="$OLDBUF"; break; }
 				# remove garbage from arrows and such
 				read -rs -k 99 -t 0.05 key2
-				[[ "$key" == "y" || "$key" == $'\n' || "$key" == "" ]] && break
-				[ "$key" = "n" ] && { BUFFER=$OLDBUF; break; }
-				[ "$key" = "e" ] && { BUFFER=$OLDBUF; printf "\033[$(wc -l <<< \"$PROMPT\")A"; zle reset-prompt; return; }
-				printf "\r\033[Kzsh: expand to '$MATCH' [nye]? "
+				[ -z "${key#[y$'\n\r']}" ] && break
+				[ "$key" = "n" ] && { BUFFER="$OLDBUF"; break; }
+				# redisplay is not always but sometimes necessary, cursor stays at beginning otherwise
+				# moving BUFFER set after printf doesn't help
+				[ "$key" = "e" ] && { BUFFER="$OLDBUF"; printf "\r\033[K\033[A"; zle redisplay; return; }
+				printf "\r\033[Kzsh: expand to %s [nye]? " "$MATCH"
 			done
 		fi
+	else
+		BUFFER="$OLDBUF"
 	fi
 		#}}}
 
@@ -412,7 +427,7 @@ _enter() {
 }
 zle -N _enter
 bindkey "^M" _enter
-#}}}
+	#}}}
 
 	#{{{ autocommands
 		#{{{ autocommand-eval

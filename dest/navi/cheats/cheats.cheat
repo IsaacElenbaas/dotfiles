@@ -144,9 +144,6 @@ sudo pacman -U <pkg_file>
 
 # Display tree
 herbstclient stack
-
-# Fix monitor
-herbstclient use_index +1
 ;	#}}}
 ;#}}}
 

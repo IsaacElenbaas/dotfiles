@@ -19,9 +19,9 @@
 # The release modifier ( + Release) is not a standard X modifier, but you can
 # use it if you want to catch release events instead of press events
 
-"herbstclient use_index -$(herbstclient get_attr monitors.count)"
+"m=$(herbstclient get_attr monitors.count); p=$(herbstclient get_attr my_p);                                                     herbstclient or , and . compare tags.focus.index gt $(($p+$m-1))      . use_index -$m , use_index -$(($p+$m))"
 	b:9 + Release
-"herbstclient use_index +$(herbstclient get_attr monitors.count)"
+"m=$(herbstclient get_attr monitors.count); p=$(herbstclient get_attr my_p); t=$((($(herbstclient get_attr tags.count)-$p)/$m)); herbstclient or , and . compare tags.focus.index lt $(($p+($t-1)*$m)) . use_index +$m , use_index +$(($p+$m))"
 	b:8 + Release
 "herbstclient emit_hook volume-down"
 	m:0x0 + c:122
@@ -33,9 +33,9 @@
 	m:0x40 + c:33 + Release
 "ffcast -# $(xdotool getactivewindow) png ~/scrot/scrot_$(printf '%(%Y-%m-%d)T')-$((($(printf '%(%s)T')%86400)))_%wx%h.png"
 	m:0x41 + c:33
-"systemctl is-active --user --quiet xpra-server && export DISPLAY=":10"; qutebrowser &"
+"systemctl is-active --user --quiet xpra-server && export DISPLAY=':10'; qutebrowser &"
 	m:0x44 + c:57 + Release
-"systemctl is-active --user --quiet xpra-server && export DISPLAY=":10"; qutebrowser ":open -p" &"
+"systemctl is-active --user --quiet xpra-server && export DISPLAY=':10'; qutebrowser ':open -p' &"
 	m:0x45 + c:57
 "/home/$USER/dotfiles/bin/pause"
 	m:0x0 + c:172

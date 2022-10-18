@@ -34,14 +34,16 @@ case "$(md5sum /etc/machine-id | cut -d " " -f 1)" in
 		[ ! -f /sys/bus/pci/devices/0000:01:00.3/remove ] || tee /sys/bus/pci/devices/0000:01:00.3/remove <<< 1 > /dev/null
 		# Disable interrupt which may or may not be a problem
 		[ $(cat /sys/firmware/acpi/interrupts/gpe43 | grep "masked" | wc -l) -ge 1 ] || tee /sys/firmware/acpi/interrupts/gpe43 <<< "mask" > /dev/null
-		# Disable Ethernet port - DO NOT ENABLE! Prevents package sleep states
-		#[ -f /sys/bus/pci/devices/0000:00:1d.5/remove ] && tee /sys/bus/pci/devices/0000:00:1d.5/remove <<< 1 > /dev/null
 
 		# Not applied from configuration for some reason
 		cpupower set -b 15
 
-		# GPU OC
-		modprobe --dry-run --first-time nvidia &>/dev/null && { printf "No GPU, skipping OC\n" >&2; exit; }
+		modprobe --dry-run --first-time nvidia &>/dev/null && {
+			printf "No GPU, disabling ethernet and skipping OC\n" >&2
+			# Disable Ethernet port - DO NOT ENABLE! Prevents package sleep states
+			[ -f /sys/bus/pci/devices/0000:00:1d.5/remove ] && tee /sys/bus/pci/devices/0000:00:1d.5/remove <<< 1 > /dev/null
+			exit
+		}
 		nvidia-smi -i 0 -lgc 300,1850
 		# Only 2-light gaming mode
 		# 200 is very doable but has crashed before

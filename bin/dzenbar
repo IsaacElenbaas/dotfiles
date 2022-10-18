@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export h="$1"
+h="$1"
 div=" ‖ "
 
 #{{{ functions
@@ -13,15 +13,25 @@ ts3=$(($ts2-2*$ts3_t))
 		#}}}
 
 tagText() {
-	local text="^p(_LOCK_X)^p($ts1;$ts1)^ib(1)"
-	for (( i=$1; i<$t; i=($i+$m) )); do
+	local text="^p(_LOCK_X)^ib(1)"
+	for (( i=$p+$1; i<$t; i=$i+$m )); do
 		if [ "$i" = "${tags[$1]}" ]; then
-			text="$text^p(-$ts1;-$ts1)^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^p($h)^fg()"
+			text="$text^r(${h}x$h)^p($ts1;$ts1)^fg(black)^r(${ts2}x$ts2)^fg()^p(-$ts1;-$ts1)"
+			text="$text^p($h)"
 		else
-			text="$text^ca(1,herbstclient chain . focus_monitor $1 . use_index $i)^r(${ts2}x$ts2)^p($ts3_t;$ts3_t)^fg(black)^r(${ts3}x$ts3)^p(-$ts3_t;-$ts3_t)^p($h)^fg()^ca()"
+			text="$text^p($ts1;$ts1)^r(${ts2}x$ts2)^p($ts3_t;$ts3_t)^fg(black)^r(${ts3}x$ts3)^fg()^p(-$ts3_t;-$ts3_t)^p(-$ts1;-$ts1)"
+			text="$text^ca(1,herbstclient chain . focus_monitor $1 . use_index $i)^p($h)^ca()"
 		fi
 	done
-	printf "$text^p(-$ts1;-$ts1)^p(_UNLOCK_X)"
+	if [ $(herbstclient get_attr monitors.$1.tag) -eq 0 ]; then
+		text="$text^r(${h}x$h)^p($ts1)^fg(black)Ω^fg()^p(-$ts1)"
+	else
+		text="$text^p($ts1)Ω^p(-$ts1)"
+	fi
+	# had these two as separate clickable areas in the above if but it looks like dzen doesn't clear them until it runs out of space in the array?
+	# would override once but then never go back to the original action
+	text="$text^ca(1,herbstclient chain . focus_monitor $1 . and : compare tags.0.client_count = 0 : spawn qpwgraph . or : and / compare monitors.$1.tag = 0 / use_previous : use_index 0)^p($h)^ca()"
+	printf "%s" "$text^p(_UNLOCK_X)"
 }
 	#}}}
 
@@ -64,8 +74,9 @@ updateMinClients() {
 #}}}
 
 #{{{ setup
-export m=$(herbstclient get_attr monitors.count)
+m=$(herbstclient get_attr monitors.count)
 t=$(herbstclient get_attr tags.count)
+p=$(($t%$m))
 primary="$(xrandr --query | grep "connected[[:space:]]primary[[:space:]][[:digit:]]" || xrandr --query | grep "[[:space:]]connected[[:space:]][[:digit:]]")"
 # just in case
 primary="${primary#*[[:space:]]}"
@@ -90,7 +101,8 @@ for (( i=0; i<$m; i++ )); do
 		read -d "+" x
 		read -d "+" x
 		read y
-		cat -u | dzen2 -fn "DejaVu" -ta l -e '' -p -x $x -y $y -w $w -h $h
+		# xfd -fa "DejaVu"
+		cat -u | dzen2 -fn "DejaVu" -ta l -e '' -x $x -y $y -w $w -h $h
 	}
 	herbstclient get_attr monitors.$i.geometry >&"${dzen2[1]}"
 	# this is illegal but works at the moment so. . .

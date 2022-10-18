@@ -35,6 +35,8 @@ else
 	[ -f "$HOME/.config/systemd/user/steam.service" ]         && systemctl --user restart --no-block steam
 	[ -f "$HOME/.config/systemd/user/vnc.service" ]           && systemctl --user restart vnc
 	xset s off -dpms
+	qpwgraph &>/dev/null &
+	easyeffects &>/dev/null &
 fi
 if [ -d /sys/class/power_supply/BAT0 ]; then
 	{ printf "power off\nexit\n" | bluetoothctl; } &

@@ -17,7 +17,7 @@ for i in Xresources bash_profile bashrc fff inputrc profile screenrc screenrcunb
 done
 link mutt/muttrc              .muttrc
 
-for i in cleanup dunst herbstluftwm navi mpv neofetch pipewire; do
+for i in cleanup dunst herbstluftwm navi mpv neofetch pipewire xsuspender.conf; do
 	link "$i" .config/
 done
 link qutebrowser/config.py    .config/qutebrowser/

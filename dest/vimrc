@@ -523,7 +523,7 @@ filetype indent off
 
 	"{{{ commands
 cnoremap w!! w !sudo tee > /dev/null %
-command D execute "w !git diff --no-index --color=always -- % - | less -R" | execute "silent! !stty sane" | redraw!
+command D execute "w !git diff --no-index --color=always -- " . resolve(expand("%:p")) . " - | less -R" | execute "silent! !stty sane" | redraw!
 command M silent make<bar>call feedkeys("\<lt>CR>", "nx")
 set wildcharm=<C-z>
 cnoremap <expr> <Tab>   (getcmdtype() =~ "[?/]") ? "<c-g>" : "<c-z>"

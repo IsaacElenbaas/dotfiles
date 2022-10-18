@@ -2,4 +2,4 @@
 Description=Applies keyrepeat settings
 
 [Service]
-ExecStart=bash -c 'while %h/dotfiles/bin/keyrepeat; inotifywait -q -e create -e delete /dev/input; do sleep 1; done'
+ExecStart=bash -c '{ printf "\n"; inotifywait -qm -e create -e delete /dev/input; } | while IFS= read -r line; do timeout 1 cat; %h/dotfiles/bin/keyrepeat; sleep 4; %h/dotfiles/bin/keyrepeat; done'
