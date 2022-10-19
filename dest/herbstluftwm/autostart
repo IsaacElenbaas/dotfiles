@@ -1,6 +1,6 @@
 #!/bin/bash
 
-p=1 # prefixed tags, may be used on any monitor and should not be reachable by standard binds
+p=2 # prefixed tags, may be used on any monitor and should not be reachable by standard binds
 t=6
 
 #{{{ init
@@ -89,30 +89,33 @@ hc keybind $Mod-a spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; e
 hc keybind $Mod-d spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; [ \$(herbstclient get_attr tags.focus.curframe_wcount) -gt 0 ] && saveclose $h || herbstclient remove"
 
 	#{{{ launching commonly used
+preload() {
+	printf "%s" "chain , sprintf TAGARG tag=%s tags.focus.index apply_tmp_rule --all title~hlwm-[a-z]*[[:space:]]$1 TAGARG ,"
+}
+
 		#{{{ no vim terminal
 # if reactivating this remember to change shell in screenrc
 #hc keybind $Mod-Return spawn xterm -e "screen"
-#hc keybind $Mod-Control-Return spawn xterm -T "max" -e "screen"
+#hc keybind $Mod-Control-Return spawn xterm -T "hlwm-m" -e "screen"
 #hc keybind $Mod-Shift-Return spawn xterm -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
-#hc keybind $Mod-Control-Shift-Return spawn xterm -T "max" -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
+#hc keybind $Mod-Control-Shift-Return spawn xterm -T "hlwm-m" -e "screen bash -c 'f; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$(pwd)\"; exec zsh -l'"
 #hc keybind $Mod-Shift-v spawn xterm -e "screen bash -c 'vim; exec zsh -l'"
-#hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "screen bash -c 'vim; exec zsh -l'"
+#hc keybind $Mod-Control-Shift-v spawn xterm -T "hlwm-m" -e "screen bash -c 'vim; exec zsh -l'"
 		#}}}
 
 		#{{{ vim terminal
 # unfortunately can't put vim around screen because it can't go back more than one page (for obvious reasons)
-hc keybind $Mod-Return spawn xterm -e "screen shell"
-hc keybind $Mod-Control-Return spawn xterm -T "max" -e "shell"
-hc keybind $Mod-Shift-Return spawn xterm -e "screen shell -c 'fff; cd \"\$(cat '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d' 2>/dev/null; rm -f '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d')\"; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$PWD\"; exec zsh -l'"
-hc keybind $Mod-Control-Shift-Return spawn xterm -T "max" -e "fff"
-# sleep is so that Tapi_TVT_Paste print doesn't interfere with terminal color fixing
-hc keybind $Mod-Shift-v spawn xterm -e "screen shell -c 'sleep 0.1; vim; exec zsh -l'"
-hc keybind $Mod-Control-Shift-v spawn xterm -T "max" -e "vim"
+hc keybind $Mod-Return $(preload "term") spawn xterm -T "hlwm-p term" -e "screen shell"
+hc keybind $Mod-Control-Return $(preload "maxterm") spawn xterm -T "hlwm-mp maxterm" -e "shell"
+hc keybind $Mod-Shift-Return $(preload "fff") spawn xterm -T "hlwm-p fff" -e "screen shell -c 'fff; cd \"\$(cat '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d' 2>/dev/null; rm -f '${XDG_CACHE_HOME:-$HOME/.cache}/fff/.fff_d')\"; [ -n \"\$STY\" ] && screen -X -S \"\${STY%%.*}\" chdir \"\$PWD\"; exec zsh -l'"
+hc keybind $Mod-Control-Shift-Return $(preload "maxfff") spawn xterm -T "hlwm-mp maxfff" -e "fff"
+hc keybind $Mod-Shift-v $(preload "vim") spawn xterm -T "hlwm-p vim" -e "screen shell -c 'vim; exec zsh -l'"
+hc keybind $Mod-Control-Shift-v $(preload "maxvim") spawn xterm -T "hlwm-mp maxvim" -e "vim"
 		#}}}
 
 # this won't save layout but prevents breaking due to resize
-hc keybind $Mod-Control-m spawn xterm -T "max" -e "mocp -T ~/dotfiles/dest/mocp/theme -O \"Keymap=$HOME/dotfiles/dest/mocp/binds\""
-hc keybind $Mod-Control-Shift-m spawn xterm -T "max" -e "neomutt"
+hc keybind $Mod-Control-m spawn xterm -T "hlwm-m" -e "mocp -T ~/dotfiles/dest/mocp/theme -O \"Keymap=$HOME/dotfiles/dest/mocp/binds\""
+hc keybind $Mod-Control-Shift-m spawn xterm -T "hlwm-m" -e "neomutt"
 	#}}}
 
 	#{{{ navigation
@@ -304,20 +307,21 @@ hc set_attr theme.title_when multiple_tabs
 #}}}
 
 #{{{ prefixed tags
-hc rule class="qpwgraph"    tag=0
-hc rule class="easyeffects" tag=0
-herbstclient chain , use_index 0 , set_layout max , use_previous
+hc rule title~'hlwm-[a-z]*p.*' tag=0 hook="preloaded"
+hc rule class="qpwgraph"    tag=1
+hc rule class="easyeffects" tag=1
+herbstclient chain , use_index 1 , set_layout max , use_previous
 #}}}
 
 #{{{ rules
 hc rule focus=on ewmhrequests=off ewmhnotify=off fullscreen=off # normally focus new clients, don"t allow them to control their fullscreen or "needs attention" state, and don't tell them what's going on
-hc rule windowtype~"_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)" pseudotile=on
-hc rule windowtype~"_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)" manage=off
-hc rule class="discord" tag=2
-hc rule class="Steam"   tag=4
-hc rule title="Steam"   tag=4
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(DIALOG|UTILITY|SPLASH)' pseudotile=on
+hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
+hc rule class="discord" tag=3
+hc rule class="Steam"   tag=5
+hc rule title="Steam"   tag=5
 
-hc rule title="max" floating=true fullscreen=true
+hc rule title~'hlwm-[a-z]*m.*' floating=true fullscreen=true
 hc rule class="mpv" title="min" focus=off index="/"
 
 hc rule title="Origin" manage=off

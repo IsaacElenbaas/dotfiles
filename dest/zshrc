@@ -259,6 +259,18 @@ zshaddhistory() {
 	return 0;
 }
 	#}}}
+
+	#{{{ TRAPEXIT
+TRAPEXIT() {
+	local APPID="$PPID"
+	if [ $ZSH_SUBSHELL -eq 0 ] \
+	&& { [ $VIM_TERMINAL -eq -1 ] || [ "$(cat /proc/$APPID/comm)" = "vim" ]; } \
+	&& { [ -z "$STY" ] || [ $(screen -Q windows | grep -oF "$" | wc -l) -eq 1 ]; } \
+	; then
+		[ -n "$WINDOWID" ] && herbstclient apply_tmp_rule "$WINDOWID" tag=0
+	fi
+}
+	#}}}
 #}}}
 
 #{{{ keybinds

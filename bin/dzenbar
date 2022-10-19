@@ -23,14 +23,14 @@ tagText() {
 			text="$text^ca(1,herbstclient chain . focus_monitor $1 . use_index $i)^p($h)^ca()"
 		fi
 	done
-	if [ $(herbstclient get_attr monitors.$1.tag) -eq 0 ]; then
+	if [ $(herbstclient get_attr monitors.$1.tag) -eq 1 ]; then
 		text="$text^r(${h}x$h)^p($ts1)^fg(black)Ω^fg()^p(-$ts1)"
 	else
 		text="$text^p($ts1)Ω^p(-$ts1)"
 	fi
 	# had these two as separate clickable areas in the above if but it looks like dzen doesn't clear them until it runs out of space in the array?
 	# would override once but then never go back to the original action
-	text="$text^ca(1,herbstclient chain . focus_monitor $1 . and : compare tags.0.client_count = 0 : spawn qpwgraph . or : and / compare monitors.$1.tag = 0 / use_previous : use_index 0)^p($h)^ca()"
+	text="$text^ca(1,herbstclient chain . focus_monitor $1 . and : compare tags.1.client_count = 0 : spawn qpwgraph . or : and / compare monitors.$1.tag = 1 / use_previous : use_index 1)^p($h)^ca()"
 	printf "%s" "$text^p(_UNLOCK_X)"
 }
 	#}}}
@@ -133,6 +133,32 @@ while IFS= read -r line; do
 	update=0
 	monitor=
 	case "${line%${line##*[![:space:]]}}" in
+		"rule"*)
+			rule="${line#*[[:space:]]}"
+			rule="${rule#${rule%%[![:space:]]*}}"
+			if [ "${rule%%[[:space:]]*}" = "preloaded" ]; then
+				herbstclient chain \
+					, lock \
+					, foreach CLIENT clients. --unique \
+						sprintf CTAG "%c.tag" CLIENT substitute CTAG CTAG \
+						sprintf CTITLE "%c.title" CLIENT substitute CTITLE CTITLE \
+						and \
+							. compare tags.focus.index = CTAG \
+							. echo CLIENT CTITLE \
+					, use_index 0 , use_previous \
+				| while IFS= read -r client; do
+					client="${client#clients.}"
+					title="${client#*[[:space:]]}"
+					title="${title#${title%%[![:space:]]*}}"
+					client="${client%%[[:space:]]*}"
+					[[ "$title" =~ hlwm-[a-z]*p.* ]] && {
+						herbstclient jumpto "$client"
+						xdotool set_window --name "${title#*[[:space:]]}" "$client"
+					}
+				done
+				herbstclient unlock
+			fi
+		;;
 
 	#{{{ song
 		"song")
