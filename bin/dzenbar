@@ -117,6 +117,9 @@ command -v pactl &>/dev/null && pactl=1 || pactl=0
 	#}}}
 
 [ $pactl -eq 1 ] && sink=$(pactl list sinks | tr -d "\n" | grep -o "Sink[[:space:]]*#[^#]*Built-in" | tr "\t" " " | cut -d "#" -f 2 | cut -d " " -f 1)
+volstreak=0
+volstepbase=5
+volstepbase=$((100/$volstepbase)); volstep=$volstepbase
 #}}}
 
 #{{{ timers
@@ -205,15 +208,33 @@ while IFS= read -r line; do
 	#}}}
 
 	#{{{ volume
-		"volume-down")
-			pactl set-sink-volume $sink -5%
-		;;&
-		"volume-up")
-			pactl set-sink-volume $sink +5%
+		"volume-down") voldir=-1 ;;&
+		"volume-up")   voldir=1  ;;&
+		"volume-down" | "volume-up")
+			dzvol="$(pactl get-sink-volume $sink | grep -o "[[:digit:]]*[[:space:]]*/")"; dzvol=${dzvol%%[^0-9]*}
+			[ $(($voldir*$volstreak)) -le 0 ] && volstreak=$voldir || { [ ${volstreak#-} -lt 4 ] && volstreak=$(($volstreak+$voldir)); }
+			case ${volstreak#-} in
+				1) volstep=$((2*$volstep)) ;&
+				2 | 4)
+					[ $voldir -lt 0 ] \
+						&& pactl set-sink-volume $sink -$((65536/$volstep)) \
+						|| pactl set-sink-volume $sink +$((65536/$volstep))
+				;;
+				3)
+					# round to volstepbase increments from zero in the direction of scrolling
+					# bug - goes one step further when scrolling down thrice immediately after going up with volstreak=3/4
+					#       unfixable, or rather one direction has to have that behavior and down is the better option
+					# accounts for possible cumulative error up to 100% and then extends that past 100% by trimming and readding volume%100
+					pactl set-sink-volume $sink $((65536*($dzvol/65536)+65536/$volstepbase*(($dzvol%65536-65536/$volstepbase/2+65536-$volstepbase*(65536/$volstepbase))/(65536/$volstepbase))))
+					[ $voldir -gt 0 ] && pactl set-sink-volume $sink +$((65536/$volstepbase))
+					volstep=$volstepbase
+				;;
+			esac
 		;;&
 		"volume-switch")
 			sink="$({ pactl list sinks; pactl list sinks; } | grep -o "^Sink[[:space:]]*#[0-9]*" | grep -m 1 -A 1 "#$sink$")"
 			sink="${sink##*#}"
+			voldir=0
 		;;&
 		"volume"*)
 			if [ $pactl -eq 1 ]; then
