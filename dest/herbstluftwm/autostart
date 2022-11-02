@@ -2,6 +2,8 @@
 
 p=2 # prefixed tags, may be used on any monitor and should not be reachable by standard binds
 t=6
+h=20
+Mod=Mod4 # Use the super key as the main modifier
 
 #{{{ init
 hc () {
@@ -9,6 +11,7 @@ hc () {
 }
 hc emit_hook reload
 hc keyunbind --all
+hc keybind $Mod-Shift-r reload
 hc unrule -F
 hc set_attr theme.tiling.reset 1
 
@@ -56,9 +59,6 @@ if [ "$randr" != "$(hc get_attr my_randr)" ]; then
 fi
 unset randr
 	#}}}
-
-h=20
-Mod=Mod4 # Use the super key as the main modifier
 #}}}
 
 #{{{ autostart
@@ -84,7 +84,6 @@ hc export DISPLAY="$DISPLAY"
 #}}}
 
 #{{{ keybindings
-hc keybind $Mod-Shift-r reload
 hc keybind $Mod-a spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; exec '$HOME/Projects/Launcher/launcher.py'"
 hc keybind $Mod-d spawn bash -c "export DISPLAY='${REAL_DISPLAY:-"$DISPLAY"}'; [ \$(herbstclient get_attr tags.focus.curframe_wcount) -gt 0 ] && saveclose $h || herbstclient remove"
 
@@ -119,10 +118,43 @@ hc keybind $Mod-Control-Shift-m spawn xterm -T "hlwm-m" -e "neomutt"
 	#}}}
 
 	#{{{ navigation
-hc keybind $Mod-h focus left
-hc keybind $Mod-t focus down
-hc keybind $Mod-c focus up
-hc keybind $Mod-n focus right
+		#{{{
+focus() {
+	cat <<- __EOF__
+	chain \
+		, or \
+			. and \
+				: compare clients.focus.fullscreen = false \
+				: chain \
+					/ focus $1 \
+					/ true \
+			. sprintf OLDTAG %s tags.focus.index \
+			  foreach FRAME tags.focus.tiling.root. --recursive \
+			  	and \
+			  		: compare tags.focus.index = OLDTAG \
+			  		: focus -e $1 \
+		, and \
+			. compare clients.focus.fullscreen = false \
+			. sprintf CURTAG %s tags.focus.index \
+			  foreach CLIENT clients. --unique \
+			  	and \
+			  		: sprintf CTAG %c.tag CLIENT \
+			  		  compare CTAG = CURTAG \
+			  		: sprintf CVIS %c.visible CLIENT \
+			  		  compare CVIS = true \
+			  		: sprintf CFULL %c.fullscreen CLIENT \
+			  		  compare CFULL = true \
+			  		: sprintf CLIENT %c.winid CLIENT \
+			  		  substitute CLIENT CLIENT \
+			  		  jumpto CLIENT
+	__EOF__
+}
+		#}}}
+
+hc keybind $Mod-h $(focus left)
+hc keybind $Mod-t $(focus down)
+hc keybind $Mod-c $(focus up)
+hc keybind $Mod-n $(focus right)
 hc keybind $Mod-apostrophe cycle -1
 hc keybind $Mod-comma cycle 1
 
